@@ -2,15 +2,18 @@
 
 ChamaPro is a **Django-based group financial management system** designed to help community savings groups, investment clubs, and chamas manage their contributions, loans, expenses, and meetings with ease.
 
-## Features (Planned)
-- Member registration and management  
-- Contribution tracking (monthly/weekly/daily)  
-- Loan management with interest calculation  
-- Expense and income tracking  
-- Reports and analytics (PDF & Excel export)  
-- Role-based user access control  
-- Notifications (Email, SMS, WhatsApp integration)  
-- Mobile-friendly responsive design  
+## 🚀 Features
+
+- **Member Management** – Add, edit, and manage member profiles with contact details.
+- **Chama Groups** – Create and manage multiple chamas under one account.
+- **Contributions Tracking** – Record, track, and report member contributions.
+- **Loan Management** – Approve, disburse, and track loan repayments.
+- **Meetings & Agendas** – Schedule meetings, take attendance, and log minutes.
+- **Reports & Analytics** – View group performance, contributions, and loans.
+- **Role-Based Access Control** – Admins, Treasurers, and Members.
+- **Secure Authentication** – Login, password reset, and 2FA ready.
+- **Multi-Device Support** – Works on desktop, tablet, and mobile.
+- **API Ready** – REST API for mobile and third-party integrations.
 
 ## Technology Stack
 - **Backend:** Django (Python)  
