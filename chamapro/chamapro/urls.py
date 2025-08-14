@@ -20,4 +20,5 @@ from chamapro import views  # Import your views module
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),  # home page
+    path('features/', views.features, name='features'),  # new route
 ]
