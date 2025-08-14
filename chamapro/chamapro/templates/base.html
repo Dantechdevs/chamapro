@@ -1,0 +1,33 @@
+<header class="top-bar bg-light py-1 border-bottom">
+    <div class="container d-flex justify-content-between align-items-center">
+        <span class="contact-info">
+            +254 733 366 240 | <a href="mailto:info@chamasoft.com">info@chamasoft.com</a>
+        </span>
+        <nav class="top-links">
+            <a href="#">Use cases</a> |
+            <a href="#">Awards</a> |
+            <a href="#">Technology</a> |
+            <a href="#">Company</a> |
+            <a href="#">Support</a> |
+            <a href="#">Blog</a>
+        </nav>
+    </div>
+</header>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">Chamasoft</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Pricing</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Customers</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Sign In</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
