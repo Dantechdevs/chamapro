@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),  # home page
     path('features/', views.features, name='features'),  # new route
+    path('pricing/', views.pricing, name='pricing'),
+    path('customers/', views.customers, name='customers'),
 ]
