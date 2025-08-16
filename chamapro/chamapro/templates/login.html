@@ -1,0 +1,269 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chamapro – Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Icons & Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --brand-dark:#002855;
+      --brand-accent:#00AEEF;
+      --text:#0b0f19;
+      --muted:#6b7280;
+      --field:#eef2f7;
+    }
+    html,body{height:100%;}
+    body{
+      font-family: "Open Sans", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+      background: #f4f6f8;
+      color: var(--text);
+    }
+
+    /* Shell */
+    .cs-auth{min-height:100vh;}
+    ._full-height{min-height:100vh;}
+    ._form{background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.9));}
+    ._illustr{position:relative; overflow:hidden;}
+    ._illustr video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter: blur(0.5px) brightness(.9);}
+    ._illustr-bg{position:relative; z-index:2; height:100%; background: linear-gradient(90deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.6) 40%, rgba(255,255,255,0) 70%);}
+
+    /* Header */
+    ._logo{height:36px;}
+    ._header a{color: var(--muted); text-decoration:none;}
+    ._header a:hover{color: var(--brand-accent);}
+    ._nav a.active{color: var(--brand-accent); font-weight:700;}
+
+    /* Title */
+    ._title{font-family: Jost, sans-serif; font-weight:700; font-size:40px; letter-spacing:.2px;}
+    ._title-descr{color: var(--muted);}
+
+    /* Floating inputs */
+    ._f-shell ._input-shell{position:relative; margin-bottom:18px;}
+    ._f-shell .form-control{
+      background: #fff; border:1px solid #e5e7eb; border-radius:12px; padding:28px 14px 14px 14px; height:auto;
+      box-shadow: 0 1px 0 rgba(0,0,0,.02);
+    }
+    ._f-shell .form-control:focus{border-color: var(--brand-accent); box-shadow: 0 0 0 .2rem rgba(0,174,239,.12);}
+    ._f-shell label{
+      position:absolute; left:14px; top:10px; font-size:12px; color:#6b7280; pointer-events:none; transition:all .15s ease;
+      background:#fff; padding:0 4px;
+    }
+    ._input-shell.has-error .form-control{border-color:#ef4444;}
+    ._icon._show-pass{
+      position:absolute; right:14px; top:50%; transform:translateY(-4px); margin-top:-6px; cursor:pointer; color:#9aa1ad;
+    }
+
+    /* Buttons */
+    .btn-primary{
+      background: linear-gradient(180deg, #1E90FF, #0d6efd); border:none; border-radius:12px; padding:.875rem 1.25rem;
+      box-shadow: 0 6px 18px rgba(13,110,253,.25);
+    }
+    .btn-primary:disabled{opacity:.7;}
+    .btn-link{color:var(--brand-accent);}
+    .btn-link:hover{color:#028ac6;}
+
+    /* Social buttons */
+    .btn-social{border-radius:12px;}
+    .btn-google{border-color:#ea4335; color:#ea4335;}
+    .btn-google:hover{background:#ea4335; color:#fff;}
+    .btn-facebook{border-color:#1877f2; color:#1877f2;}
+    .btn-facebook:hover{background:#1877f2; color:#fff;}
+    .btn-twitter{border-color:#1da1f2; color:#1da1f2;}
+    .btn-twitter:hover{background:#1da1f2; color:#fff;}
+
+    /* Right intro */
+    ._intro h1{
+      font-family:Jost, sans-serif; font-weight:600; font-size:64px; color:#1f2937; line-height:1.1; margin-top:120px;
+    }
+    ._intro h1 span{color:var(--brand-accent);}
+    ._intro h6{color:#374151; font-weight:400;}
+    ._apps img{height:40px;}
+
+    /* Footer mini */
+    ._mini a{color:#2563eb; text-decoration:none;}
+    ._mini a:hover{text-decoration:underline;}
+
+    /* Small screens */
+    @media (max-width: 991.98px){
+      ._intro h1{font-size:42px; margin-top:32px;}
+      ._illustr-bg{background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.7) 30%, rgba(255,255,255,.1) 60%);}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid p-0 cs-auth">
+    <div class="row g-0">
+      <!-- LEFT: form -->
+      <div class="col-md-5 _full-height _form d-flex flex-column">
+        <!-- top header -->
+        <div class="row _header pt-4 pb-2">
+          <div class="col-7 col-lg-6 px-4 px-lg-5">
+            <a href="{% url 'home' %}">
+              <img src="{% static 'img/logo.png' %}" class="_logo" alt="Chamapro logo">
+            </a>
+          </div>
+          <div class="col-5 col-lg-6 px-4 px-lg-5 text-end">
+            <p class="m-0 _nav">
+              <small>
+                <a href="{% url 'home' %}" class="me-3"><i class="mdi mdi-home-outline d-none d-md-inline me-1"></i>Home</a>
+                <a href="{% url 'login' %}" class="me-3 active"><strong>Login</strong></a>
+                <a href="{% url 'signup' %}">Signup</a>
+              </small>
+            </p>
+          </div>
+        </div>
+
+        <!-- body -->
+        <div class="row _body flex-grow-1">
+          <div class="col-12 px-4 px-lg-5">
+            <h2 class="pt-3 _title">Login <span class="fw-normal" style="font-weight:600; color:#6b7280;">to continue</span></h2>
+            <p class="_title-descr">Use your <strong>email</strong> or <strong>phone</strong> and <strong>password</strong> to login</p>
+          </div>
+
+          <div class="col-12 px-4 px-lg-5">
+            <div class="_alert-shell"></div>
+
+            <form action="" method="post" autocomplete="off" class="login">
+              {% csrf_token %}
+              <div class="_f-shell">
+                <div class="_input-shell">
+                  <input type="text" name="identity" id="identity" class="form-control" autocomplete="username" placeholder="Your email or phone" />
+                  <label for="identity">Email or phone</label>
+                </div>
+
+                <div class="_input-shell">
+                  <input type="password" name="password" id="password" class="form-control" autocomplete="current-password" placeholder="Your password" />
+                  <i class="_icon _show-pass mdi mdi-eye" title="Show password"></i>
+                  <label for="password">Password</label>
+                </div>
+              </div>
+
+              <button class="btn btn-primary btn-lg my-2 my-md-4 px-5 me-lg-3 login" type="submit">
+                Login <i class="mdi mdi-vanish mdi-spin ms-2 _load-indicator" style="display:none"></i>
+              </button>
+              <a href="#" class="btn btn-link btn-lg align-middle">I forgot my password</a>
+            </form>
+          </div>
+
+          <div class="col-12 px-4 px-lg-5 pb-4">
+            <p class="_title-descr m-0">Login using your <strong>social media</strong> account</p>
+            <div class="row g-2 g-md-3 mt-1">
+              <div class="col-lg">
+                <a href="#" class="btn btn-md btn-outline-danger btn-block btn-social btn-google w-100"><i class="mdi mdi-google me-2"></i>Google <i class="mdi mdi-vanish mdi-spin ms-2 _load-indicator" style="display:none"></i></a>
+              </div>
+              <div class="col-lg">
+                <a href="#" class="btn btn-md btn-outline-primary btn-block btn-social btn-facebook w-100"><i class="mdi mdi-facebook me-2"></i>Facebook <i class="mdi mdi-vanish mdi-spin ms-2 _load-indicator" style="display:none"></i></a>
+              </div>
+              <div class="col-lg">
+                <a href="#" class="btn btn-md btn-outline-info btn-block btn-social btn-twitter w-100"><i class="mdi mdi-twitter me-2"></i>Twitter <i class="mdi mdi-vanish mdi-spin ms-2 _load-indicator" style="display:none"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- footer -->
+        <div class="row _footer mt-auto">
+          <div class="col-12 px-4 px-lg-5 py-3 text-muted">
+            <small>&copy; 2025 Chamapro · <span style="opacity:.75">All rights reserved</span></small>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: hero -->
+      <div class="col-md-7 bg-white _full-height _illustr d-none d-md-block">
+        <video id="videoBG" poster="{% static 'videos/screenshot.jpg' %}" autoplay muted loop playsinline>
+          <source src="{% static 'videos/auth_illustration.mp4' %}" type="video/mp4">
+        </video>
+
+        <div class="_illustr-bg d-flex flex-column">
+          <!-- top right apps menu -->
+          <div class="text-end pt-3 pe-4">
+            <div class="dropstart">
+              <button class="btn btn-link text-muted p-2" data-bs-toggle="dropdown" aria-expanded="false" title="Explore">
+                <i class="mdi mdi-apps fs-3"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><h6 class="dropdown-header" style="opacity:.6">Explore More</h6></li>
+                <li><a class="dropdown-item" href="#" target="_blank"><i class="mdi mdi-open-in-new me-2"></i>Docs</a></li>
+                <li><a class="dropdown-item" href="#" target="_blank"><i class="mdi mdi-open-in-new me-2"></i>Help Center</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- main intro -->
+          <div class="container-fluid _intro">
+            <div class="px-4 px-lg-5 mt-2">
+              <h1>Automate your <span>Chama</span></h1>
+              <h6 class="mt-2">Focus on your Chama investments as we handle<br class="d-none d-lg-block">your Chama financial administration.<br>Get the mobile application.</h6>
+              <div class="my-3 _apps">
+                <a href="#" class="me-2"><img src="{% static 'img/get_play_store.png' %}" alt="Get it on Google Play"></a>
+                <a href="#"><img src="{% static 'img/get_app_store.png' %}" alt="Download on the App Store"></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- mini links -->
+          <div class="mt-auto _mini">
+            <div class="px-4 px-lg-5 pb-3">
+              <small>
+                <a href="#" class="me-3"><strong>Online Demo</strong></a>
+                <a href="#" class="me-3">Terms &amp; Conditions</a>
+                <a href="#" class="me-3">Support</a>
+                <a href="#" class="me-3">Schedule Meeting</a>
+                <a href="#" title="Follow us on Twitter"><i class="mdi mdi-twitter"></i></a>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /RIGHT -->
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // enable/disable loaders
+    (function(){
+      const loginBtn = document.querySelector('form.login .login');
+      const loaders = document.querySelectorAll('._load-indicator');
+
+      // show/hide password
+      document.querySelector('._show-pass').addEventListener('click', function(){
+        const input = document.getElementById('password');
+        const isPass = input.type === 'password';
+        input.type = isPass ? 'text' : 'password';
+        this.classList.toggle('mdi-eye-off', isPass);
+        this.classList.toggle('mdi-eye', !isPass);
+        this.title = isPass ? 'Hide password' : 'Show password';
+      });
+
+      // basic validation + loader
+      document.querySelector('form.login').addEventListener('submit', function(e){
+        const id = document.getElementById('identity');
+        const pw = document.getElementById('password');
+        if(!id.value.trim()){
+          e.preventDefault(); alert('Your email or phone number is required.'); id.focus(); return;
+        }
+        if(!pw.value.trim()){
+          e.preventDefault(); alert('Your password is required.'); pw.focus(); return;
+        }
+        loginBtn.setAttribute('disabled', 'disabled');
+        loaders.forEach(i => i.style.display = 'inline-block');
+      });
+    })();
+  </script>
+</body>
+</html>

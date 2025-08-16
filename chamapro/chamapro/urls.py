@@ -23,4 +23,6 @@ urlpatterns = [
     path('features/', views.features, name='features'),  # new route
     path('pricing/', views.pricing, name='pricing'),
     path('customers/', views.customers, name='customers'),
+    path('login/', views.login, name='login'),  # add signup route
+    path('signup/', views.signup, name='signup'),  # add signup route
 ]

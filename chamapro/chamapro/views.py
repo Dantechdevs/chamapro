@@ -11,3 +11,9 @@ def pricing(request):
 
 def customers(request):
     return render(request, "customers.html")    
+
+def login(request):
+    return render(request, 'login.html')
+
+def signup(request):
+    return render(request, 'signup.html')  # Render the signup page template    

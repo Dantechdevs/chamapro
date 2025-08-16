@@ -1,0 +1,276 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chamapro – Signup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+
+  <!-- Intl Tel Input CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/css/intlTelInput.css"/>
+
+  <style>
+    /* keep all your styles unchanged */
+    :root{ --brand-dark:#002855; --brand-accent:#00AEEF; --text:#0b0f19; --muted:#6b7280; --field:#eef2f7;}
+    body{font-family:"Open Sans",system-ui; background:#f4f6f8; color:var(--text);}
+    ._title{font-family:Jost, sans-serif; font-weight:700; font-size:36px;}
+    ._title-descr{color:var(--muted);}
+    ._f-shell .form-control{border-radius:12px; padding:28px 44px 14px 14px;}
+    .btn-primary{background:linear-gradient(180deg, #1E90FF, #0d6efd); border:none; border-radius:12px;}
+    .btn-social{border-radius:12px;}
+  </style>
+</head>
+<body>
+  <div class="container-fluid p-0 cs-auth">
+    <div class="row g-0">
+      <!-- LEFT: signup form -->
+      <div class="col-md-5 _form d-flex flex-column">
+        <!-- Header -->
+        <div class="row _header pt-4 pb-2">
+          <div class="col-7 px-4">
+            <a href="{% url 'home' %}">
+              <img src="{% static 'img/logo.png' %}" class="_logo" alt="Chamapro logo">
+            </a>
+          </div>
+          <div class="col-5 text-end">
+            <small class="_nav">
+              <a href="{% url 'home' %}" class="me-3"><i class="mdi mdi-home-outline d-none d-md-inline"></i>Home</a>
+              <a href="{% url 'login' %}" class="me-3"><i class="mdi mdi-login d-none d-md-inline"></i>Login</a>
+              <a href="{% url 'signup' %}" class="active"><i class="mdi mdi-account-plus-outline d-none d-md-inline"></i><strong>Signup</strong></a>
+            </small>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-4 flex-grow-1">
+          <h2 class="_title">Sign up your Chama</h2>
+          <p class="_title-descr">Fill in the form below to continue</p>
+
+          <form action="" method="post" class="signup" novalidate>
+            {% csrf_token %}
+            <div class="_f-shell">
+              <!-- Full Name -->
+              <div class="_input-shell">
+                <input type="text" name="full_name" id="full_name" class="form-control" placeholder="Full Name" required>
+                <label for="full_name">Your full name</label>
+              </div>
+
+              <!-- Phone -->
+              <div class="_input-shell">
+                <input type="tel" name="phone" id="phone" class="form-control" placeholder="712 123456" required>
+                <label for="phone">Phone Number</label>
+              </div>
+
+              <!-- Email -->
+              <div class="_input-shell">
+                <input type="email" name="email" id="email" class="form-control" placeholder="Email" required>
+                <label for="email">Your email</label>
+              </div>
+
+              <!-- Password -->
+              <div class="_input-shell position-relative">
+                <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+                <label for="password">Your password</label>
+                <button type="button" class="_toggle-pass" id="togglePass"><i class="mdi mdi-eye"></i></button>
+              </div>
+            </div>
+
+            <!-- Terms -->
+            <div class="form-check my-3">
+              <input class="form-check-input" type="checkbox" id="terms" required>
+              <label class="form-check-label" for="terms">I agree to the <a href="#">terms &amp; conditions</a></label>
+            </div>
+
+            <!-- Submit -->
+            <button class="btn btn-primary btn-lg w-100 my-3" type="submit">Sign up</button>
+          </form>
+        </div>
+
+        <!-- Social signup -->
+        <div class="px-4 pb-4">
+          <p class="_title-descr">Or sign up using your <strong>social media</strong> account</p>
+          <div class="row g-2">
+            <div class="col"><a href="#" class="btn btn-outline-danger w-100 btn-social"><i class="mdi mdi-google"></i> Google</a></div>
+            <div class="col"><a href="#" class="btn btn-outline-primary w-100 btn-social"><i class="mdi mdi-facebook"></i> Facebook</a></div>
+            <div class="col"><a href="#" class="btn btn-outline-info w-100 btn-social"><i class="mdi mdi-twitter"></i> Twitter</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT illustration -->
+      <div class="col-md-7 d-none d-md-block bg-white">
+        <video autoplay muted loop playsinline>
+          <source src="{% static 'videos/auth_illustration.mp4' %}" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/intlTelInput.min.js"></script>
+  <script>
+    // phone input with country flag
+    const phoneInput = document.querySelector("#phone");
+    window.intlTelInput(phoneInput, {
+      initialCountry: "ke", // Kenya as default
+      separateDialCode: true,
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js"
+    });
+
+    // toggle password
+    document.getElementById("togglePass").addEventListener("click", function(){
+      const pw = document.getElementById("password");
+      if(pw.type === "password"){ pw.type = "text"; this.innerHTML='<i class="mdi mdi-eye-off"></i>'; }
+      else{ pw.type = "password"; this.innerHTML='<i class="mdi mdi-eye"></i>'; }
+    });
+  </script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chamapro – Signup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">
+
+  <!-- Intl Tel Input CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/css/intlTelInput.css"/>
+
+  <style>
+    /* keep all your styles unchanged */
+    :root{ --brand-dark:#002855; --brand-accent:#00AEEF; --text:#0b0f19; --muted:#6b7280; --field:#eef2f7;}
+    body{font-family:"Open Sans",system-ui; background:#f4f6f8; color:var(--text);}
+    ._title{font-family:Jost, sans-serif; font-weight:700; font-size:36px;}
+    ._title-descr{color:var(--muted);}
+    ._f-shell .form-control{border-radius:12px; padding:28px 44px 14px 14px;}
+    .btn-primary{background:linear-gradient(180deg, #1E90FF, #0d6efd); border:none; border-radius:12px;}
+    .btn-social{border-radius:12px;}
+  </style>
+</head>
+<body>
+  <div class="container-fluid p-0 cs-auth">
+    <div class="row g-0">
+      <!-- LEFT: signup form -->
+      <div class="col-md-5 _form d-flex flex-column">
+        <!-- Header -->
+        <div class="row _header pt-4 pb-2">
+          <div class="col-7 px-4">
+            <a href="{% url 'home' %}">
+              <img src="{% static 'img/logo.png' %}" class="_logo" alt="Chamapro logo">
+            </a>
+          </div>
+          <div class="col-5 text-end">
+            <small class="_nav">
+              <a href="{% url 'home' %}" class="me-3"><i class="mdi mdi-home-outline d-none d-md-inline"></i>Home</a>
+              <a href="{% url 'login' %}" class="me-3"><i class="mdi mdi-login d-none d-md-inline"></i>Login</a>
+              <a href="{% url 'signup' %}" class="active"><i class="mdi mdi-account-plus-outline d-none d-md-inline"></i><strong>Signup</strong></a>
+            </small>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-4 flex-grow-1">
+          <h2 class="_title">Sign up your Chama</h2>
+          <p class="_title-descr">Fill in the form below to continue</p>
+
+          <form action="" method="post" class="signup" novalidate>
+            {% csrf_token %}
+            <div class="_f-shell">
+              <!-- Full Name -->
+              <div class="_input-shell">
+                <input type="text" name="full_name" id="full_name" class="form-control" placeholder="Full Name" required>
+                <label for="full_name">Your full name</label>
+              </div>
+
+              <!-- Phone -->
+              <div class="_input-shell">
+                <input type="tel" name="phone" id="phone" class="form-control" placeholder="712 123456" required>
+                <label for="phone">Phone Number</label>
+              </div>
+
+              <!-- Email -->
+              <div class="_input-shell">
+                <input type="email" name="email" id="email" class="form-control" placeholder="Email" required>
+                <label for="email">Your email</label>
+              </div>
+
+              <!-- Password -->
+              <div class="_input-shell position-relative">
+                <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+                <label for="password">Your password</label>
+                <button type="button" class="_toggle-pass" id="togglePass"><i class="mdi mdi-eye"></i></button>
+              </div>
+            </div>
+
+            <!-- Terms -->
+            <div class="form-check my-3">
+              <input class="form-check-input" type="checkbox" id="terms" required>
+              <label class="form-check-label" for="terms">I agree to the <a href="#">terms &amp; conditions</a></label>
+            </div>
+
+            <!-- Submit -->
+            <button class="btn btn-primary btn-lg w-100 my-3" type="submit">Sign up</button>
+          </form>
+        </div>
+
+        <!-- Social signup -->
+        <div class="px-4 pb-4">
+          <p class="_title-descr">Or sign up using your <strong>social media</strong> account</p>
+          <div class="row g-2">
+            <div class="col"><a href="#" class="btn btn-outline-danger w-100 btn-social"><i class="mdi mdi-google"></i> Google</a></div>
+            <div class="col"><a href="#" class="btn btn-outline-primary w-100 btn-social"><i class="mdi mdi-facebook"></i> Facebook</a></div>
+            <div class="col"><a href="#" class="btn btn-outline-info w-100 btn-social"><i class="mdi mdi-twitter"></i> Twitter</a></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT illustration -->
+      <div class="col-md-7 d-none d-md-block bg-white">
+        <video autoplay muted loop playsinline>
+          <source src="{% static 'videos/auth_illustration.mp4' %}" type="video/mp4">
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/intlTelInput.min.js"></script>
+  <script>
+    // phone input with country flag
+    const phoneInput = document.querySelector("#phone");
+    window.intlTelInput(phoneInput, {
+      initialCountry: "ke", // Kenya as default
+      separateDialCode: true,
+      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.1.1/js/utils.js"
+    });
+
+    // toggle password
+    document.getElementById("togglePass").addEventListener("click", function(){
+      const pw = document.getElementById("password");
+      if(pw.type === "password"){ pw.type = "text"; this.innerHTML='<i class="mdi mdi-eye-off"></i>'; }
+      else{ pw.type = "password"; this.innerHTML='<i class="mdi mdi-eye"></i>'; }
+    });
+  </script>
+</body>
+</html>
