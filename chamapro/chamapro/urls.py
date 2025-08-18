@@ -25,4 +25,6 @@ urlpatterns = [
     path('customers/', views.customers, name='customers'),
     path('login/', views.login, name='login'),  # add signup route
     path('signup/', views.signup, name='signup'),  # add signup route
+    path('forgot-password/', views.forgot_password, name='forgot_password'),  # new route
+
 ]

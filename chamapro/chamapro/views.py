@@ -17,3 +17,6 @@ def login(request):
 
 def signup(request):
     return render(request, 'signup.html')  # Render the signup page template    
+
+def forgot_password(request):
+    return render(request, 'forgot_password.html')  # new view for password reset
