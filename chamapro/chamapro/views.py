@@ -20,3 +20,5 @@ def signup(request):
 
 def forgot_password(request):
     return render(request, 'forgot_password.html')  # new view for password reset
+def dashboard(request):
+    return render(request, 'dashboard.html')
