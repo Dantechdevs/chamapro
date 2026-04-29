@@ -415,10 +415,7 @@
       </nav>
       
       <div class="mt-auto p-3">
-        <a href="javascript:void(0)" id="logout-btn" class="btn btn-outline-light btn-sm d-flex align-items-center">
-          <i class="fas fa-sign-out-alt me-2"></i>
-          <span>Logout</span>
-        </a>
+        <a href="{% url 'logout' %}" class="btn btn-outline-light btn-sm d-flex align-items-center">
       </div>
     </div>
     
@@ -458,13 +455,13 @@
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="javascript:void(0)" id="userDropdown" role="button" data-bs-toggle="dropdown">
                   <div class="avatar-circle me-2">JD</div>
-                  <span>Daniel</span>
+                  <span>{{ user.get_full_name|default:user.username }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                   <li><a class="dropdown-item" href="javascript:void(0)">Profile</a></li>
                   <li><a class="dropdown-item" href="javascript:void(0)">Account Settings</a></li>
                   <li><hr class="dropdown-divider"></li>
-                  <li><a class="dropdown-item" href="javascript:void(0)" id="logout-link">Logout</a></li>
+                  <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                 </ul>
               </li>
             </ul>
@@ -780,7 +777,7 @@
                     <td>1</td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="avatar-circle me-2">JD</div>
+                        <div class="avatar-circle me-2">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
                         <div>John Doe</div>
                       </div>
                     </td>
