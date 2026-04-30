@@ -1,0 +1,368 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ chama.name }} – Members</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary: #2d6a4f;
+        --primary-light: #40916c;
+        --accent: #d8f3dc;
+      }
+      body {
+        background: #f5f5f5;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .page-header {
+        background: var(--primary);
+        color: #fff;
+        padding: 2rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+      }
+      .page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+      }
+      .card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      }
+      .avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .badge-role {
+        font-size: 11px;
+        font-weight: 500;
+        padding: 4px 10px;
+        border-radius: 20px;
+      }
+      .role-admin {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .role-treasurer {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .role-secretary {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .role-member {
+        background: var(--accent);
+        color: var(--primary);
+      }
+      .btn-primary {
+        background: var(--primary);
+        border-color: var(--primary);
+        border-radius: 8px;
+      }
+      .btn-primary:hover {
+        background: var(--primary-light);
+        border-color: var(--primary-light);
+      }
+      .stat-box {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        padding: 0.75rem 1.25rem;
+        text-align: center;
+      }
+      .stat-box .num {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .stat-box .lbl {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-4" style="max-width: 800px">
+      <div class="mb-3">
+        <a
+          href="{% url 'dashboard' %}"
+          class="text-muted text-decoration-none"
+          style="font-size: 14px"
+        >
+          <i class="fas fa-arrow-left me-1"></i> Dashboard
+        </a>
+      </div>
+
+      <!-- Header -->
+      <div
+        class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3"
+      >
+        <div>
+          <h1><i class="fas fa-users me-2"></i>{{ chama.name }}</h1>
+          {% if chama.description %}
+          <p class="mb-0 mt-1" style="opacity: 0.8; font-size: 14px">
+            {{ chama.description }}
+          </p>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-3">
+          <div class="stat-box">
+            <div class="num">{{ memberships|length }}</div>
+            <div class="lbl">Members</div>
+          </div>
+          <div class="stat-box">
+            <div class="num">{{ chama.currency }}</div>
+            <div class="lbl">Currency</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      {% if messages %} {% for message in messages %}
+      <div
+        class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+        style="border-radius: 10px; font-size: 14px"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %} {% endif %}
+
+      <!-- Invite form (admins/treasurers only) -->
+      {% if can_manage %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h6 class="fw-600 mb-3">
+            <i class="fas fa-user-plus me-2 text-success"></i>Invite a Member
+          </h6>
+          <form
+            method="post"
+            action="{% url 'member_invite' chama.id %}"
+            class="row g-2 align-items-end"
+          >
+            {% csrf_token %}
+            <div class="col-md-6">
+              <label class="form-label" style="font-size: 13px"
+                >Member's Email</label
+              >
+              <input
+                type="email"
+                name="email"
+                class="form-control"
+                placeholder="member@email.com"
+                required
+                style="border-radius: 8px"
+              />
+            </div>
+            <div class="col-md-3">
+              <label class="form-label" style="font-size: 13px">Role</label>
+              <select
+                name="role"
+                class="form-select"
+                style="border-radius: 8px"
+              >
+                <option value="member">Member</option>
+                <option value="treasurer">Treasurer</option>
+                <option value="secretary">Secretary</option>
+                {% if my_membership.role == 'admin' %}
+                <option value="admin">Admin</option>
+                {% endif %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-plus me-1"></i> Add Member
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Member list -->
+      <div class="card">
+        <div
+          class="card-header bg-white py-3 px-4"
+          style="border-radius: 14px 14px 0 0"
+        >
+          <h6 class="mb-0 fw-bold">Members ({{ memberships|length }})</h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4">Member</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Joined</th>
+                  {% if can_manage %}
+                  <th>Actions</th>
+                  {% endif %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for m in memberships %}
+                <tr>
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar">
+                        {{ m.user.first_name.0|upper }}{{
+                        m.user.last_name.0|upper }}
+                      </div>
+                      <div>
+                        <div style="font-weight: 500; font-size: 14px">
+                          {{ m.user.get_full_name|default:m.user.username }}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280">
+                          {{ m.user.email }}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="font-size: 14px">
+                    {{ m.user.phone|default:"—" }}
+                  </td>
+                  <td>
+                    <span class="badge-role role-{{ m.role }}"
+                      >{{ m.get_role_display }}</span
+                    >
+                  </td>
+                  <td style="font-size: 13px; color: #6b7280">
+                    {{ m.joined_at|date:"M d, Y" }}
+                  </td>
+                  {% if can_manage %}
+                  <td>
+                    {% if m.user != request.user %}
+                    <div class="d-flex gap-1">
+                      <!-- Change role -->
+                      <form
+                        method="post"
+                        action="{% url 'member_role_update' chama.id m.id %}"
+                        class="d-inline"
+                      >
+                        {% csrf_token %}
+                        <select
+                          name="role"
+                          onchange="this.form.submit()"
+                          class="form-select form-select-sm"
+                          style="
+                            width: 110px;
+                            border-radius: 6px;
+                            font-size: 12px;
+                          "
+                        >
+                          <option
+                            value="member"
+                            {%
+                            if
+                            m.role=""
+                            ="member"
+                            %}selected{%
+                            endif
+                            %}
+                          >
+                            Member
+                          </option>
+                          <option
+                            value="treasurer"
+                            {%
+                            if
+                            m.role=""
+                            ="treasurer"
+                            %}selected{%
+                            endif
+                            %}
+                          >
+                            Treasurer
+                          </option>
+                          <option
+                            value="secretary"
+                            {%
+                            if
+                            m.role=""
+                            ="secretary"
+                            %}selected{%
+                            endif
+                            %}
+                          >
+                            Secretary
+                          </option>
+                          {% if my_membership.role == 'admin' %}
+                          <option
+                            value="admin"
+                            {%
+                            if
+                            m.role=""
+                            ="admin"
+                            %}selected{%
+                            endif
+                            %}
+                          >
+                            Admin
+                          </option>
+                          {% endif %}
+                        </select>
+                      </form>
+                      <!-- Remove -->
+                      <form
+                        method="post"
+                        action="{% url 'member_remove' chama.id m.id %}"
+                        onsubmit="return confirm('Remove {{ m.user.get_full_name }} from {{ chama.name }}?')"
+                      >
+                        {% csrf_token %}
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                          style="border-radius: 6px"
+                          title="Remove member"
+                        >
+                          <i class="fas fa-user-minus"></i>
+                        </button>
+                      </form>
+                    </div>
+                    {% else %}
+                    <span style="font-size: 12px; color: #6b7280">You</span>
+                    {% endif %}
+                  </td>
+                  {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">
+                    No members yet.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
