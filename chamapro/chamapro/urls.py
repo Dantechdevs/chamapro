@@ -27,4 +27,13 @@ urlpatterns = [
     path('chama/<int:chama_id>/invite/', views.member_invite, name='member_invite'),
     path('chama/<int:chama_id>/members/<int:membership_id>/role/', views.member_role_update, name='member_role_update'),
     path('chama/<int:chama_id>/members/<int:membership_id>/remove/', views.member_remove, name='member_remove'),
+
+    # Contributions
+    path('chama/<int:chama_id>/contributions/', views.contributions, name='contributions'),
+    path('chama/<int:chama_id>/contributions/add/', views.contribution_add, name='contribution_add'),
+    path('chama/<int:chama_id>/contributions/<int:contribution_id>/delete/', views.contribution_delete, name='contribution_delete'),
+    path('chama/<int:chama_id>/contributions/<int:contribution_id>/status/', views.contribution_status_update, name='contribution_status_update'),
+
+    # Penalties
+    path('chama/<int:chama_id>/penalties/add/', views.penalty_add, name='penalty_add'),
 ]

@@ -1,0 +1,303 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ chama.name }} – Contributions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --brand:#0d6e4f; --brand-light:#1a8f68; --brand-xlight:#e6f5f0; --brand-dark:#064d38; --danger:#ef4444; --warning:#f59e0b; --info:#3b82f6; --border:#e5e7eb; --muted:#6b7280; }
+    body { font-family:'Plus Jakarta Sans',sans-serif; background:#f3f6f4; color:#111827; }
+    .page-shell { max-width:1100px; margin:0 auto; padding:24px 20px; }
+    .back-link { font-size:13px; color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin-bottom:18px; }
+    .back-link:hover { color:var(--brand); }
+    .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+    .page-title { font-size:22px; font-weight:800; margin:0; }
+    .page-sub { font-size:13px; color:var(--muted); margin-top:2px; }
+
+    /* Stat cards */
+    .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px; }
+    .stat-card { background:#fff; border-radius:14px; padding:18px 20px; box-shadow:0 1px 4px rgba(0,0,0,.07); border-top:3px solid var(--brand); }
+    .stat-card.warning { border-top-color:var(--warning); }
+    .stat-card.info { border-top-color:var(--info); }
+    .stat-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-bottom:6px; }
+    .stat-value { font-size:22px; font-weight:800; font-family:'DM Mono',monospace; letter-spacing:-.5px; }
+
+    /* Table card */
+    .table-card { background:#fff; border-radius:14px; box-shadow:0 1px 4px rgba(0,0,0,.07); overflow:hidden; }
+    .table-card-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    .table-card-header h6 { font-size:15px; font-weight:700; margin:0; }
+    .filters { display:flex; gap:8px; flex-wrap:wrap; }
+    .filter-select { font-size:12px; border:1px solid var(--border); border-radius:8px; padding:6px 10px; color:#374151; background:#fff; cursor:pointer; }
+    .filter-select:focus { outline:none; border-color:var(--brand); }
+    table { width:100%; border-collapse:collapse; }
+    thead th { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:10px 14px; background:#f9fafb; border-bottom:1px solid var(--border); white-space:nowrap; }
+    tbody td { padding:12px 14px; border-bottom:1px solid var(--border); font-size:13.5px; vertical-align:middle; }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody tr:hover { background:#fafafa; }
+    .member-cell { display:flex; align-items:center; gap:10px; }
+    .avatar { width:34px; height:34px; border-radius:50%; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+    .member-name { font-weight:600; font-size:13.5px; }
+    .member-email { font-size:11px; color:var(--muted); }
+    .amount-cell { font-family:'DM Mono',monospace; font-weight:600; font-size:14px; }
+    .badge-status { font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; display:inline-block; }
+    .badge-confirmed { background:#d1fae5; color:#065f46; }
+    .badge-pending { background:#fef3c7; color:#92400e; }
+    .badge-rejected { background:#fee2e2; color:#991b1b; }
+    .method-badge { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; background:#f3f4f6; color:#374151; }
+    .action-btn { width:30px; height:30px; border-radius:7px; border:1px solid var(--border); background:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; color:var(--muted); transition:all .15s; text-decoration:none; }
+    .action-btn:hover { background:var(--brand); color:#fff; border-color:var(--brand); }
+    .action-btn.danger:hover { background:var(--danger); border-color:var(--danger); }
+    .empty-state { padding:48px; text-align:center; color:var(--muted); }
+    .empty-state i { font-size:36px; margin-bottom:12px; opacity:.3; display:block; }
+    .btn-add { background:var(--brand); color:#fff; border:none; border-radius:10px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+    .btn-add:hover { background:var(--brand-light); }
+
+    /* Modal */
+    .modal-content { border:none; border-radius:16px; }
+    .modal-header { border-bottom:1px solid var(--border); padding:18px 22px; }
+    .modal-title { font-weight:800; font-size:17px; }
+    .modal-body { padding:22px; }
+    .form-label { font-size:13px; font-weight:600; color:#374151; margin-bottom:4px; }
+    .form-control, .form-select { border-radius:10px; border:1px solid var(--border); padding:9px 13px; font-size:13.5px; }
+    .form-control:focus, .form-select:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(13,110,79,.1); }
+    .btn-submit { background:var(--brand); color:#fff; border:none; border-radius:10px; padding:10px 24px; font-weight:700; font-size:14px; }
+    .btn-submit:hover { background:var(--brand-light); }
+
+    @media(max-width:700px) { .stat-row{grid-template-columns:1fr 1fr;} .filters{flex-direction:column;} }
+    @media(max-width:500px) { .stat-row{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<div class="page-shell">
+  <a href="{% url 'dashboard' %}" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Contributions</h1>
+      <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Track and manage member contributions</p>
+    </div>
+    {% if can_manage %}
+    <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addContribModal">
+      <i class="fas fa-plus"></i> Record Contribution
+    </button>
+    {% endif %}
+  </div>
+
+  <!-- Messages -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:13px;">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Confirmed</div>
+      <div class="stat-value">KES {{ total_confirmed|floatformat:2 }}</div>
+    </div>
+    <div class="stat-card warning">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value">KES {{ total_pending|floatformat:2 }}</div>
+    </div>
+    <div class="stat-card info">
+      <div class="stat-label">This Month</div>
+      <div class="stat-value">KES {{ total_this_month|floatformat:2 }}</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h6>All Contributions</h6>
+      <form method="get" class="filters" id="filterForm">
+        <select name="member" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+          <option value="">All Members</option>
+          {% for m in members %}
+          <option value="{{ m.user.id }}" {% if member_filter == m.user.id|stringformat:"s" %}selected{% endif %}>
+            {{ m.user.get_full_name|default:m.user.username }}
+          </option>
+          {% endfor %}
+        </select>
+        <select name="method" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+          <option value="">All Methods</option>
+          {% for val, label in payment_methods %}
+          <option value="{{ val }}" {% if method_filter == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <select name="status" class="filter-select" onchange="document.getElementById('filterForm').submit()">
+          <option value="">All Statuses</option>
+          <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+          <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+        {% if member_filter or method_filter or status_filter %}
+        <a href="{% url 'contributions' chama.id %}" class="filter-select" style="text-decoration:none;color:var(--danger);">
+          <i class="fas fa-times"></i> Clear
+        </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Member</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Method</th>
+            <th>Reference</th>
+            <th>Status</th>
+            <th>Recorded by</th>
+            {% if can_manage %}<th>Actions</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in contributions %}
+          <tr>
+            <td style="color:var(--muted);font-size:12px;">{{ forloop.counter }}</td>
+            <td>
+              <div class="member-cell">
+                <div class="avatar">{{ c.member.first_name.0|upper }}{{ c.member.last_name.0|upper }}</div>
+                <div>
+                  <div class="member-name">{{ c.member.get_full_name|default:c.member.username }}</div>
+                  <div class="member-email">{{ c.member.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="amount-cell">{{ chama.currency }} {{ c.amount|floatformat:2 }}</td>
+            <td style="color:var(--muted);font-size:13px;">{{ c.date|date:"M d, Y" }}</td>
+            <td><span class="method-badge">{{ c.get_payment_method_display }}</span></td>
+            <td style="font-size:12px;color:var(--muted);">{{ c.reference|default:"—" }}</td>
+            <td><span class="badge-status badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+            <td style="font-size:12px;color:var(--muted);">{{ c.recorded_by.get_full_name|default:"—" }}</td>
+            {% if can_manage %}
+            <td>
+              <div style="display:flex;gap:4px;">
+                {% if c.status == 'pending' %}
+                <form method="post" action="{% url 'contribution_status_update' chama.id c.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="status" value="confirmed">
+                  <button type="submit" class="action-btn" title="Confirm" style="color:#10b981;">
+                    <i class="fas fa-check"></i>
+                  </button>
+                </form>
+                <form method="post" action="{% url 'contribution_status_update' chama.id c.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="status" value="rejected">
+                  <button type="submit" class="action-btn danger" title="Reject">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </form>
+                {% endif %}
+                <form method="post" action="{% url 'contribution_delete' chama.id c.id %}"
+                      onsubmit="return confirm('Delete this contribution?')">
+                  {% csrf_token %}
+                  <button type="submit" class="action-btn danger" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="9">
+              <div class="empty-state">
+                <i class="fas fa-hand-holding-dollar"></i>
+                No contributions recorded yet.
+                {% if can_manage %}
+                <br><br>
+                <button class="btn-add" data-bs-toggle="modal" data-bs-target="#addContribModal">
+                  <i class="fas fa-plus"></i> Record First Contribution
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contribution Modal -->
+{% if can_manage %}
+<div class="modal fade" id="addContribModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-plus-circle me-2" style="color:var(--brand);"></i>Record Contribution</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'contribution_add' chama.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Member <span style="color:red;">*</span></label>
+            <select name="member_id" class="form-select" required>
+              <option value="">— Select Member —</option>
+              {% for m in members %}
+              <option value="{{ m.user.id }}">{{ m.user.get_full_name|default:m.user.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Amount ({{ chama.currency }}) <span style="color:red;">*</span></label>
+              <input type="number" name="amount" class="form-control" placeholder="{{ chama.contribution_amount }}" step="0.01" min="1" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Date</label>
+              <input type="date" name="date" class="form-control" value="{% now 'Y-m-d' %}">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Payment Method</label>
+              <select name="payment_method" class="form-select">
+                {% for val, label in payment_methods %}
+                <option value="{{ val }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="confirmed">Confirmed</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reference / Transaction Code</label>
+            <input type="text" name="reference" class="form-control" placeholder="e.g. MPESA code, bank ref">
+          </div>
+          <div class="mb-1">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Optional notes..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius:10px;">Cancel</button>
+          <button type="submit" class="btn-submit">Save Contribution</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
