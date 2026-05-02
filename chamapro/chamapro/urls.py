@@ -36,4 +36,11 @@ urlpatterns = [
 
     # Penalties
     path('chama/<int:chama_id>/penalties/add/', views.penalty_add, name='penalty_add'),
+
+    # Loans
+    path('chama/<int:chama_id>/loans/', views.loans, name='loans'),
+    path('chama/<int:chama_id>/loans/apply/', views.loan_apply, name='loan_apply'),
+    path('chama/<int:chama_id>/loans/<int:loan_id>/', views.loan_detail, name='loan_detail'),
+    path('chama/<int:chama_id>/loans/<int:loan_id>/approve/', views.loan_approve, name='loan_approve'),
+    path('chama/<int:chama_id>/loans/<int:loan_id>/repay/', views.loan_repayment_add, name='loan_repayment_add'),
 ]

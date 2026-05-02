@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Sum
-from .models import User, Chama, Membership, Contribution, Penalty
+from django.db.models import Sum, Count
+from decimal import Decimal
+import datetime
+from .models import User, Chama, Membership, Contribution, Penalty, Loan, LoanRepayment
 
 
 # ─── Auth ────────────────────────────────────────────────────────────────────
@@ -240,15 +242,15 @@ def contributions(request, chama_id):
         contribs = contribs.filter(status=status_filter)
 
     # Summary stats
-    total_confirmed = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or 0
-    total_pending   = chama.contributions.filter(status='pending').aggregate(t=Sum('amount'))['t'] or 0
+    today = datetime.date.today()
+    total_confirmed  = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or 0
+    total_pending    = chama.contributions.filter(status='pending').aggregate(t=Sum('amount'))['t'] or 0
     total_this_month = chama.contributions.filter(
         status='confirmed',
-        date__month=__import__('datetime').date.today().month,
-        date__year=__import__('datetime').date.today().year,
+        date__month=today.month,
+        date__year=today.year,
     ).aggregate(t=Sum('amount'))['t'] or 0
 
-    # Member list for filter dropdown
     members = chama.memberships.filter(active=True).select_related('user')
 
     context = {
@@ -278,13 +280,13 @@ def contribution_add(request, chama_id):
         return redirect('contributions', chama_id=chama_id)
 
     if request.method == 'POST':
-        member_id   = request.POST.get('member_id')
-        amount      = request.POST.get('amount', '').strip()
-        method      = request.POST.get('payment_method', 'cash')
-        reference   = request.POST.get('reference', '').strip()
-        notes       = request.POST.get('notes', '').strip()
-        date        = request.POST.get('date', '').strip()
-        status      = request.POST.get('status', 'confirmed')
+        member_id = request.POST.get('member_id')
+        amount    = request.POST.get('amount', '').strip()
+        method    = request.POST.get('payment_method', 'cash')
+        reference = request.POST.get('reference', '').strip()
+        notes     = request.POST.get('notes', '').strip()
+        date      = request.POST.get('date', '').strip()
+        status    = request.POST.get('status', 'confirmed')
 
         errors = []
         if not member_id: errors.append('Please select a member.')
@@ -308,7 +310,7 @@ def contribution_add(request, chama_id):
             reference=reference or None,
             notes=notes or None,
             status=status,
-            date=date or __import__('datetime').date.today(),
+            date=date or datetime.date.today(),
             recorded_by=request.user,
         )
         messages.success(request, f'Contribution of KES {amount:,.2f} recorded for {member.get_full_name()}.')
@@ -378,3 +380,188 @@ def penalty_add(request, chama_id):
         messages.success(request, f'Penalty of KES {amount} issued to {member.get_full_name()}.')
 
     return redirect('contributions', chama_id=chama_id)
+
+
+# ─── Loans ────────────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def loans(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    all_loans = chama.loans.select_related('member', 'approved_by').order_by('-created_at')
+
+    # Filters
+    status_filter = request.GET.get('status', '')
+    member_filter = request.GET.get('member', '')
+    if status_filter:
+        all_loans = all_loans.filter(status=status_filter)
+    if member_filter:
+        all_loans = all_loans.filter(member_id=member_filter)
+
+    # Summary stats
+    total_disbursed   = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_outstanding = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_pending     = chama.loans.filter(status='pending').count()
+    total_overdue     = chama.loans.filter(status='overdue').count()
+
+    members = chama.memberships.filter(active=True).select_related('user')
+
+    context = {
+        'chama': chama,
+        'my_membership': my,
+        'can_manage': my.role in ('admin', 'treasurer'),
+        'loans': all_loans,
+        'members': members,
+        'total_disbursed': total_disbursed,
+        'total_outstanding': total_outstanding,
+        'total_pending': total_pending,
+        'total_overdue': total_overdue,
+        'status_filter': status_filter,
+        'member_filter': member_filter,
+        'loan_statuses': Loan.STATUS_CHOICES,
+        'purpose_choices': Loan.PURPOSE_CHOICES,
+    }
+    return render(request, 'loans.html', context)
+
+
+@login_required(login_url='login')
+def loan_apply(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    if request.method == 'POST':
+        member_id    = request.POST.get('member_id') or request.user.id
+        amount       = request.POST.get('amount', '').strip()
+        interest     = request.POST.get('interest_rate', '10').strip()
+        term         = request.POST.get('term_months', '3').strip()
+        purpose      = request.POST.get('purpose', 'other')
+        description  = request.POST.get('description', '').strip()
+        applied_date = request.POST.get('applied_at', '').strip()
+
+        errors = []
+        if not amount: errors.append('Loan amount is required.')
+        try:
+            amount_val = float(amount)
+            if amount_val <= 0: errors.append('Amount must be greater than 0.')
+        except (ValueError, TypeError):
+            errors.append('Invalid amount.')
+
+        if errors:
+            for e in errors: messages.error(request, e)
+            return redirect('loans', chama_id=chama_id)
+
+        # Admins/treasurers can apply on behalf of any member
+        if my.role in ('admin', 'treasurer') and member_id:
+            member = get_object_or_404(User, id=member_id)
+        else:
+            member = request.user
+
+        Loan.objects.create(
+            chama=chama,
+            member=member,
+            amount=Decimal(amount),
+            interest_rate=Decimal(interest or '10'),
+            term_months=int(term or 3),
+            purpose=purpose,
+            description=description or None,
+            status='pending',
+            applied_at=applied_date or datetime.date.today(),
+        )
+        messages.success(request, f'Loan application of KES {amount_val:,.2f} submitted for {member.get_full_name()}.')
+        return redirect('loans', chama_id=chama_id)
+
+    return redirect('loans', chama_id=chama_id)
+
+
+@login_required(login_url='login')
+def loan_approve(request, chama_id, loan_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    if my.role not in ('admin', 'treasurer'):
+        messages.error(request, 'Only admins and treasurers can approve loans.')
+        return redirect('loans', chama_id=chama_id)
+
+    loan = get_object_or_404(Loan, id=loan_id, chama=chama)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')  # 'approve' or 'reject'
+        from dateutil.relativedelta import relativedelta
+
+        if action == 'approve' and loan.status == 'pending':
+            loan.status      = 'active'
+            loan.approved_by = request.user
+            loan.approved_at = datetime.date.today()
+            loan.due_date    = datetime.date.today() + relativedelta(months=loan.term_months)
+            loan.save()
+            messages.success(request, f'Loan of KES {loan.amount:,.2f} approved for {loan.member.get_full_name()}.')
+
+        elif action == 'reject' and loan.status == 'pending':
+            loan.status = 'rejected'
+            loan.save()
+            messages.warning(request, f'Loan application rejected for {loan.member.get_full_name()}.')
+
+    return redirect('loans', chama_id=chama_id)
+
+
+@login_required(login_url='login')
+def loan_repayment_add(request, chama_id, loan_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    if my.role not in ('admin', 'treasurer'):
+        messages.error(request, 'Only admins and treasurers can record repayments.')
+        return redirect('loans', chama_id=chama_id)
+
+    loan = get_object_or_404(Loan, id=loan_id, chama=chama)
+
+    if request.method == 'POST':
+        amount    = request.POST.get('amount', '').strip()
+        method    = request.POST.get('payment_method', 'cash')
+        reference = request.POST.get('reference', '').strip()
+        date      = request.POST.get('date', '').strip()
+
+        try:
+            amount_val = Decimal(amount)
+        except Exception:
+            messages.error(request, 'Invalid amount.')
+            return redirect('loans', chama_id=chama_id)
+
+        LoanRepayment.objects.create(
+            loan=loan,
+            amount=amount_val,
+            payment_method=method,
+            reference=reference or None,
+            date=date or datetime.date.today(),
+            recorded_by=request.user,
+            status='confirmed',
+        )
+
+        # Check if fully repaid
+        if loan.balance() <= 0:
+            loan.status = 'repaid'
+            loan.save()
+            messages.success(request, f'Loan fully repaid by {loan.member.get_full_name()}! 🎉')
+        else:
+            messages.success(request, f'Repayment of KES {amount_val:,.2f} recorded. Balance: KES {loan.balance():,.2f}')
+
+    return redirect('loans', chama_id=chama_id)
+
+
+@login_required(login_url='login')
+def loan_detail(request, chama_id, loan_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    loan = get_object_or_404(Loan, id=loan_id, chama=chama)
+    repayments = loan.repayments.all()
+
+    context = {
+        'chama': chama,
+        'my_membership': my,
+        'can_manage': my.role in ('admin', 'treasurer'),
+        'loan': loan,
+        'repayments': repayments,
+        'payment_methods': LoanRepayment.PAYMENT_METHODS,
+    }
+    return render(request, 'loan_detail.html', context)

@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.db.models import Sum
+from decimal import Decimal
 
 
 class User(AbstractUser):
@@ -32,14 +33,12 @@ class Chama(models.Model):
         return self.memberships.filter(active=True).count()
 
     def total_contributions(self):
-        result = self.contributions.filter(
-            status='confirmed'
-        ).aggregate(total=Sum('amount'))
-        return result['total'] or 0
+        result = self.contributions.filter(status='confirmed').aggregate(total=Sum('amount'))
+        return result['total'] or Decimal('0')
 
-    def total_penalties(self):
-        result = self.penalties.aggregate(total=Sum('amount'))
-        return result['total'] or 0
+    def total_loans_outstanding(self):
+        result = self.loans.filter(status__in=['active', 'overdue']).aggregate(total=Sum('amount'))
+        return result['total'] or Decimal('0')
 
 
 class Membership(models.Model):
@@ -71,14 +70,7 @@ class Membership(models.Model):
         result = self.chama.contributions.filter(
             member=self.user, status='confirmed'
         ).aggregate(total=Sum('amount'))
-        return result['total'] or 0
-
-    def total_arrears(self):
-        """How much this member owes based on expected vs paid."""
-        paid = self.total_contributed()
-        expected = self.chama.contribution_amount
-        shortfall = expected - paid
-        return max(shortfall, 0)
+        return result['total'] or Decimal('0')
 
 
 class Contribution(models.Model):
@@ -93,12 +85,11 @@ class Contribution(models.Model):
         ('confirmed', 'Confirmed'),
         ('rejected', 'Rejected'),
     ]
-
     chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='contributions')
     member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='contributions')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cash')
-    reference = models.CharField(max_length=255, blank=True, null=True, help_text="M-Pesa code or bank ref")
+    reference = models.CharField(max_length=255, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
     date = models.DateField(default=timezone.now)
@@ -111,7 +102,7 @@ class Contribution(models.Model):
         ordering = ['-date', '-created_at']
 
     def __str__(self):
-        return f"{self.member} → {self.chama} KES {self.amount} ({self.status})"
+        return f"{self.member} → {self.chama} {self.amount} ({self.status})"
 
 
 class Penalty(models.Model):
@@ -126,7 +117,6 @@ class Penalty(models.Model):
         ('paid', 'Paid'),
         ('waived', 'Waived'),
     ]
-
     chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='penalties')
     member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='penalties')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -143,6 +133,102 @@ class Penalty(models.Model):
 
     def __str__(self):
         return f"Penalty {self.member} {self.amount} ({self.status})"
+
+
+class Loan(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('active', 'Active'),
+        ('overdue', 'Overdue'),
+        ('repaid', 'Fully Repaid'),
+        ('rejected', 'Rejected'),
+    ]
+    PURPOSE_CHOICES = [
+        ('business', 'Business Investment'),
+        ('education', 'Education'),
+        ('medical', 'Medical Expenses'),
+        ('home', 'Home Improvement'),
+        ('emergency', 'Emergency'),
+        ('other', 'Other'),
+    ]
+
+    chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='loans')
+    member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='loans')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10)  # percent
+    term_months = models.PositiveSmallIntegerField(default=3)
+    purpose = models.CharField(max_length=50, choices=PURPOSE_CHOICES, default='other')
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    applied_at = models.DateField(default=timezone.now)
+    approved_at = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    approved_by = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_loans'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Loan {self.member} {self.amount} ({self.status})"
+
+    def interest_amount(self):
+        return (self.amount * self.interest_rate / 100).quantize(Decimal('0.01'))
+
+    def total_payable(self):
+        return self.amount + self.interest_amount()
+
+    def total_repaid(self):
+        result = self.repayments.filter(status='confirmed').aggregate(total=Sum('amount'))
+        return result['total'] or Decimal('0')
+
+    def balance(self):
+        return max(self.total_payable() - self.total_repaid(), Decimal('0'))
+
+    def repayment_percent(self):
+        total = self.total_payable()
+        if total == 0:
+            return 0
+        return int((self.total_repaid() / total) * 100)
+
+    def is_overdue(self):
+        from datetime import date
+        return self.due_date and date.today() > self.due_date and self.status in ('active', 'approved')
+
+
+class LoanRepayment(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('rejected', 'Rejected'),
+    ]
+    PAYMENT_METHODS = [
+        ('mpesa', 'M-Pesa'),
+        ('bank', 'Bank Transfer'),
+        ('cash', 'Cash'),
+        ('cheque', 'Cheque'),
+    ]
+
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cash')
+    reference = models.CharField(max_length=255, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
+    date = models.DateField(default=timezone.now)
+    recorded_by = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='recorded_repayments'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"Repayment {self.loan.member} {self.amount}"
 
 
 class Transaction(models.Model):
