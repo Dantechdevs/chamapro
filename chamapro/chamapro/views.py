@@ -135,11 +135,14 @@ def switch_chama(request, chama_id):
 
 @login_required(login_url='login')
 def chama_create(request):
+    contribution_days = [1, 5, 10, 15, 20, 25, 28]
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         if not name:
             messages.error(request, 'Chama name is required.')
-            return render(request, 'chama_create.html')
+            return render(request, 'chama_create.html', {
+                'contribution_days': contribution_days
+            })
         chama = Chama.objects.create(
             name=name,
             description=request.POST.get('description', ''),
@@ -153,7 +156,9 @@ def chama_create(request):
         request.session['active_chama_id'] = chama.id
         messages.success(request, f'"{chama.name}" created! You are the Admin.')
         return redirect('chama_members', chama_id=chama.id)
-    return render(request, 'chama_create.html')
+    return render(request, 'chama_create.html', {
+        'contribution_days': contribution_days
+    })
 
 
 @login_required(login_url='login')
@@ -557,7 +562,6 @@ def reports(request, chama_id):
         status='confirmed', date__month=today.month, date__year=today.year
     ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
 
-    # Monthly breakdown — last 12 months
     monthly_data = []
     for i in range(11, -1, -1):
         d = (today.replace(day=1) - datetime.timedelta(days=i * 30)).replace(day=1)
@@ -566,7 +570,6 @@ def reports(request, chama_id):
         ).aggregate(t=Sum('amount'))['t'] or 0
         monthly_data.append({'label': d.strftime('%b %Y'), 'amount': float(month_total)})
 
-    # Member summary
     memberships = chama.memberships.filter(active=True).select_related('user')
     member_summary = []
     for m in memberships:
@@ -584,7 +587,6 @@ def reports(request, chama_id):
             'arrears': max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0')),
         })
 
-    # Loan summary
     total_loans       = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
     total_outstanding = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
     active_loans      = chama.loans.filter(status__in=['active', 'overdue']).count()
@@ -596,11 +598,9 @@ def reports(request, chama_id):
     for loan in chama.loans.filter(status='repaid'):
         total_interest_earned += loan.interest_amount()
 
-    # Penalties
     total_penalties  = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
     unpaid_penalties = chama.penalties.filter(status='unpaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
 
-    # Health metrics
     contrib_to_loan_ratio = 0
     if total_contributions > 0:
         contrib_to_loan_ratio = min(int((total_outstanding / total_contributions) * 100), 100)
@@ -760,7 +760,6 @@ def export_report_pdf(request, chama_id):
     story.append(st)
     story.append(Spacer(1, 10))
 
-    # Member contributions
     story.append(Paragraph('Member Contribution Summary', h2_style))
     rows = [['#', 'Member', 'Email', 'Total Paid (KES)', 'Last Contribution']]
     for i, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1):
@@ -780,7 +779,6 @@ def export_report_pdf(request, chama_id):
     story.append(ct)
     story.append(Spacer(1, 10))
 
-    # Loans
     story.append(Paragraph('Loan Summary', h2_style))
     loan_rows = [['#', 'Member', 'Amount', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status']]
     for i, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 1):
@@ -853,7 +851,6 @@ def export_report_excel(request, chama_id):
             cell.border = thin_border
             cell.alignment = Alignment(vertical='center')
 
-    # Sheet 1: Summary
     ws1 = wb.active; ws1.title = 'Summary'
     ws1['A1'] = f'{chama.name} – Financial Report'
     ws1['A1'].font = Font(bold=True, size=14, color='0D6E4F')
@@ -881,7 +878,6 @@ def export_report_excel(request, chama_id):
     ws1.column_dimensions['A'].width = 36
     ws1.column_dimensions['B'].width = 20
 
-    # Sheet 2: Contributions
     ws2 = wb.create_sheet('Contributions')
     h2 = ['#', 'Member', 'Email', 'Amount (KES)', 'Date', 'Method', 'Reference', 'Status']
     for ci, h in enumerate(h2, 1): ws2.cell(row=1, column=ci, value=h)
@@ -895,7 +891,6 @@ def export_report_excel(request, chama_id):
     for ci, w in enumerate([6,26,28,16,14,14,18,14], 1):
         ws2.column_dimensions[get_column_letter(ci)].width = w
 
-    # Sheet 3: Members
     ws3 = wb.create_sheet('Members')
     h3 = ['#', 'Name', 'Email', 'Phone', 'Role', 'Joined', 'Total Contributed', 'Arrears']
     for ci, h in enumerate(h3, 1): ws3.cell(row=1, column=ci, value=h)
@@ -911,7 +906,6 @@ def export_report_excel(request, chama_id):
     for ci, w in enumerate([6,26,28,18,14,14,22,16], 1):
         ws3.column_dimensions[get_column_letter(ci)].width = w
 
-    # Sheet 4: Loans
     ws4 = wb.create_sheet('Loans')
     h4 = ['#', 'Member', 'Amount', 'Rate %', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status', 'Purpose', 'Applied', 'Due Date']
     for ci, h in enumerate(h4, 1): ws4.cell(row=1, column=ci, value=h)

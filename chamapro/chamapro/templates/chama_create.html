@@ -85,7 +85,7 @@
     <div class="create-shell">
       <div class="create-card">
         <div class="mb-4">
-          <a
+          
             href="{% url 'dashboard' %}"
             class="text-muted text-decoration-none"
             style="font-size: 14px"
@@ -99,27 +99,29 @@
           Set up your savings group. You'll be assigned as Admin.
         </p>
 
-        {% if messages %} {% for message in messages %}
-        <div
-          class="alert alert-danger alert-dismissible fade show"
-          style="border-radius: 10px; font-size: 14px"
-        >
-          {{ message }}
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-          ></button>
-        </div>
-        {% endfor %} {% endif %}
+        {% if messages %}
+          {% for message in messages %}
+          <div
+            class="alert alert-danger alert-dismissible fade show"
+            style="border-radius: 10px; font-size: 14px"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          {% endfor %}
+        {% endif %}
 
         <form method="post">
           {% csrf_token %}
 
           <div class="mb-3">
-            <label class="form-label"
-              >Chama Name <span class="text-danger">*</span></label
-            >
+            <label class="form-label">
+              Chama Name <span class="text-danger">*</span>
+            </label>
             <input
               type="text"
               name="name"
@@ -155,17 +157,8 @@
             <div class="col-6">
               <label class="form-label">Contribution Due Day</label>
               <select name="contribution_day" class="form-select">
-                {% for day in "1,5,10,15,20,25,28"|split:"," %}
-                <option
-                  value="{{ day }}"
-                  {%
-                  if
-                  day=""
-                  ="5"
-                  %}selected{%
-                  endif
-                  %}
-                >
+                {% for day in contribution_days %}
+                <option value="{{ day }}" {% if day == 5 %}selected{% endif %}>
                   {{ day }}th of month
                 </option>
                 {% endfor %}
@@ -204,7 +197,7 @@
             <button type="submit" class="btn btn-primary flex-grow-1">
               <i class="fas fa-plus me-2"></i>Create Chama
             </button>
-            <a
+            
               href="{% url 'dashboard' %}"
               class="btn btn-outline-secondary"
               style="border-radius: 10px; padding: 0.75rem 1.5rem"
