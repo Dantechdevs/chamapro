@@ -2,9 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import HttpResponse
 from django.db.models import Sum, Count
 from decimal import Decimal
 import datetime
+import io
+import csv
 from .models import User, Chama, Membership, Contribution, Penalty, Loan, LoanRepayment
 
 
@@ -229,7 +232,6 @@ def contributions(request, chama_id):
 
     contribs = chama.contributions.select_related('member', 'recorded_by').order_by('-date', '-created_at')
 
-    # Filters
     member_filter = request.GET.get('member', '')
     method_filter = request.GET.get('method', '')
     status_filter = request.GET.get('status', '')
@@ -241,14 +243,11 @@ def contributions(request, chama_id):
     if status_filter:
         contribs = contribs.filter(status=status_filter)
 
-    # Summary stats
     today = datetime.date.today()
     total_confirmed  = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or 0
     total_pending    = chama.contributions.filter(status='pending').aggregate(t=Sum('amount'))['t'] or 0
     total_this_month = chama.contributions.filter(
-        status='confirmed',
-        date__month=today.month,
-        date__year=today.year,
+        status='confirmed', date__month=today.month, date__year=today.year,
     ).aggregate(t=Sum('amount'))['t'] or 0
 
     members = chama.memberships.filter(active=True).select_related('user')
@@ -303,15 +302,10 @@ def contribution_add(request, chama_id):
 
         member = get_object_or_404(User, id=member_id)
         Contribution.objects.create(
-            chama=chama,
-            member=member,
-            amount=amount,
-            payment_method=method,
-            reference=reference or None,
-            notes=notes or None,
-            status=status,
-            date=date or datetime.date.today(),
-            recorded_by=request.user,
+            chama=chama, member=member, amount=amount,
+            payment_method=method, reference=reference or None,
+            notes=notes or None, status=status,
+            date=date or datetime.date.today(), recorded_by=request.user,
         )
         messages.success(request, f'Contribution of KES {amount:,.2f} recorded for {member.get_full_name()}.')
         return redirect('contributions', chama_id=chama_id)
@@ -323,11 +317,9 @@ def contribution_add(request, chama_id):
 def contribution_delete(request, chama_id, contribution_id):
     chama = get_object_or_404(Chama, id=chama_id)
     my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
-
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can delete contributions.')
         return redirect('contributions', chama_id=chama_id)
-
     contrib = get_object_or_404(Contribution, id=contribution_id, chama=chama)
     contrib.delete()
     messages.success(request, 'Contribution deleted.')
@@ -336,14 +328,11 @@ def contribution_delete(request, chama_id, contribution_id):
 
 @login_required(login_url='login')
 def contribution_status_update(request, chama_id, contribution_id):
-    """Confirm or reject a pending contribution."""
     chama = get_object_or_404(Chama, id=chama_id)
     my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
-
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Permission denied.')
         return redirect('contributions', chama_id=chama_id)
-
     contrib = get_object_or_404(Contribution, id=contribution_id, chama=chama)
     new_status = request.POST.get('status')
     if new_status in ('confirmed', 'rejected', 'pending'):
@@ -359,26 +348,20 @@ def contribution_status_update(request, chama_id, contribution_id):
 def penalty_add(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
     my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
-
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can issue penalties.')
         return redirect('contributions', chama_id=chama_id)
-
     if request.method == 'POST':
         member_id   = request.POST.get('member_id')
         amount      = request.POST.get('amount', '').strip()
         reason      = request.POST.get('reason', 'late_contribution')
         description = request.POST.get('description', '').strip()
-
         member = get_object_or_404(User, id=member_id)
         Penalty.objects.create(
-            chama=chama, member=member,
-            amount=amount, reason=reason,
-            description=description or None,
-            issued_by=request.user,
+            chama=chama, member=member, amount=amount, reason=reason,
+            description=description or None, issued_by=request.user,
         )
         messages.success(request, f'Penalty of KES {amount} issued to {member.get_full_name()}.')
-
     return redirect('contributions', chama_id=chama_id)
 
 
@@ -391,7 +374,6 @@ def loans(request, chama_id):
 
     all_loans = chama.loans.select_related('member', 'approved_by').order_by('-created_at')
 
-    # Filters
     status_filter = request.GET.get('status', '')
     member_filter = request.GET.get('member', '')
     if status_filter:
@@ -399,7 +381,6 @@ def loans(request, chama_id):
     if member_filter:
         all_loans = all_loans.filter(member_id=member_filter)
 
-    # Summary stats
     total_disbursed   = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
     total_outstanding = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
     total_pending     = chama.loans.filter(status='pending').count()
@@ -451,20 +432,17 @@ def loan_apply(request, chama_id):
             for e in errors: messages.error(request, e)
             return redirect('loans', chama_id=chama_id)
 
-        # Admins/treasurers can apply on behalf of any member
         if my.role in ('admin', 'treasurer') and member_id:
             member = get_object_or_404(User, id=member_id)
         else:
             member = request.user
 
         Loan.objects.create(
-            chama=chama,
-            member=member,
+            chama=chama, member=member,
             amount=Decimal(amount),
             interest_rate=Decimal(interest or '10'),
             term_months=int(term or 3),
-            purpose=purpose,
-            description=description or None,
+            purpose=purpose, description=description or None,
             status='pending',
             applied_at=applied_date or datetime.date.today(),
         )
@@ -486,7 +464,7 @@ def loan_approve(request, chama_id, loan_id):
     loan = get_object_or_404(Loan, id=loan_id, chama=chama)
 
     if request.method == 'POST':
-        action = request.POST.get('action')  # 'approve' or 'reject'
+        action = request.POST.get('action')
         from dateutil.relativedelta import relativedelta
 
         if action == 'approve' and loan.status == 'pending':
@@ -496,7 +474,6 @@ def loan_approve(request, chama_id, loan_id):
             loan.due_date    = datetime.date.today() + relativedelta(months=loan.term_months)
             loan.save()
             messages.success(request, f'Loan of KES {loan.amount:,.2f} approved for {loan.member.get_full_name()}.')
-
         elif action == 'reject' and loan.status == 'pending':
             loan.status = 'rejected'
             loan.save()
@@ -529,16 +506,12 @@ def loan_repayment_add(request, chama_id, loan_id):
             return redirect('loans', chama_id=chama_id)
 
         LoanRepayment.objects.create(
-            loan=loan,
-            amount=amount_val,
-            payment_method=method,
+            loan=loan, amount=amount_val, payment_method=method,
             reference=reference or None,
             date=date or datetime.date.today(),
-            recorded_by=request.user,
-            status='confirmed',
+            recorded_by=request.user, status='confirmed',
         )
 
-        # Check if fully repaid
         if loan.balance() <= 0:
             loan.status = 'repaid'
             loan.save()
@@ -565,3 +538,401 @@ def loan_detail(request, chama_id, loan_id):
         'payment_methods': LoanRepayment.PAYMENT_METHODS,
     }
     return render(request, 'loan_detail.html', context)
+
+
+# ─── Reports ──────────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def reports(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    today = datetime.date.today()
+
+    total_contributions = chama.contributions.filter(
+        status='confirmed'
+    ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+
+    this_month_contributions = chama.contributions.filter(
+        status='confirmed', date__month=today.month, date__year=today.year
+    ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+
+    # Monthly breakdown — last 12 months
+    monthly_data = []
+    for i in range(11, -1, -1):
+        d = (today.replace(day=1) - datetime.timedelta(days=i * 30)).replace(day=1)
+        month_total = chama.contributions.filter(
+            status='confirmed', date__month=d.month, date__year=d.year
+        ).aggregate(t=Sum('amount'))['t'] or 0
+        monthly_data.append({'label': d.strftime('%b %Y'), 'amount': float(month_total)})
+
+    # Member summary
+    memberships = chama.memberships.filter(active=True).select_related('user')
+    member_summary = []
+    for m in memberships:
+        paid = chama.contributions.filter(
+            member=m.user, status='confirmed'
+        ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        last_contrib = chama.contributions.filter(
+            member=m.user, status='confirmed'
+        ).order_by('-date').first()
+        member_summary.append({
+            'member': m.user,
+            'role': m.get_role_display(),
+            'total_paid': paid,
+            'last_contribution': last_contrib.date if last_contrib else None,
+            'arrears': max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0')),
+        })
+
+    # Loan summary
+    total_loans       = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_outstanding = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    active_loans      = chama.loans.filter(status__in=['active', 'overdue']).count()
+    total_overdue     = chama.loans.filter(status='overdue').count()
+    total_pending     = chama.loans.filter(status='pending').count()
+    total_repaid_count = chama.loans.filter(status='repaid').count()
+
+    total_interest_earned = Decimal('0')
+    for loan in chama.loans.filter(status='repaid'):
+        total_interest_earned += loan.interest_amount()
+
+    # Penalties
+    total_penalties  = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    unpaid_penalties = chama.penalties.filter(status='unpaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+
+    # Health metrics
+    contrib_to_loan_ratio = 0
+    if total_contributions > 0:
+        contrib_to_loan_ratio = min(int((total_outstanding / total_contributions) * 100), 100)
+
+    repayment_rate = 0
+    if total_loans > 0:
+        repaid_amount = chama.loans.filter(status='repaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        repayment_rate = int((repaid_amount / total_loans) * 100)
+
+    context = {
+        'chama': chama,
+        'my_membership': my,
+        'can_manage': my.role in ('admin', 'treasurer'),
+        'total_contributions': total_contributions,
+        'this_month_contributions': this_month_contributions,
+        'monthly_labels': [d['label'] for d in monthly_data],
+        'monthly_amounts': [d['amount'] for d in monthly_data],
+        'member_summary': member_summary,
+        'total_members': chama.member_count(),
+        'total_loans': total_loans,
+        'total_outstanding': total_outstanding,
+        'total_interest_earned': total_interest_earned,
+        'active_loans': active_loans,
+        'total_overdue': total_overdue,
+        'total_pending': total_pending,
+        'total_repaid': total_repaid_count,
+        'total_penalties': total_penalties,
+        'unpaid_penalties': unpaid_penalties,
+        'contrib_to_loan_ratio': contrib_to_loan_ratio,
+        'repayment_rate': repayment_rate,
+        'today': today,
+    }
+    return render(request, 'reports.html', context)
+
+
+# ── Export: CSV ───────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def export_contributions_csv(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{chama.name}_contributions_{datetime.date.today()}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['#', 'Member', 'Email', 'Amount (KES)', 'Date', 'Payment Method', 'Reference', 'Status', 'Recorded By'])
+    for i, c in enumerate(chama.contributions.select_related('member', 'recorded_by').order_by('-date'), 1):
+        writer.writerow([
+            i, c.member.get_full_name() or c.member.username, c.member.email,
+            c.amount, c.date, c.get_payment_method_display(),
+            c.reference or '', c.get_status_display(),
+            c.recorded_by.get_full_name() if c.recorded_by else '',
+        ])
+    return response
+
+
+@login_required(login_url='login')
+def export_loans_csv(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{chama.name}_loans_{datetime.date.today()}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['#', 'Member', 'Amount', 'Interest Rate %', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status', 'Purpose', 'Applied', 'Due Date'])
+    for i, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 1):
+        writer.writerow([
+            i, loan.member.get_full_name() or loan.member.username,
+            loan.amount, loan.interest_rate, loan.interest_amount(),
+            loan.total_payable(), loan.total_repaid(), loan.balance(),
+            loan.get_status_display(), loan.get_purpose_display(),
+            loan.applied_at, loan.due_date or '',
+        ])
+    return response
+
+
+@login_required(login_url='login')
+def export_members_csv(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{chama.name}_members_{datetime.date.today()}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['#', 'Name', 'Email', 'Phone', 'Role', 'Joined', 'Total Contributed (KES)', 'Arrears (KES)'])
+    for i, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1):
+        paid = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        arrears = max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0'))
+        writer.writerow([
+            i, m.user.get_full_name() or m.user.username, m.user.email,
+            m.user.phone or '', m.get_role_display(), m.joined_at.date(),
+            paid, arrears,
+        ])
+    return response
+
+
+# ── Export: PDF ───────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def export_report_pdf(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4,
+                            leftMargin=18*mm, rightMargin=18*mm,
+                            topMargin=16*mm, bottomMargin=16*mm)
+
+    styles = getSampleStyleSheet()
+    brand      = colors.HexColor('#0d6e4f')
+    light_brand = colors.HexColor('#e6f5f0')
+    story = []
+
+    title_style = ParagraphStyle('title', fontSize=20, fontName='Helvetica-Bold', textColor=brand, spaceAfter=2)
+    sub_style   = ParagraphStyle('sub', fontSize=10, textColor=colors.HexColor('#6b7280'), spaceAfter=12)
+    h2_style    = ParagraphStyle('h2', fontSize=13, fontName='Helvetica-Bold', textColor=brand, spaceBefore=14, spaceAfter=6)
+    normal      = ParagraphStyle('norm', fontSize=9, leading=14)
+
+    story.append(Paragraph(f'{chama.name}', title_style))
+    story.append(Paragraph(f'Financial Report  ·  Generated {datetime.date.today().strftime("%B %d, %Y")}', sub_style))
+    story.append(HRFlowable(width='100%', thickness=1, color=brand))
+    story.append(Spacer(1, 8))
+
+    total_contribs   = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_loans_amt  = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    outstanding      = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_penalties  = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
+
+    summary_data = [
+        ['Metric', 'Value'],
+        ['Total Contributions (Confirmed)', f'KES {total_contribs:,.2f}'],
+        ['Total Loans Disbursed', f'KES {total_loans_amt:,.2f}'],
+        ['Outstanding Loans', f'KES {outstanding:,.2f}'],
+        ['Total Penalties/Fines', f'KES {total_penalties:,.2f}'],
+        ['Active Members', str(chama.member_count())],
+    ]
+    st = Table(summary_data, colWidths=[100*mm, 60*mm])
+    st.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), brand), ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_brand]),
+        ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
+        ('TOPPADDING', (0,0), (-1,-1), 5), ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING', (0,0), (-1,-1), 8),
+    ]))
+    story.append(Paragraph('Financial Summary', h2_style))
+    story.append(st)
+    story.append(Spacer(1, 10))
+
+    # Member contributions
+    story.append(Paragraph('Member Contribution Summary', h2_style))
+    rows = [['#', 'Member', 'Email', 'Total Paid (KES)', 'Last Contribution']]
+    for i, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1):
+        paid = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        last = chama.contributions.filter(member=m.user, status='confirmed').order_by('-date').first()
+        rows.append([str(i), m.user.get_full_name() or m.user.username, m.user.email,
+                     f'{paid:,.2f}', last.date.strftime('%b %d, %Y') if last else '—'])
+    ct = Table(rows, colWidths=[10*mm, 50*mm, 55*mm, 35*mm, 30*mm])
+    ct.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), brand), ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_brand]),
+        ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
+        ('TOPPADDING', (0,0), (-1,-1), 5), ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('LEFTPADDING', (0,0), (-1,-1), 6),
+    ]))
+    story.append(ct)
+    story.append(Spacer(1, 10))
+
+    # Loans
+    story.append(Paragraph('Loan Summary', h2_style))
+    loan_rows = [['#', 'Member', 'Amount', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status']]
+    for i, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 1):
+        loan_rows.append([str(i), loan.member.get_full_name() or loan.member.username,
+                          f'{loan.amount:,.2f}', f'{loan.interest_rate}%',
+                          f'{loan.total_payable():,.2f}', f'{loan.total_repaid():,.2f}',
+                          f'{loan.balance():,.2f}', loan.get_status_display()])
+    if len(loan_rows) > 1:
+        lt = Table(loan_rows, colWidths=[8*mm, 38*mm, 22*mm, 16*mm, 24*mm, 20*mm, 20*mm, 22*mm])
+        lt.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), brand), ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 7.5),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_brand]),
+            ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
+            ('TOPPADDING', (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+            ('LEFTPADDING', (0,0), (-1,-1), 5),
+        ]))
+        story.append(lt)
+    else:
+        story.append(Paragraph('No loans recorded yet.', normal))
+
+    story.append(Spacer(1, 16))
+    story.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#e5e7eb')))
+    story.append(Spacer(1, 4))
+    story.append(Paragraph(
+        f'Generated by ChamaPro  ·  {chama.name}  ·  {datetime.datetime.now().strftime("%B %d, %Y %H:%M")}',
+        ParagraphStyle('footer', fontSize=8, textColor=colors.HexColor('#9ca3af'), alignment=TA_CENTER)
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{chama.name}_report_{datetime.date.today()}.pdf"'
+    return response
+
+
+# ── Export: Excel ─────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def export_report_excel(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+    except ImportError:
+        messages.error(request, 'Run: pip install openpyxl')
+        return redirect('reports', chama_id=chama_id)
+
+    wb = openpyxl.Workbook()
+    brand_fill  = PatternFill('solid', fgColor='0D6E4F')
+    header_font = Font(bold=True, color='FFFFFF', size=10)
+    alt_fill    = PatternFill('solid', fgColor='E6F5F0')
+    border_side = Side(style='thin', color='E5E7EB')
+    thin_border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+
+    def style_header(ws, row, cols):
+        for c in range(1, cols+1):
+            cell = ws.cell(row=row, column=c)
+            cell.fill = brand_fill; cell.font = header_font
+            cell.alignment = Alignment(horizontal='left', vertical='center')
+            cell.border = thin_border
+
+    def style_row(ws, row, cols, alt=False):
+        for c in range(1, cols+1):
+            cell = ws.cell(row=row, column=c)
+            if alt: cell.fill = alt_fill
+            cell.border = thin_border
+            cell.alignment = Alignment(vertical='center')
+
+    # Sheet 1: Summary
+    ws1 = wb.active; ws1.title = 'Summary'
+    ws1['A1'] = f'{chama.name} – Financial Report'
+    ws1['A1'].font = Font(bold=True, size=14, color='0D6E4F')
+    ws1['A2'] = f'Generated: {datetime.date.today().strftime("%B %d, %Y")}'
+    ws1['A2'].font = Font(size=10, color='6B7280')
+    for ci, h in enumerate(['Metric', 'Value'], 1):
+        ws1.cell(row=4, column=ci, value=h)
+    style_header(ws1, 4, 2)
+
+    total_contribs  = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_loans_amt = chama.loans.filter(status__in=['active','overdue','repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    outstanding     = chama.loans.filter(status__in=['active','overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_penalties = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
+
+    for ri, (metric, val) in enumerate([
+        ('Total Contributions', float(total_contribs)),
+        ('Total Loans Disbursed', float(total_loans_amt)),
+        ('Outstanding Loans', float(outstanding)),
+        ('Total Penalties', float(total_penalties)),
+        ('Active Members', chama.member_count()),
+    ], 5):
+        ws1.cell(row=ri, column=1, value=metric)
+        ws1.cell(row=ri, column=2, value=val)
+        style_row(ws1, ri, 2, alt=(ri % 2 == 0))
+    ws1.column_dimensions['A'].width = 36
+    ws1.column_dimensions['B'].width = 20
+
+    # Sheet 2: Contributions
+    ws2 = wb.create_sheet('Contributions')
+    h2 = ['#', 'Member', 'Email', 'Amount (KES)', 'Date', 'Method', 'Reference', 'Status']
+    for ci, h in enumerate(h2, 1): ws2.cell(row=1, column=ci, value=h)
+    style_header(ws2, 1, len(h2))
+    for ri, c in enumerate(chama.contributions.select_related('member').order_by('-date'), 2):
+        vals = [ri-1, c.member.get_full_name() or c.member.username, c.member.email,
+                float(c.amount), str(c.date), c.get_payment_method_display(),
+                c.reference or '', c.get_status_display()]
+        for ci, v in enumerate(vals, 1): ws2.cell(row=ri, column=ci, value=v)
+        style_row(ws2, ri, len(h2), alt=(ri % 2 == 0))
+    for ci, w in enumerate([6,26,28,16,14,14,18,14], 1):
+        ws2.column_dimensions[get_column_letter(ci)].width = w
+
+    # Sheet 3: Members
+    ws3 = wb.create_sheet('Members')
+    h3 = ['#', 'Name', 'Email', 'Phone', 'Role', 'Joined', 'Total Contributed', 'Arrears']
+    for ci, h in enumerate(h3, 1): ws3.cell(row=1, column=ci, value=h)
+    style_header(ws3, 1, len(h3))
+    for ri, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 2):
+        paid = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        arrears = max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0'))
+        vals = [ri-1, m.user.get_full_name() or m.user.username, m.user.email,
+                m.user.phone or '', m.get_role_display(), str(m.joined_at.date()),
+                float(paid), float(arrears)]
+        for ci, v in enumerate(vals, 1): ws3.cell(row=ri, column=ci, value=v)
+        style_row(ws3, ri, len(h3), alt=(ri % 2 == 0))
+    for ci, w in enumerate([6,26,28,18,14,14,22,16], 1):
+        ws3.column_dimensions[get_column_letter(ci)].width = w
+
+    # Sheet 4: Loans
+    ws4 = wb.create_sheet('Loans')
+    h4 = ['#', 'Member', 'Amount', 'Rate %', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status', 'Purpose', 'Applied', 'Due Date']
+    for ci, h in enumerate(h4, 1): ws4.cell(row=1, column=ci, value=h)
+    style_header(ws4, 1, len(h4))
+    for ri, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 2):
+        vals = [ri-1, loan.member.get_full_name() or loan.member.username,
+                float(loan.amount), float(loan.interest_rate), float(loan.interest_amount()),
+                float(loan.total_payable()), float(loan.total_repaid()), float(loan.balance()),
+                loan.get_status_display(), loan.get_purpose_display(),
+                str(loan.applied_at), str(loan.due_date) if loan.due_date else '']
+        for ci, v in enumerate(vals, 1): ws4.cell(row=ri, column=ci, value=v)
+        style_row(ws4, ri, len(h4), alt=(ri % 2 == 0))
+    for ci, w in enumerate([6,24,16,10,14,16,14,14,16,18,14,14], 1):
+        ws4.column_dimensions[get_column_letter(ci)].width = w
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    response = HttpResponse(
+        output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{chama.name}_report_{datetime.date.today()}.xlsx"'
+    return response
