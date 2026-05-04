@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Sum, Count
 from decimal import Decimal
 import datetime
 import io
 import csv
-from .models import User, Chama, Membership, Contribution, Penalty, Loan, LoanRepayment
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from .models import User, Chama, Membership, Contribution, Penalty, Loan, LoanRepayment, MpesaTransaction
+from .mpesa import mpesa
 
 
 # ─── Auth ────────────────────────────────────────────────────────────────────
@@ -720,7 +724,7 @@ def export_report_pdf(request, chama_id):
                             topMargin=16*mm, bottomMargin=16*mm)
 
     styles = getSampleStyleSheet()
-    brand      = colors.HexColor('#0d6e4f')
+    brand       = colors.HexColor('#0d6e4f')
     light_brand = colors.HexColor('#e6f5f0')
     story = []
 
@@ -734,10 +738,10 @@ def export_report_pdf(request, chama_id):
     story.append(HRFlowable(width='100%', thickness=1, color=brand))
     story.append(Spacer(1, 8))
 
-    total_contribs   = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    total_loans_amt  = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    outstanding      = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    total_penalties  = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_contribs  = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_loans_amt = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    outstanding     = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_penalties = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
 
     summary_data = [
         ['Metric', 'Value'],
@@ -930,3 +934,215 @@ def export_report_excel(request, chama_id):
     )
     response['Content-Disposition'] = f'attachment; filename="{chama.name}_report_{datetime.date.today()}.xlsx"'
     return response
+
+
+# ─── M-Pesa Views ─────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def mpesa_stk_push(request, chama_id):
+    """
+    Initiate STK Push for a contribution payment.
+    Called via AJAX from the contributions page.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    try:
+        data    = json.loads(request.body)
+        phone   = data.get('phone', '').strip()
+        amount  = data.get('amount', 0)
+        tx_type = data.get('type', 'contribution')
+        loan_id = data.get('loan_id')
+    except (json.JSONDecodeError, AttributeError):
+        phone   = request.POST.get('phone', '').strip()
+        amount  = request.POST.get('amount', 0)
+        tx_type = request.POST.get('type', 'contribution')
+        loan_id = request.POST.get('loan_id')
+
+    if not phone or not amount:
+        return JsonResponse({'success': False, 'error': 'Phone and amount are required.'})
+
+    try:
+        amount = int(float(amount))
+        if amount < 1:
+            raise ValueError
+    except (ValueError, TypeError):
+        return JsonResponse({'success': False, 'error': 'Invalid amount.'})
+
+    account_ref = f'CP-{chama.id}'
+    tx_desc     = 'Contribution' if tx_type == 'contribution' else 'Loan Repayment'
+
+    try:
+        response = mpesa.stk_push(
+            phone_number=phone,
+            amount=amount,
+            account_reference=account_ref,
+            transaction_desc=tx_desc,
+        )
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': f'M-Pesa error: {str(e)}'})
+
+    if response.get('ResponseCode') == '0':
+        MpesaTransaction.objects.create(
+            chama=chama,
+            member=request.user,
+            phone=phone,
+            amount=amount,
+            transaction_type=tx_type,
+            checkout_request_id=response.get('CheckoutRequestID'),
+            merchant_request_id=response.get('MerchantRequestID'),
+            status='pending',
+        )
+        return JsonResponse({
+            'success': True,
+            'message': f'STK Push sent to {phone}. Check your phone and enter your M-Pesa PIN.',
+            'checkout_request_id': response.get('CheckoutRequestID'),
+        })
+    else:
+        return JsonResponse({
+            'success': False,
+            'error': response.get('errorMessage') or response.get('ResponseDescription', 'STK Push failed.'),
+        })
+
+
+@login_required(login_url='login')
+def mpesa_stk_query(request, chama_id):
+    """Check STK Push status — called by frontend polling."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        checkout_request_id = data.get('checkout_request_id')
+    except Exception:
+        checkout_request_id = request.POST.get('checkout_request_id')
+
+    if not checkout_request_id:
+        return JsonResponse({'success': False, 'error': 'Missing checkout_request_id'})
+
+    try:
+        tx = MpesaTransaction.objects.get(
+            checkout_request_id=checkout_request_id,
+            member=request.user,
+        )
+    except MpesaTransaction.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Transaction not found.'})
+
+    if tx.status in ('success', 'failed', 'cancelled'):
+        return JsonResponse({'success': True, 'status': tx.status, 'receipt': tx.mpesa_receipt})
+
+    try:
+        result = mpesa.stk_query(checkout_request_id)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+    result_code = str(result.get('ResultCode', ''))
+
+    if result_code == '0':
+        return JsonResponse({'success': True, 'status': 'success'})
+    elif result_code in ('1032', '1001'):
+        return JsonResponse({'success': True, 'status': 'cancelled'})
+    elif result_code:
+        return JsonResponse({'success': True, 'status': 'failed', 'error': result.get('ResultDesc', '')})
+    else:
+        return JsonResponse({'success': True, 'status': 'pending'})
+
+
+@csrf_exempt
+@require_POST
+def mpesa_callback(request):
+    """
+    Safaricom STK Push callback — receives payment confirmation.
+    This URL must be publicly accessible (use ngrok for local testing).
+    No authentication needed — Safaricom calls this directly.
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Invalid JSON'})
+
+    try:
+        body         = data['Body']['stkCallback']
+        checkout_req = body.get('CheckoutRequestID')
+        result_code  = str(body.get('ResultCode', ''))
+        result_desc  = body.get('ResultDesc', '')
+    except (KeyError, TypeError):
+        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Malformed callback'})
+
+    try:
+        tx = MpesaTransaction.objects.get(checkout_request_id=checkout_req)
+    except MpesaTransaction.DoesNotExist:
+        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'OK'})
+
+    tx.result_code = result_code
+    tx.result_desc = result_desc
+
+    if result_code == '0':
+        items = body.get('CallbackMetadata', {}).get('Item', [])
+        meta  = {item['Name']: item.get('Value') for item in items}
+
+        tx.mpesa_receipt = meta.get('MpesaReceiptNumber')
+        tx.status        = 'success'
+        tx.save()
+
+        if tx.transaction_type == 'contribution' and not tx.contribution:
+            contrib = Contribution.objects.create(
+                chama=tx.chama,
+                member=tx.member,
+                amount=tx.amount,
+                payment_method='mpesa',
+                reference=tx.mpesa_receipt,
+                notes='Auto-recorded via M-Pesa STK Push',
+                status='confirmed',
+                date=datetime.date.today(),
+            )
+            tx.contribution = contrib
+            tx.save()
+
+        elif tx.transaction_type == 'loan_repayment' and not tx.loan_repayment:
+            loan = Loan.objects.filter(
+                chama=tx.chama,
+                member=tx.member,
+                status__in=['active', 'overdue']
+            ).first()
+            if loan:
+                repayment = LoanRepayment.objects.create(
+                    loan=loan,
+                    amount=tx.amount,
+                    payment_method='mpesa',
+                    reference=tx.mpesa_receipt,
+                    status='confirmed',
+                    date=datetime.date.today(),
+                )
+                tx.loan_repayment = repayment
+                tx.save()
+                if loan.balance() <= 0:
+                    loan.status = 'repaid'
+                    loan.save()
+    else:
+        tx.status = 'cancelled' if result_code == '1032' else 'failed'
+        tx.save()
+
+    return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
+
+# ── M-Pesa transaction history ────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def mpesa_transactions(request, chama_id):
+    """View all M-Pesa transactions for a chama."""
+    chama = get_object_or_404(Chama, id=chama_id)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    transactions = MpesaTransaction.objects.filter(chama=chama).select_related('member').order_by('-created_at')
+
+    context = {
+        'chama': chama,
+        'my_membership': my,
+        'transactions': transactions,
+        'can_manage': my.role in ('admin', 'treasurer'),
+    }
+    return render(request, 'mpesa_transactions.html', context)

@@ -1,0 +1,292 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ chama.name }} – M-Pesa Transactions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--danger:#ef4444;--warning:#f59e0b;--success:#10b981;--border:#e5e7eb;--muted:#6b7280;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:#111827;}
+    .page-shell{max-width:1000px;margin:0 auto;padding:24px 20px;}
+    .back-link{font-size:13px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:18px;}
+    .back-link:hover{color:var(--brand);}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+    .page-title{font-size:22px;font-weight:800;margin:0;}
+    .mpesa-hero{background:linear-gradient(135deg,#00a651,#007a3e);border-radius:16px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;color:#fff;}
+    .mpesa-logo{font-size:32px;font-weight:900;font-family:'DM Mono',monospace;letter-spacing:-2px;}
+    .mpesa-logo span{color:#fff;opacity:.7;font-size:16px;font-weight:400;}
+    .table-card{background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden;}
+    .table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+    .table-card-header h6{font-size:15px;font-weight:700;margin:0;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 14px;background:#f9fafb;border-bottom:1px solid var(--border);}
+    tbody td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover{background:#fafafa;}
+    .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+    .mono{font-family:'DM Mono',monospace;font-weight:600;}
+    .badge-s{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-block;}
+    .s-success{background:#d1fae5;color:#065f46;}
+    .s-pending{background:#fef3c7;color:#92400e;}
+    .s-failed{background:#fee2e2;color:#991b1b;}
+    .s-cancelled{background:#f3f4f6;color:#6b7280;}
+    .empty-state{padding:48px;text-align:center;color:var(--muted);}
+    .empty-state i{font-size:36px;margin-bottom:12px;opacity:.3;display:block;}
+
+    /* STK Push widget */
+    .stk-card{background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);padding:24px;margin-bottom:20px;}
+    .stk-card h5{font-size:16px;font-weight:700;margin-bottom:4px;}
+    .stk-card p{font-size:13px;color:var(--muted);margin-bottom:16px;}
+    .form-label{font-size:13px;font-weight:600;color:#374151;margin-bottom:4px;}
+    .form-control,.form-select{border-radius:10px;border:1px solid var(--border);padding:9px 13px;font-size:13.5px;}
+    .form-control:focus,.form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,110,79,.1);}
+    .btn-mpesa{background:linear-gradient(135deg,#00a651,#007a3e);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;}
+    .btn-mpesa:hover{opacity:.9;}
+    .btn-mpesa:disabled{opacity:.6;cursor:not-allowed;}
+    .stk-status{display:none;margin-top:12px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;}
+    .stk-status.pending{background:#fef3c7;color:#92400e;}
+    .stk-status.success{background:#d1fae5;color:#065f46;}
+    .stk-status.failed{background:#fee2e2;color:#991b1b;}
+  </style>
+</head>
+<body>
+<div class="page-shell">
+  <a href="{% url 'contributions' chama.id %}" class="back-link"><i class="fas fa-arrow-left"></i> Contributions</a>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">M-Pesa Payments</h1>
+      <p style="font-size:13px;color:var(--muted);margin-top:2px;">{{ chama.name }} &nbsp;·&nbsp; Lipa na M-Pesa STK Push</p>
+    </div>
+  </div>
+
+  <!-- M-Pesa Hero -->
+  <div class="mpesa-hero">
+    <div>
+      <div class="mpesa-logo">M-PESA <span>by Safaricom</span></div>
+      <div style="font-size:13px;opacity:.8;margin-top:4px;">Send a payment prompt directly to a member's phone. They enter their PIN to confirm.</div>
+    </div>
+    <i class="fas fa-mobile-screen-button" style="font-size:40px;opacity:.3;margin-left:auto;"></i>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:13px;">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- STK Push Form -->
+  <div class="stk-card">
+    <h5><i class="fas fa-paper-plane me-2" style="color:var(--brand);"></i>Send STK Push</h5>
+    <p>Enter the member's phone and amount. They'll receive a prompt on their phone to pay.</p>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Phone Number (254XXXXXXXXX)</label>
+        <input type="tel" id="stkPhone" class="form-control" placeholder="254712345678">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Amount (KES)</label>
+        <input type="number" id="stkAmount" class="form-control" placeholder="{{ chama.contribution_amount }}" min="1">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Payment Type</label>
+        <select id="stkType" class="form-select">
+          <option value="contribution">Contribution</option>
+          <option value="loan_repayment">Loan Repayment</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button class="btn-mpesa w-100" id="stkBtn" onclick="sendSTK()">
+          <i class="fas fa-paper-plane"></i> Send
+        </button>
+      </div>
+    </div>
+
+    <div class="stk-status" id="stkStatus"></div>
+  </div>
+
+  <!-- Transaction history -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <h6>Transaction History</h6>
+      <span style="font-size:12px;color:var(--muted);">{{ transactions|length }} total</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Member</th>
+          <th>Phone</th>
+          <th>Amount</th>
+          <th>Type</th>
+          <th>Receipt</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tx in transactions %}
+        <tr>
+          <td style="color:var(--muted);font-size:12px;">{{ forloop.counter }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="avatar">{{ tx.member.first_name.0|upper }}{{ tx.member.last_name.0|upper }}</div>
+              <div style="font-weight:600;font-size:13px;">{{ tx.member.get_full_name|default:tx.member.username }}</div>
+            </div>
+          </td>
+          <td class="mono" style="font-size:12px;">{{ tx.phone }}</td>
+          <td class="mono">KES {{ tx.amount|floatformat:2 }}</td>
+          <td style="font-size:12px;"><span style="background:#f3f4f6;padding:2px 8px;border-radius:6px;font-weight:600;">{{ tx.get_transaction_type_display }}</span></td>
+          <td class="mono" style="font-size:12px;color:var(--muted);">{{ tx.mpesa_receipt|default:"—" }}</td>
+          <td><span class="badge-s s-{{ tx.status }}">{{ tx.get_status_display }}</span></td>
+          <td style="font-size:12px;color:var(--muted);">{{ tx.created_at|date:"M d, Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <i class="fas fa-mobile-screen-button"></i>
+              No M-Pesa transactions yet. Send your first STK Push above.
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const CHAMA_ID = {{ chama.id }};
+  let pollInterval = null;
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      for (let cookie of document.cookie.split(';')) {
+        cookie = cookie.trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function showStatus(msg, type) {
+    const el = document.getElementById('stkStatus');
+    el.className = `stk-status ${type}`;
+    el.innerHTML = msg;
+    el.style.display = 'block';
+  }
+
+  async function sendSTK() {
+    const phone  = document.getElementById('stkPhone').value.trim();
+    const amount = document.getElementById('stkAmount').value.trim();
+    const type   = document.getElementById('stkType').value;
+    const btn    = document.getElementById('stkBtn');
+
+    if (!phone || !amount) {
+      showStatus('<i class="fas fa-exclamation-circle me-2"></i>Phone and amount are required.', 'failed');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    showStatus('<i class="fas fa-spinner fa-spin me-2"></i>Sending STK Push...', 'pending');
+
+    try {
+      const res = await fetch(`/chama/${CHAMA_ID}/mpesa/push/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ phone, amount, type }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        showStatus(
+          `<i class="fas fa-mobile-screen-button me-2"></i>${data.message}`,
+          'pending'
+        );
+        btn.innerHTML = '<i class="fas fa-clock"></i> Waiting...';
+        pollPayment(data.checkout_request_id);
+      } else {
+        showStatus(`<i class="fas fa-times-circle me-2"></i>${data.error}`, 'failed');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+      }
+    } catch (err) {
+      showStatus('<i class="fas fa-times-circle me-2"></i>Network error. Please try again.', 'failed');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+    }
+  }
+
+  function pollPayment(checkoutRequestId) {
+    let attempts = 0;
+    const maxAttempts = 20; // Poll for up to ~60 seconds
+
+    pollInterval = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(pollInterval);
+        showStatus('<i class="fas fa-clock me-2"></i>Timeout — check back to confirm payment.', 'failed');
+        resetBtn();
+        return;
+      }
+
+      try {
+        const res = await fetch(`/chama/${CHAMA_ID}/mpesa/query/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({ checkout_request_id: checkoutRequestId }),
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          clearInterval(pollInterval);
+          showStatus(
+            `<i class="fas fa-check-circle me-2"></i>Payment confirmed! M-Pesa receipt: <strong>${data.receipt || 'Processing'}</strong>. Contribution recorded automatically.`,
+            'success'
+          );
+          resetBtn();
+          setTimeout(() => location.reload(), 3000);
+        } else if (data.status === 'cancelled') {
+          clearInterval(pollInterval);
+          showStatus('<i class="fas fa-times-circle me-2"></i>Payment cancelled by user.', 'failed');
+          resetBtn();
+        } else if (data.status === 'failed') {
+          clearInterval(pollInterval);
+          showStatus(`<i class="fas fa-times-circle me-2"></i>Payment failed: ${data.error || 'Unknown error'}`, 'failed');
+          resetBtn();
+        }
+        // else status === 'pending' — keep polling
+      } catch (err) {
+        // Network blip — keep trying
+      }
+    }, 3000); // Check every 3 seconds
+  }
+
+  function resetBtn() {
+    const btn = document.getElementById('stkBtn');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
+  }
+</script>
+</body>
+</html>

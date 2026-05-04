@@ -50,5 +50,10 @@ urlpatterns = [
     path('chama/<int:chama_id>/export/members/csv/', views.export_members_csv, name='export_members_csv'),
     path('chama/<int:chama_id>/export/pdf/', views.export_report_pdf, name='export_report_pdf'),
     path('chama/<int:chama_id>/export/excel/', views.export_report_excel, name='export_report_excel'),
- 
+    
+     # M-Pesa
+    path('chama/<int:chama_id>/mpesa/push/', views.mpesa_stk_push, name='mpesa_stk_push'),
+    path('chama/<int:chama_id>/mpesa/query/', views.mpesa_stk_query, name='mpesa_stk_query'),
+    path('chama/<int:chama_id>/mpesa/transactions/', views.mpesa_transactions, name='mpesa_transactions'),
+    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),  # No chama_id — Safaricom calls this
 ]

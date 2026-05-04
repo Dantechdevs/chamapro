@@ -156,7 +156,7 @@ class Loan(models.Model):
     chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='loans')
     member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='loans')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10)  # percent
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10)
     term_months = models.PositiveSmallIntegerField(default=3)
     purpose = models.CharField(max_length=50, choices=PURPOSE_CHOICES, default='other')
     description = models.TextField(blank=True, null=True)
@@ -250,3 +250,46 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.type} {self.amount} ({self.chama})"
+
+
+# ── M-Pesa ────────────────────────────────────────────────────────────────────
+
+class MpesaTransaction(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    TYPE_CHOICES = [
+        ('contribution', 'Contribution'),
+        ('loan_repayment', 'Loan Repayment'),
+    ]
+
+    chama               = models.ForeignKey('Chama', on_delete=models.CASCADE, related_name='mpesa_transactions')
+    member              = models.ForeignKey('User', on_delete=models.CASCADE, related_name='mpesa_transactions')
+    phone               = models.CharField(max_length=20)
+    amount              = models.DecimalField(max_digits=12, decimal_places=2)
+    transaction_type    = models.CharField(max_length=20, choices=TYPE_CHOICES, default='contribution')
+
+    # Safaricom identifiers
+    checkout_request_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    merchant_request_id = models.CharField(max_length=100, null=True, blank=True)
+    mpesa_receipt       = models.CharField(max_length=50, null=True, blank=True)
+
+    status              = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    result_code         = models.CharField(max_length=10, null=True, blank=True)
+    result_desc         = models.TextField(null=True, blank=True)
+
+    # Link to contribution or loan once confirmed
+    contribution        = models.OneToOneField('Contribution', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
+    loan_repayment      = models.OneToOneField('LoanRepayment', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
+
+    created_at          = models.DateTimeField(auto_now_add=True)
+    updated_at          = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'M-Pesa {self.phone} KES {self.amount} ({self.status})'
