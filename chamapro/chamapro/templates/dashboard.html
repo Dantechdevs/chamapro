@@ -176,6 +176,12 @@
             <i class="fas fa-hand-holding-dollar"></i> Contributions
           </a>
         </div>
+        <!-- ✅ M-Pesa link added here -->
+        <div class="nav-item-wrap">
+          <a href="{% if active_chama %}{% url 'mpesa_transactions' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
+            <i class="fas fa-mobile-screen-button"></i> M-Pesa
+          </a>
+        </div>
         <div class="nav-item-wrap">
           <a href="{% if active_chama %}{% url 'loans' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
             <i class="fas fa-money-bill-wave"></i> Loans
@@ -419,7 +425,7 @@
         </div>
       </div>
 
-      <!-- Quick Access — all wired -->
+      <!-- Quick Access -->
       <div class="mb-3">
         <h6 style="font-weight:700;margin-bottom:12px;">Quick Access</h6>
         <div class="quick-grid">
@@ -430,6 +436,11 @@
           <a href="{% url 'contributions' active_chama.id %}" class="quick-card">
             <div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-hand-holding-dollar"></i></div>
             <div class="quick-label">Contributions</div>
+          </a>
+          <!-- ✅ M-Pesa quick access added here -->
+          <a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card">
+            <div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div>
+            <div class="quick-label">M-Pesa</div>
           </a>
           <a href="{% url 'loans' active_chama.id %}" class="quick-card">
             <div class="quick-icon" style="background:#fee2e2;color:#ef4444;"><i class="fas fa-money-bill-wave"></i></div>
@@ -476,6 +487,7 @@
             {% if active_chama %}
             <div class="col-6"><a href="{% url 'chama_members' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-plus"></i></div><div class="quick-label">Invite Member</div></a></div>
             <div class="col-6"><a href="{% url 'contributions' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-plus-circle"></i></div><div class="quick-label">Contributions</div></a></div>
+            <div class="col-6"><a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div><div class="quick-label">M-Pesa</div></a></div>
             <div class="col-6"><a href="{% url 'loans' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fee2e2;color:#ef4444;"><i class="fas fa-file-invoice-dollar"></i></div><div class="quick-label">Loans</div></a></div>
             <div class="col-6"><a href="{% url 'reports' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#f3e8ff;color:#9333ea;"><i class="fas fa-chart-bar"></i></div><div class="quick-label">Reports</div></a></div>
             <div class="col-6"><a href="{% url 'export_report_pdf' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fff7ed;color:#ea580c;"><i class="fas fa-file-pdf"></i></div><div class="quick-label">Download PDF</div></a></div>

@@ -129,6 +129,9 @@ MPESA_CONSUMER_SECRET=your-mpesa-secret
 EMAIL_HOST_USER=your-email@gmail.com
 ```
 
+### E-WALLET
+![alt text](image.png)
+
 ### 5. Run migrations
 
 ```bash
