@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'chamapro',
+    'chamas' ,
+    'wallets',
 ]
 
 MIDDLEWARE = [

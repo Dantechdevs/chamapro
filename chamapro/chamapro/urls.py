@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from chamapro import views
 
 urlpatterns = [
@@ -55,5 +55,8 @@ urlpatterns = [
     path('chama/<int:chama_id>/mpesa/push/', views.mpesa_stk_push, name='mpesa_stk_push'),
     path('chama/<int:chama_id>/mpesa/query/', views.mpesa_stk_query, name='mpesa_stk_query'),
     path('chama/<int:chama_id>/mpesa/transactions/', views.mpesa_transactions, name='mpesa_transactions'),
-    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),  # No chama_id — Safaricom calls this
+    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),  
+    
+    # Wallets app (IMPORTANT)
+    path('wallets/', include('wallets.urls')),
 ]
