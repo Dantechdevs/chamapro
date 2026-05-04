@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from chamas.models import Chama, Membership
+from chamapro.models import Chama, Membership
 from .models import Wallet, WalletTransaction, GroupWallet, WithdrawalRequest
 from .services import WalletService, InsufficientFundsError, WalletFrozenError
 from .mpesa import initiate_stk_push, process_stk_callback, process_b2c_result

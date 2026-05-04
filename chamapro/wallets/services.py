@@ -342,7 +342,7 @@ class AutoDeductService:
         Process all due contributions for one chama.
         Returns a summary dict.
         """
-        from chamas.models import Membership  # local import to avoid circular
+        from chamapro.models import Membership  # local import to avoid circular
 
         results = {'success': [], 'skipped': [], 'errors': []}
         today = timezone.now().date()
@@ -424,7 +424,7 @@ class AutoDeductService:
         """
         Entry point called by Celery beat task or management command.
         """
-        from chamas.models import Chama
+        from chamapro.models import Chama
         summary = {}
         for chama in Chama.objects.filter(is_active=True):
             summary[chama.name] = AutoDeductService.run_for_chama(chama)

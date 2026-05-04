@@ -13,7 +13,7 @@ class Wallet(models.Model):
     records but cached here for fast reads.
     """
     membership = models.OneToOneField(
-        'chamas.Membership',
+        'chamapro.Membership',
         on_delete=models.CASCADE,
         related_name='wallet',
     )
@@ -92,13 +92,13 @@ class WalletTransaction(models.Model):
 
     # Audit trail links
     contribution = models.ForeignKey(
-        'chamas.Contribution',
+        'chamapro.Contribution',
         null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='wallet_transactions',
     )
     loan = models.ForeignKey(
-        'chamas.Loan',
+        'chamapro.Loan',
         null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='wallet_transactions',
@@ -133,7 +133,7 @@ class GroupWallet(models.Model):
     Debited on approved group expenses or disbursements.
     """
     chama                        = models.OneToOneField(
-        'chamas.Chama',
+        'chamapro.Chama',
         on_delete=models.CASCADE,
         related_name='group_wallet',
     )

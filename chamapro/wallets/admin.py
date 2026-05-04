@@ -7,7 +7,7 @@ from .models import Wallet, WalletTransaction, GroupWallet, WithdrawalRequest
 @admin.register(Wallet)
 class WalletAdmin(admin.ModelAdmin):
     list_display   = ['membership', 'balance_display', 'is_frozen', 'created_at']
-    list_filter    = ['is_frozen', 'membership__chama']
+    list_filter    = ['is_frozen']
     search_fields  = ['membership__user__first_name', 'membership__user__last_name']
     readonly_fields = ['balance', 'created_at', 'updated_at']
     actions        = ['freeze_wallets', 'unfreeze_wallets', 'recalculate_balances']
@@ -35,7 +35,7 @@ class WalletAdmin(admin.ModelAdmin):
 @admin.register(WalletTransaction)
 class WalletTransactionAdmin(admin.ModelAdmin):
     list_display   = ['wallet', 'tx_type', 'amount_display', 'status', 'reference', 'created_at']
-    list_filter    = ['tx_type', 'status', 'wallet__membership__chama']
+    list_filter    = ['tx_type', 'status']
     search_fields  = ['reference', 'wallet__membership__user__first_name']
     readonly_fields = ['created_at', 'updated_at']
     ordering       = ['-created_at']
@@ -54,7 +54,7 @@ class GroupWalletAdmin(admin.ModelAdmin):
 @admin.register(WithdrawalRequest)
 class WithdrawalRequestAdmin(admin.ModelAdmin):
     list_display   = ['wallet', 'amount', 'phone_number', 'status', 'approved_by', 'created_at']
-    list_filter    = ['status', 'wallet__membership__chama']
+    list_filter    = ['status']
     search_fields  = ['wallet__membership__user__first_name', 'phone_number', 'mpesa_reference']
     readonly_fields = ['created_at', 'updated_at']
 
@@ -69,7 +69,7 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
 SIGNALS_CODE = '''
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from chamas.models import Membership, Chama
+from chamapro.models import Membership, Chama
 from .models import Wallet, GroupWallet
 
 

@@ -190,7 +190,6 @@
   </div>
 
   {% for tx in page_obj %}
-  {% with is_credit=tx.tx_type|lower in 'topup,transfer_in,reversal' %}
   <div class="tx-row">
     <div class="tx-icon {{ tx.tx_type }}">
       {% if tx.tx_type == 'topup' %}<i class="fas fa-arrow-down"></i>
@@ -208,13 +207,14 @@
       <div class="tx-date">{{ tx.created_at|date:"d M Y, H:i" }}</div>
     </div>
     <div class="tx-amount">
-      <div class="amount {% if tx.tx_type in 'topup,transfer_in,reversal' %}credit{% else %}debit{% endif %}">
-        {% if tx.tx_type in 'topup,transfer_in,reversal' %}+{% else %}-{% endif %}KES {{ tx.amount|floatformat:2|intcomma }}
-      </div>
+      {% if tx.tx_type == 'topup' or tx.tx_type == 'transfer_in' or tx.tx_type == 'reversal' %}
+        <div class="amount credit">+KES {{ tx.amount|floatformat:2|intcomma }}</div>
+      {% else %}
+        <div class="amount debit">-KES {{ tx.amount|floatformat:2|intcomma }}</div>
+      {% endif %}
       <div class="status status-{{ tx.status }}">{{ tx.get_status_display }}</div>
     </div>
   </div>
-  {% endwith %}
   {% empty %}
   <div style="padding:40px;text-align:center;color:var(--muted);">
     <i class="fas fa-receipt" style="font-size:28px;opacity:.3;display:block;margin-bottom:10px;"></i>
