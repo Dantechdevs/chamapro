@@ -65,6 +65,10 @@ ChamaPro is a **Django-based platform** that digitizes and automates the full li
 - **M-Pesa integration** *(coming soon)* — STK push payments, wallet top-ups, and withdrawals to M-Pesa or bank account
 - Cloud-hosted with 99.9% uptime target
 
+### E-WALLET
+![alt text](image.png)
+
+
 ---
 
 ## 🛠 Technology Stack
@@ -129,8 +133,6 @@ MPESA_CONSUMER_SECRET=your-mpesa-secret
 EMAIL_HOST_USER=your-email@gmail.com
 ```
 
-### E-WALLET
-![alt text](image.png)
 
 ### 5. Run migrations
 
