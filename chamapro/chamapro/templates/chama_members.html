@@ -1,368 +1,346 @@
 {% load static %}
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ chama.name }} – Members</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <style>
-      :root {
-        --primary: #2d6a4f;
-        --primary-light: #40916c;
-        --accent: #d8f3dc;
-      }
-      body {
-        background: #f5f5f5;
-        font-family: "Segoe UI", sans-serif;
-      }
-      .page-header {
-        background: var(--primary);
-        color: #fff;
-        padding: 2rem;
-        border-radius: 16px;
-        margin-bottom: 1.5rem;
-      }
-      .page-header h1 {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin: 0;
-      }
-      .card {
-        border: none;
-        border-radius: 14px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-      }
-      .avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: var(--primary);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 13px;
-        flex-shrink: 0;
-      }
-      .badge-role {
-        font-size: 11px;
-        font-weight: 500;
-        padding: 4px 10px;
-        border-radius: 20px;
-      }
-      .role-admin {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-      .role-treasurer {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      .role-secretary {
-        background: #dbeafe;
-        color: #1e40af;
-      }
-      .role-member {
-        background: var(--accent);
-        color: var(--primary);
-      }
-      .btn-primary {
-        background: var(--primary);
-        border-color: var(--primary);
-        border-radius: 8px;
-      }
-      .btn-primary:hover {
-        background: var(--primary-light);
-        border-color: var(--primary-light);
-      }
-      .stat-box {
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 10px;
-        padding: 0.75rem 1.25rem;
-        text-align: center;
-      }
-      .stat-box .num {
-        font-size: 1.5rem;
-        font-weight: 700;
-      }
-      .stat-box .lbl {
-        font-size: 12px;
-        opacity: 0.8;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container py-4" style="max-width: 800px">
-      <div class="mb-3">
-        <a
-          href="{% url 'dashboard' %}"
-          class="text-muted text-decoration-none"
-          style="font-size: 14px"
-        >
-          <i class="fas fa-arrow-left me-1"></i> Dashboard
-        </a>
-      </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ chama.name }} – Members | ChamaPro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;--sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;--accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);}
+    *{box-sizing:border-box;}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
+    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
+    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+    .sidebar-logo .logo-text span{color:var(--accent);}
+    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
+    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
+    .chama-btn .chama-icon{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
+    .chama-btn .chama-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nav-section{padding:10px 0 4px;}
+    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
+    .nav-item-wrap{padding:1px 10px;}
+    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
+    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-link-cp.active{background:var(--brand);color:#fff;}
+    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
+    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
+    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
+    .sidebar-user:hover{background:rgba(255,255,255,.07);}
+    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+    .sidebar-user .user-info{flex:1;min-width:0;}
+    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
+    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
+    /* TOPBAR */
+    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
+    .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
+    .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+    .topbar-group-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
+    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
+    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
+    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+    /* MAIN */
+    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
+    .main-content{padding:24px;max-width:900px;}
+    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
+    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+    /* MEMBERS HERO */
+    .members-hero{background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 60%,var(--brand-light) 100%);border-radius:16px;padding:24px 28px;color:#fff;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+    .members-hero h2{font-size:22px;font-weight:800;margin:0;}
+    .members-hero p{font-size:13px;opacity:.75;margin:4px 0 0;}
+    .hero-stats{display:flex;gap:12px;}
+    .hero-stat{background:rgba(255,255,255,.15);border-radius:10px;padding:10px 18px;text-align:center;}
+    .hero-stat .num{font-size:22px;font-weight:800;}
+    .hero-stat .lbl{font-size:11px;opacity:.8;}
+    /* INVITE CARD */
+    .invite-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:20px 22px;margin-bottom:16px;}
+    .invite-card h6{font-size:14px;font-weight:700;margin-bottom:14px;}
+    .form-label{font-size:13px;font-weight:600;color:#374151;margin-bottom:4px;}
+    .form-control,.form-select{border-radius:10px;border:1px solid var(--border);padding:9px 13px;font-size:13.5px;}
+    .form-control:focus,.form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,110,79,.1);}
+    .btn-add{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;width:100%;justify-content:center;}
+    .btn-add:hover{background:var(--brand-light);}
+    /* TABLE */
+    .table-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+    .table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);}
+    .table-card-header h6{font-size:15px;font-weight:700;margin:0;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 16px;background:#f9fafb;border-bottom:1px solid var(--border);}
+    tbody td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover{background:#fafafa;}
+    .avatar-sm{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+    .badge-role{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;}
+    .role-admin{background:#fee2e2;color:#991b1b;}
+    .role-treasurer{background:#fef3c7;color:#92400e;}
+    .role-secretary{background:#dbeafe;color:#1e40af;}
+    .role-member{background:var(--brand-xlight);color:var(--brand-dark);}
+    @media(max-width:768px){.sidebar{width:0;overflow:hidden;}.topbar,.main-wrap{left:0;margin-left:0;}.sidebar.open{width:var(--sidebar-w);}}
+  </style>
+</head>
+<body>
 
-      <!-- Header -->
-      <div
-        class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3"
-      >
-        <div>
-          <h1><i class="fas fa-users me-2"></i>{{ chama.name }}</h1>
-          {% if chama.description %}
-          <p class="mb-0 mt-1" style="opacity: 0.8; font-size: 14px">
-            {{ chama.description }}
-          </p>
-          {% endif %}
-        </div>
-        <div class="d-flex gap-3">
-          <div class="stat-box">
-            <div class="num">{{ memberships|length }}</div>
-            <div class="lbl">Members</div>
-          </div>
-          <div class="stat-box">
-            <div class="num">{{ chama.currency }}</div>
-            <div class="lbl">Currency</div>
-          </div>
-        </div>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="plan-banner">
+    <span>Free Plan</span>
+    <a href="#" class="upgrade-btn">UPGRADE</a>
+  </div>
+  <div class="sidebar-logo">
+    <div class="logo-icon">CP</div>
+    <div class="logo-text">Chama<span>Pro</span></div>
+  </div>
+  <div class="chama-selector-wrap">
+    <div class="dropdown">
+      <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="chama-icon"><i class="fas fa-users" style="font-size:11px;"></i></div>
+        <span class="chama-name">{{ chama.name }}</span>
       </div>
-
-      <!-- Messages -->
-      {% if messages %} {% for message in messages %}
-      <div
-        class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
-        style="border-radius: 10px; font-size: 14px"
-      >
-        {{ message }}
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-        ></button>
+      <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
+        <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
+      </ul>
+    </div>
+  </div>
+  <nav style="flex:1;padding-bottom:8px;">
+    <div class="nav-section">
+      <div class="nav-item-wrap">
+        <a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a>
       </div>
-      {% endfor %} {% endif %}
-
-      <!-- Invite form (admins/treasurers only) -->
-      {% if can_manage %}
-      <div class="card mb-4">
-        <div class="card-body">
-          <h6 class="fw-600 mb-3">
-            <i class="fas fa-user-plus me-2 text-success"></i>Invite a Member
-          </h6>
-          <form
-            method="post"
-            action="{% url 'member_invite' chama.id %}"
-            class="row g-2 align-items-end"
-          >
-            {% csrf_token %}
-            <div class="col-md-6">
-              <label class="form-label" style="font-size: 13px"
-                >Member's Email</label
-              >
-              <input
-                type="email"
-                name="email"
-                class="form-control"
-                placeholder="member@email.com"
-                required
-                style="border-radius: 8px"
-              />
-            </div>
-            <div class="col-md-3">
-              <label class="form-label" style="font-size: 13px">Role</label>
-              <select
-                name="role"
-                class="form-select"
-                style="border-radius: 8px"
-              >
-                <option value="member">Member</option>
-                <option value="treasurer">Treasurer</option>
-                <option value="secretary">Secretary</option>
-                {% if my_membership.role == 'admin' %}
-                <option value="admin">Admin</option>
-                {% endif %}
-              </select>
-            </div>
-            <div class="col-md-3">
-              <button type="submit" class="btn btn-primary w-100">
-                <i class="fas fa-plus me-1"></i> Add Member
-              </button>
-            </div>
-          </form>
+      <div class="nav-item-wrap">
+        <a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp"><i class="fas fa-wallet"></i> E-Wallet</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals <span class="badge-soon">SOON</span></a>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Management</div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'chama_members' chama.id %}" class="nav-link-cp active"><i class="fas fa-users"></i> Members</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'contributions' chama.id %}" class="nav-link-cp"><i class="fas fa-hand-holding-dollar"></i> Contributions</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp"><i class="fas fa-mobile-screen-button"></i> M-Pesa</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'loans' chama.id %}" class="nav-link-cp"><i class="fas fa-money-bill-wave"></i> Loans</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-triangle-exclamation"></i> Fines <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Reports</div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'reports' chama.id %}" class="nav-link-cp"><i class="fas fa-chart-bar"></i> Reports</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp"><i class="fas fa-download"></i> Download Data</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a>
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="dropdown">
+      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="user-role">{{ membership.get_role_display|default:"Member" }}</div>
         </div>
       </div>
-      {% endif %}
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</aside>
 
-      <!-- Member list -->
-      <div class="card">
-        <div
-          class="card-header bg-white py-3 px-4"
-          style="border-radius: 14px 14px 0 0"
-        >
-          <h6 class="mb-0 fw-bold">Members ({{ memberships|length }})</h6>
+<!-- TOPBAR -->
+<header class="topbar">
+  <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+  <div class="topbar-group-badge">
+    <div class="dot"></div>
+    <span>{{ chama.name|truncatechars:25 }}</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+    <div class="dropdown">
+      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
+        {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+      </div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
+        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="main-content">
+
+    <!-- Members Hero -->
+    <div class="members-hero">
+      <div>
+        <h2><i class="fas fa-users me-2"></i>{{ chama.name }}</h2>
+        <p>{{ chama.description|default:"monthly contributions" }}</p>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">{{ memberships|length }}</div>
+          <div class="lbl">Members</div>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th class="ps-4">Member</th>
-                  <th>Phone</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                  {% if can_manage %}
-                  <th>Actions</th>
-                  {% endif %}
-                </tr>
-              </thead>
-              <tbody>
-                {% for m in memberships %}
-                <tr>
-                  <td class="ps-4">
-                    <div class="d-flex align-items-center gap-2">
-                      <div class="avatar">
-                        {{ m.user.first_name.0|upper }}{{
-                        m.user.last_name.0|upper }}
-                      </div>
-                      <div>
-                        <div style="font-weight: 500; font-size: 14px">
-                          {{ m.user.get_full_name|default:m.user.username }}
-                        </div>
-                        <div style="font-size: 12px; color: #6b7280">
-                          {{ m.user.email }}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td style="font-size: 14px">
-                    {{ m.user.phone|default:"—" }}
-                  </td>
-                  <td>
-                    <span class="badge-role role-{{ m.role }}"
-                      >{{ m.get_role_display }}</span
-                    >
-                  </td>
-                  <td style="font-size: 13px; color: #6b7280">
-                    {{ m.joined_at|date:"M d, Y" }}
-                  </td>
-                  {% if can_manage %}
-                  <td>
-                    {% if m.user != request.user %}
-                    <div class="d-flex gap-1">
-                      <!-- Change role -->
-                      <form
-                        method="post"
-                        action="{% url 'member_role_update' chama.id m.id %}"
-                        class="d-inline"
-                      >
-                        {% csrf_token %}
-                        <select
-                          name="role"
-                          onchange="this.form.submit()"
-                          class="form-select form-select-sm"
-                          style="
-                            width: 110px;
-                            border-radius: 6px;
-                            font-size: 12px;
-                          "
-                        >
-                          <option
-                            value="member"
-                            {%
-                            if
-                            m.role=""
-                            ="member"
-                            %}selected{%
-                            endif
-                            %}
-                          >
-                            Member
-                          </option>
-                          <option
-                            value="treasurer"
-                            {%
-                            if
-                            m.role=""
-                            ="treasurer"
-                            %}selected{%
-                            endif
-                            %}
-                          >
-                            Treasurer
-                          </option>
-                          <option
-                            value="secretary"
-                            {%
-                            if
-                            m.role=""
-                            ="secretary"
-                            %}selected{%
-                            endif
-                            %}
-                          >
-                            Secretary
-                          </option>
-                          {% if my_membership.role == 'admin' %}
-                          <option
-                            value="admin"
-                            {%
-                            if
-                            m.role=""
-                            ="admin"
-                            %}selected{%
-                            endif
-                            %}
-                          >
-                            Admin
-                          </option>
-                          {% endif %}
-                        </select>
-                      </form>
-                      <!-- Remove -->
-                      <form
-                        method="post"
-                        action="{% url 'member_remove' chama.id m.id %}"
-                        onsubmit="return confirm('Remove {{ m.user.get_full_name }} from {{ chama.name }}?')"
-                      >
-                        {% csrf_token %}
-                        <button
-                          type="submit"
-                          class="btn btn-sm btn-outline-danger"
-                          style="border-radius: 6px"
-                          title="Remove member"
-                        >
-                          <i class="fas fa-user-minus"></i>
-                        </button>
-                      </form>
-                    </div>
-                    {% else %}
-                    <span style="font-size: 12px; color: #6b7280">You</span>
-                    {% endif %}
-                  </td>
-                  {% endif %}
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5" class="text-center py-4 text-muted">
-                    No members yet.
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+        <div class="hero-stat">
+          <div class="num">{{ chama.currency }}</div>
+          <div class="lbl">Currency</div>
         </div>
       </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:13px;">
+          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <!-- Invite form -->
+    {% if can_manage %}
+    <div class="invite-card">
+      <h6><i class="fas fa-user-plus me-2" style="color:var(--brand);"></i>Invite a Member</h6>
+      <form method="post" action="{% url 'member_invite' chama.id %}" class="row g-2 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-6">
+          <label class="form-label">Member's Email</label>
+          <input type="email" name="email" class="form-control" placeholder="member@email.com" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Role</label>
+          <select name="role" class="form-select">
+            <option value="member">Member</option>
+            <option value="treasurer">Treasurer</option>
+            <option value="secretary">Secretary</option>
+            {% if my_membership.role == 'admin' %}
+            <option value="admin">Admin</option>
+            {% endif %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn-add">
+            <i class="fas fa-plus"></i> Add Member
+          </button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Member list -->
+    <div class="table-card">
+      <div class="table-card-header">
+        <h6>Members ({{ memberships|length }})</h6>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th class="ps-4">Member</th>
+              <th>Phone</th>
+              <th>Role</th>
+              <th>Joined</th>
+              {% if can_manage %}<th>Actions</th>{% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in memberships %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-sm">{{ m.user.first_name.0|upper }}{{ m.user.last_name.0|upper }}</div>
+                  <div>
+                    <div style="font-weight:600;font-size:14px;">{{ m.user.get_full_name|default:m.user.username }}</div>
+                    <div style="font-size:12px;color:var(--muted);">{{ m.user.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:14px;">{{ m.user.phone|default:"—" }}</td>
+              <td><span class="badge-role role-{{ m.role }}">{{ m.get_role_display }}</span></td>
+              <td style="font-size:13px;color:var(--muted);">{{ m.joined_at|date:"M d, Y" }}</td>
+              {% if can_manage %}
+              <td>
+                {% if m.user != request.user %}
+                <div class="d-flex gap-1">
+                  <form method="post" action="{% url 'member_role_update' chama.id m.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <select name="role" onchange="this.form.submit()" class="form-select form-select-sm" style="width:110px;border-radius:6px;font-size:12px;">
+                      <option value="member" {% if m.role == "member" %}selected{% endif %}>Member</option>
+                      <option value="treasurer" {% if m.role == "treasurer" %}selected{% endif %}>Treasurer</option>
+                      <option value="secretary" {% if m.role == "secretary" %}selected{% endif %}>Secretary</option>
+                      {% if my_membership.role == 'admin' %}
+                      <option value="admin" {% if m.role == "admin" %}selected{% endif %}>Admin</option>
+                      {% endif %}
+                    </select>
+                  </form>
+                  <form method="post" action="{% url 'member_remove' chama.id m.id %}"
+                        onsubmit="return confirm('Remove {{ m.user.get_full_name }} from {{ chama.name }}?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" style="border-radius:6px;" title="Remove member">
+                      <i class="fas fa-user-minus"></i>
+                    </button>
+                  </form>
+                </div>
+                {% else %}
+                <span style="font-size:12px;color:var(--muted);">You</span>
+                {% endif %}
+              </td>
+              {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4" style="color:var(--muted);">No members yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const st = document.getElementById('sidebarToggle');
+  if(st) st.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
+</script>
+</body>
 </html>
