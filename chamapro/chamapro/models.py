@@ -8,8 +8,90 @@ from decimal import Decimal
 class User(AbstractUser):
     phone = models.CharField(max_length=30, unique=True, null=True, blank=True)
 
+    # Profile fields
+    national_id   = models.CharField(max_length=20, blank=True, null=True)
+    kra_pin       = models.CharField(max_length=20, blank=True, null=True)
+    bio           = models.TextField(blank=True, null=True)
+    occupation    = models.CharField(max_length=100, blank=True, null=True)
+    location      = models.CharField(max_length=100, blank=True, null=True)
+    avatar        = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    bank_name     = models.CharField(max_length=100, blank=True, null=True)
+    bank_account  = models.CharField(max_length=30, blank=True, null=True)
+    mpesa_number  = models.CharField(max_length=20, blank=True, null=True)
+
+    KYC_CHOICES = [
+        ('unverified', 'Unverified'),
+        ('pending',    'Pending Review'),
+        ('verified',   'Verified'),
+    ]
+    kyc_status = models.CharField(max_length=20, choices=KYC_CHOICES, default='unverified')
+
     def __str__(self):
         return self.get_full_name() or self.username
+
+    # ── Credit score (0–850) ──────────────────────────────────────────────────
+    def credit_score(self):
+        score = 0
+
+        # 1. Contribution consistency (max 300 pts)
+        all_contribs   = self.contributions.count()
+        confirmed      = self.contributions.filter(status='confirmed').count()
+        if all_contribs > 0:
+            score += int((confirmed / all_contribs) * 300)
+
+        # 2. Loan repayment history (max 250 pts)
+        total_loans  = self.loans.exclude(status__in=['pending', 'rejected']).count()
+        repaid_loans = self.loans.filter(status='repaid').count()
+        if total_loans > 0:
+            score += int((repaid_loans / total_loans) * 250)
+        else:
+            score += 150  # no loans = neutral
+
+        # 3. Zero unpaid fines (max 200 pts)
+        unpaid_fines = self.penalties.filter(status='unpaid').count()
+        score += max(0, 200 - (unpaid_fines * 40))
+
+        # 4. Membership tenure (max 100 pts)
+        earliest = self.memberships.filter(active=True).order_by('joined_at').first()
+        if earliest:
+            months = (timezone.now() - earliest.joined_at).days // 30
+            score += min(months * 5, 100)
+
+        return min(score, 850)
+
+    def credit_score_label(self):
+        s = self.credit_score()
+        if s >= 750: return 'Excellent'
+        if s >= 650: return 'Very Good'
+        if s >= 550: return 'Good'
+        if s >= 400: return 'Fair'
+        return 'Poor'
+
+    def credit_score_color(self):
+        s = self.credit_score()
+        if s >= 750: return 'green'
+        if s >= 550: return 'blue'
+        if s >= 400: return 'amber'
+        return 'red'
+
+    def payment_rate(self):
+        total = self.contributions.count()
+        if total == 0:
+            return 100
+        confirmed = self.contributions.filter(status='confirmed').count()
+        return int((confirmed / total) * 100)
+
+    def total_contributed_all(self):
+        result = self.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))
+        return result['t'] or Decimal('0')
+
+    def active_loan_balance(self):
+        result = self.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))
+        return result['t'] or Decimal('0')
+
+    def outstanding_fines(self):
+        result = self.penalties.filter(status='unpaid').aggregate(t=Sum('amount'))
+        return result['t'] or Decimal('0')
 
 
 class Chama(models.Model):
@@ -272,7 +354,6 @@ class MpesaTransaction(models.Model):
     amount              = models.DecimalField(max_digits=12, decimal_places=2)
     transaction_type    = models.CharField(max_length=20, choices=TYPE_CHOICES, default='contribution')
 
-    # Safaricom identifiers
     checkout_request_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     merchant_request_id = models.CharField(max_length=100, null=True, blank=True)
     mpesa_receipt       = models.CharField(max_length=50, null=True, blank=True)
@@ -281,7 +362,6 @@ class MpesaTransaction(models.Model):
     result_code         = models.CharField(max_length=10, null=True, blank=True)
     result_desc         = models.TextField(null=True, blank=True)
 
-    # Link to contribution or loan once confirmed
     contribution        = models.OneToOneField('Contribution', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
     loan_repayment      = models.OneToOneField('LoanRepayment', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
 
@@ -293,3 +373,49 @@ class MpesaTransaction(models.Model):
 
     def __str__(self):
         return f'M-Pesa {self.phone} KES {self.amount} ({self.status})'
+
+
+# ── Profile extras ────────────────────────────────────────────────────────────
+
+class NotificationPreference(models.Model):
+    FREQUENCY_CHOICES = [
+        ('daily',   'Daily'),
+        ('weekly',  'Weekly'),
+        ('monthly', 'Monthly'),
+        ('never',   'Never'),
+    ]
+    user             = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_prefs')
+    mpesa_alerts     = models.BooleanField(default=True)
+    sms_reminders    = models.BooleanField(default=True)
+    email_reports    = models.BooleanField(default=True)
+    report_frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, default='weekly')
+    two_fa_enabled   = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Prefs({self.user})'
+
+
+class MemberActivity(models.Model):
+    EVENT_CHOICES = [
+        ('contribution',  'Made Contribution'),
+        ('loan_approved', 'Loan Approved'),
+        ('loan_applied',  'Loan Applied'),
+        ('loan_repaid',   'Loan Repaid'),
+        ('fine_issued',   'Fine Issued'),
+        ('fine_paid',     'Fine Paid'),
+        ('chama_joined',  'Joined Chama'),
+        ('chama_created', 'Created Chama'),
+        ('role_changed',  'Role Changed'),
+    ]
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
+    chama      = models.ForeignKey('Chama', on_delete=models.CASCADE, related_name='activities', null=True, blank=True)
+    event_type = models.CharField(max_length=30, choices=EVENT_CHOICES)
+    amount     = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    note       = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} – {self.event_type}'
