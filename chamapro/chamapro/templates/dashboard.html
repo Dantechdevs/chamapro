@@ -152,17 +152,16 @@
             <i class="fas fa-wallet"></i> E-Wallet <span class="badge-new">NEW</span>
           </a>
         </div>
-       <div class="nav-item-wrap">
-  <a href="{% if active_chama %}{% url 'deposit_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-    <i class="fas fa-arrow-down-to-bracket"></i> Deposits
-  </a>
-</div>
-
-<div class="nav-item-wrap">
-  <a href="{% if active_chama %}{% url 'withdrawal_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-    <i class="fas fa-arrow-up-from-bracket"></i> Withdrawals
-  </a>
-</div>
+        <div class="nav-item-wrap">
+          <a href="{% if active_chama %}{% url 'deposit_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
+            <i class="fas fa-arrow-down-to-bracket"></i> Deposits
+          </a>
+        </div>
+        <div class="nav-item-wrap">
+          <a href="{% if active_chama %}{% url 'withdrawal_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
+            <i class="fas fa-arrow-up-from-bracket"></i> Withdrawals
+          </a>
+        </div>
       </div>
 
       <div class="nav-section">
@@ -177,7 +176,6 @@
             <i class="fas fa-hand-holding-dollar"></i> Contributions
           </a>
         </div>
-        <!-- ✅ M-Pesa link added here -->
         <div class="nav-item-wrap">
           <a href="{% if active_chama %}{% url 'mpesa_transactions' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
             <i class="fas fa-mobile-screen-button"></i> M-Pesa
@@ -235,6 +233,7 @@
       </div>
     </nav>
 
+    <!-- SIDEBAR FOOTER: Profile link wired up -->
     <div class="sidebar-footer">
       <div class="dropdown">
         <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
@@ -245,7 +244,8 @@
           </div>
         </div>
         <ul class="dropdown-menu dropdown-menu-dark">
-          <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="fas fa-pen me-2"></i>Edit Profile</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
         </ul>
@@ -267,13 +267,15 @@
     {% endif %}
     <div class="topbar-right">
       <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+      <!-- TOPBAR AVATAR: Profile link wired up -->
       <div class="dropdown">
         <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
           {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
         </div>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
-          <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="fas fa-pen me-2"></i>Edit Profile</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
         </ul>
@@ -438,7 +440,6 @@
             <div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-hand-holding-dollar"></i></div>
             <div class="quick-label">Contributions</div>
           </a>
-          <!-- ✅ M-Pesa quick access added here -->
           <a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card">
             <div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div>
             <div class="quick-label">M-Pesa</div>
@@ -458,6 +459,11 @@
           <a href="{% url 'export_report_excel' active_chama.id %}" class="quick-card">
             <div class="quick-icon" style="background:#ecfdf5;color:#10b981;"><i class="fas fa-file-excel"></i></div>
             <div class="quick-label">Excel Export</div>
+          </a>
+          <!-- Profile quick access card -->
+          <a href="{% url 'profile' %}" class="quick-card">
+            <div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-circle"></i></div>
+            <div class="quick-label">My Profile</div>
           </a>
           <a href="{% url 'chama_create' %}" class="quick-card">
             <div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-plus-circle"></i></div>
@@ -485,6 +491,8 @@
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-6"><a href="{% url 'chama_create' %}" class="quick-card"><div class="quick-icon" style="background:var(--brand-xlight);color:var(--brand);"><i class="fas fa-plus"></i></div><div class="quick-label">New Chama</div></a></div>
+            <!-- Profile link in quick actions modal -->
+            <div class="col-6"><a href="{% url 'profile' %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-circle"></i></div><div class="quick-label">My Profile</div></a></div>
             {% if active_chama %}
             <div class="col-6"><a href="{% url 'chama_members' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-plus"></i></div><div class="quick-label">Invite Member</div></a></div>
             <div class="col-6"><a href="{% url 'wallet_dashboard' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#e6f5f0;color:var(--brand);"><i class="fas fa-wallet"></i></div><div class="quick-label">E-Wallet</div></a></div>
