@@ -1,190 +1,528 @@
-{% extends 'base.html' %}
-{% block title %}Edit Profile — ChamaPro{% endblock %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile | ChamaPro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;
+      --sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;
+      --accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;
+      --text:#111827;--muted:#6b7280;--border:#e5e7eb;
+      --card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
 
-{% block content %}
-<div class="profile-page">
-  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
-    <a href="{% url 'profile' %}" class="back-link">← Back to Profile</a>
-    <h2 style="margin:0;font-size:20px">Edit Profile</h2>
+    /* ── SIDEBAR ─────────────────────────────────────────────────── */
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
+    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
+    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+    .sidebar-logo .logo-text span{color:var(--accent);}
+    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
+    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
+    .chama-btn .chama-icon{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
+    .chama-btn .chama-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nav-section{padding:10px 0 4px;}
+    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
+    .nav-item-wrap{padding:1px 10px;}
+    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
+    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-link-cp.active{background:var(--brand);color:#fff;}
+    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
+    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
+    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
+    .sidebar-user:hover{background:rgba(255,255,255,.07);}
+    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+    .sidebar-user .user-info{flex:1;min-width:0;}
+    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
+    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
+
+    /* ── TOPBAR ──────────────────────────────────────────────────── */
+    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
+    .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
+    .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+    .topbar-group-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
+    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
+    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
+    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+
+    /* ── MAIN ────────────────────────────────────────────────────── */
+    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
+    .main-content{padding:24px;}
+    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
+    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+
+    /* ── BREADCRUMB ──────────────────────────────────────────────── */
+    .back-link{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:13px;font-weight:600;color:var(--brand);
+      text-decoration:none;padding:6px 12px;
+      border-radius:8px;border:1px solid var(--brand-xlight);
+      background:var(--brand-xlight);transition:background .15s;
+    }
+    .back-link:hover{background:#d0ece4;color:var(--brand-dark);}
+
+    /* ── EDIT GRID ───────────────────────────────────────────────── */
+    .edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+    /* ── CARD PANELS ─────────────────────────────────────────────── */
+    .card-panel{background:#fff;border-radius:14px;padding:20px;box-shadow:var(--card-shadow);margin-bottom:16px;}
+    .card-panel:last-child{margin-bottom:0;}
+    .card-panel-title{
+      font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.07em;color:var(--muted);
+      margin-bottom:16px;padding-bottom:10px;
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:8px;
+    }
+    .card-panel-title i{color:var(--brand);font-size:13px;}
+
+    /* ── FORM ELEMENTS ───────────────────────────────────────────── */
+    .form-group{margin-bottom:14px;}
+    .form-group:last-child{margin-bottom:0;}
+    .form-label-cp{
+      display:block;font-size:12px;font-weight:600;
+      color:#374151;margin-bottom:5px;
+    }
+    .form-input{
+      width:100%;padding:9px 13px;font-size:13.5px;
+      border:1px solid var(--border);border-radius:10px;
+      background:#fafafa;color:var(--text);
+      font-family:'Plus Jakarta Sans',sans-serif;
+      outline:none;transition:border .2s,background .2s,box-shadow .2s;
+    }
+    .form-input:focus{
+      border-color:var(--brand);background:#fff;
+      box-shadow:0 0 0 3px rgba(13,110,79,.1);
+    }
+    textarea.form-input{resize:vertical;min-height:80px;}
+    select.form-input{cursor:pointer;}
+    .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .help-text{font-size:11px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:4px;}
+    .help-text i{font-size:10px;}
+
+    /* ── AVATAR PREVIEW ──────────────────────────────────────────── */
+    .avatar-preview-wrap{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+    .avatar-preview-img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid var(--border);}
+    .avatar-preview-initials{
+      width:52px;height:52px;border-radius:50%;
+      background:var(--brand-xlight);color:var(--brand);
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;font-weight:800;border:3px solid var(--border);
+    }
+    .avatar-preview-info{font-size:12px;color:var(--muted);}
+    .avatar-preview-info strong{display:block;font-size:13px;color:var(--text);margin-bottom:2px;}
+
+    /* ── TOGGLE ROWS ─────────────────────────────────────────────── */
+    .toggle-row{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 0;border-bottom:1px solid var(--border);
+    }
+    .toggle-row:last-of-type{border-bottom:none;}
+    .toggle-label-text{font-size:13px;color:var(--text);font-weight:500;}
+    .toggle-label-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+    /* iOS-style toggle */
+    .toggle-switch{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;}
+    .toggle-switch input{opacity:0;width:0;height:0;}
+    .toggle-slider{
+      position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+      background:#d1d5db;border-radius:22px;transition:.2s;
+    }
+    .toggle-slider:before{
+      position:absolute;content:"";height:16px;width:16px;
+      left:3px;bottom:3px;background:#fff;border-radius:50%;
+      transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle-switch input:checked + .toggle-slider{background:var(--brand);}
+    .toggle-switch input:checked + .toggle-slider:before{transform:translateX(18px);}
+
+    /* ── FILE INPUT ──────────────────────────────────────────────── */
+    .file-input-wrap{position:relative;}
+    .file-input-wrap input[type=file]{
+      width:100%;padding:8px 13px;font-size:13px;
+      border:1px dashed var(--border);border-radius:10px;
+      background:#fafafa;color:var(--muted);cursor:pointer;
+      font-family:'Plus Jakarta Sans',sans-serif;
+    }
+    .file-input-wrap input[type=file]:hover{border-color:var(--brand);background:var(--brand-xlight);}
+
+    /* ── BOTTOM ACTIONS ──────────────────────────────────────────── */
+    .form-actions{
+      display:flex;align-items:center;gap:10px;
+      margin-top:20px;padding-top:20px;
+      border-top:1px solid var(--border);
+    }
+    .btn-save{
+      background:var(--brand);color:#fff;border:none;
+      border-radius:10px;padding:10px 24px;
+      font-size:14px;font-weight:700;cursor:pointer;
+      display:inline-flex;align-items:center;gap:7px;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      transition:background .15s;
+    }
+    .btn-save:hover{background:var(--brand-light);}
+    .btn-cancel{
+      background:#fff;color:var(--muted);
+      border:1px solid var(--border);border-radius:10px;
+      padding:10px 20px;font-size:14px;font-weight:600;
+      text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+      transition:background .15s;
+    }
+    .btn-cancel:hover{background:#f9fafb;color:var(--text);}
+
+    /* ── RESPONSIVE ──────────────────────────────────────────────── */
+    @media(max-width:768px){
+      .sidebar{width:0;overflow:hidden;}
+      .topbar,.main-wrap{left:0;margin-left:0;}
+      .sidebar.open{width:var(--sidebar-w);}
+      .edit-grid{grid-template-columns:1fr;}
+      .form-row-2{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="plan-banner">
+    <span>Free Plan</span>
+    <a href="#" class="upgrade-btn">UPGRADE</a>
   </div>
-
-  {% if messages %}
-    {% for msg in messages %}
-      <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
-    {% endfor %}
-  {% endif %}
-
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <div class="edit-grid">
-
-      {# Personal info #}
-      <div class="card">
-        <div class="card-title">Personal Information</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>First Name</label>
-            <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First name">
-          </div>
-          <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last name">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" name="email" value="{{ user.email }}">
-        </div>
-        <div class="form-group">
-          <label>Phone Number</label>
-          <input type="text" name="phone" value="{{ user.phone|default:'' }}" placeholder="e.g. 0712345678">
-        </div>
-        <div class="form-group">
-          <label>Occupation</label>
-          <input type="text" name="occupation" value="{{ user.occupation|default:'' }}" placeholder="e.g. Software Developer">
-        </div>
-        <div class="form-group">
-          <label>Location</label>
-          <input type="text" name="location" value="{{ user.location|default:'' }}" placeholder="e.g. Nairobi, Kenya">
-        </div>
-        <div class="form-group">
-          <label>Bio</label>
-          <textarea name="bio" rows="3" placeholder="Short bio...">{{ user.bio|default:'' }}</textarea>
-        </div>
-        <div class="form-group">
-          <label>Profile Photo</label>
-          {% if user.avatar %}
-            <div style="margin-bottom:6px"><img src="{{ user.avatar.url }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover"></div>
-          {% endif %}
-          <input type="file" name="avatar" accept="image/*">
-        </div>
+  <div class="sidebar-logo">
+    <div class="logo-icon">CP</div>
+    <div class="logo-text">Chama<span>Pro</span></div>
+  </div>
+  <div class="chama-selector-wrap">
+    <div class="dropdown">
+      <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="chama-icon"><i class="fas fa-users" style="font-size:11px;"></i></div>
+        <span class="chama-name">{{ chama.name }}</span>
       </div>
-
-      {# KYC / financial #}
-      <div>
-        <div class="card" style="margin-bottom:1.25rem">
-          <div class="card-title">KYC &amp; Identity</div>
-          <div class="form-group">
-            <label>National ID Number</label>
-            <input type="text" name="national_id" value="{{ user.national_id|default:'' }}" placeholder="e.g. 34xxxxxxx">
-          </div>
-          <div class="form-group">
-            <label>KRA PIN</label>
-            <input type="text" name="kra_pin" value="{{ user.kra_pin|default:'' }}" placeholder="e.g. A002xxxxxxx">
-          </div>
-          <p class="help-text">Fill both fields then save, then click Submit KYC on your profile page.</p>
-        </div>
-
-        <div class="card" style="margin-bottom:1.25rem">
-          <div class="card-title">Payment Details</div>
-          <div class="form-group">
-            <label>M-Pesa Number</label>
-            <input type="text" name="mpesa_number" value="{{ user.mpesa_number|default:'' }}" placeholder="e.g. 0712345678">
-          </div>
-          <div class="form-group">
-            <label>Bank Name</label>
-            <input type="text" name="bank_name" value="{{ user.bank_name|default:'' }}" placeholder="e.g. KCB, Equity">
-          </div>
-          <div class="form-group">
-            <label>Bank Account Number</label>
-            <input type="text" name="bank_account" placeholder="Stored masked — enter full number to update">
-            <p class="help-text">Only the last 4 digits will be visible after saving.</p>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Notifications &amp; Security</div>
-          <div class="toggle-row">
-            <label class="toggle-label">
-              <input type="checkbox" name="mpesa_alerts" {% if prefs.mpesa_alerts %}checked{% endif %}>
-              <span class="toggle-slider"></span>
-              M-Pesa payment alerts
-            </label>
-          </div>
-          <div class="toggle-row">
-            <label class="toggle-label">
-              <input type="checkbox" name="sms_reminders" {% if prefs.sms_reminders %}checked{% endif %}>
-              <span class="toggle-slider"></span>
-              SMS contribution reminders
-            </label>
-          </div>
-          <div class="toggle-row">
-            <label class="toggle-label">
-              <input type="checkbox" name="email_reports" {% if prefs.email_reports %}checked{% endif %}>
-              <span class="toggle-slider"></span>
-              Email reports
-            </label>
-          </div>
-          <div class="form-group" style="margin-top:.75rem">
-            <label>Report Frequency</label>
-            <select name="report_frequency">
-              {% for val, label in prefs.FREQUENCY_CHOICES %}
-                <option value="{{ val }}" {% if prefs.report_frequency == val %}selected{% endif %}>{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="toggle-row">
-            <label class="toggle-label">
-              <input type="checkbox" name="two_fa_enabled" {% if prefs.two_fa_enabled %}checked{% endif %}>
-              <span class="toggle-slider"></span>
-              Two-Factor Authentication
-            </label>
-          </div>
-        </div>
-      </div>
-
-    </div>{# end edit-grid #}
-
-    <div style="margin-top:1.25rem;display:flex;gap:10px">
-      <button type="submit" class="btn-save">Save Changes</button>
-      <a href="{% url 'profile' %}" class="btn-cancel">Cancel</a>
+      <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
+        <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
+      </ul>
     </div>
-  </form>
+  </div>
+  <nav style="flex:1;padding-bottom:8px;">
+    <div class="nav-section">
+      <div class="nav-item-wrap">
+        <a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a>
+      </div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-wallet"></i> E-Wallet</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals <span class="badge-soon">SOON</span></a>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Management</div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'chama_members' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-users"></i> Members</a>
+      </div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'contributions' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-hand-holding-dollar"></i> Contributions</a>
+      </div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-mobile-screen-button"></i> M-Pesa</a>
+      </div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'loans' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-money-bill-wave"></i> Loans</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-triangle-exclamation"></i> Fines <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Reports</div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'reports' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-chart-bar"></i> Reports</a>
+      </div>
+      <div class="nav-item-wrap">
+        {% if chama.id %}<a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-download"></i> Download Data</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'profile' %}" class="nav-link-cp active"><i class="fas fa-user-circle"></i> My Profile</a>
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="dropdown">
+      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="user-role">{{ membership.get_role_display|default:"Member" }}</div>
+        </div>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+  <div class="topbar-group-badge">
+    <div class="dot"></div>
+    <span>Edit Profile</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+    <div class="dropdown">
+      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
+        {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+      </div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
+        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="main-content">
+
+    <!-- Page heading -->
+    <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+      <a href="{% url 'profile' %}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Profile</a>
+      <div>
+        <h1 class="page-title">Edit Profile</h1>
+        <p class="page-sub">Update your personal information and preferences</p>
+      </div>
+    </div>
+
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:13px;">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="edit-grid">
+
+        <!-- LEFT: Personal Info -->
+        <div>
+          <div class="card-panel">
+            <div class="card-panel-title"><i class="fas fa-user"></i> Personal Information</div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label-cp">First Name</label>
+                <input type="text" name="first_name" class="form-input" value="{{ user.first_name }}" placeholder="First name">
+              </div>
+              <div class="form-group">
+                <label class="form-label-cp">Last Name</label>
+                <input type="text" name="last_name" class="form-input" value="{{ user.last_name }}" placeholder="Last name">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-cp">Email Address</label>
+              <input type="email" name="email" class="form-input" value="{{ user.email }}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-cp">Phone Number</label>
+              <input type="text" name="phone" class="form-input" value="{{ user.phone|default:'' }}" placeholder="e.g. 0712345678">
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label-cp">Occupation</label>
+                <input type="text" name="occupation" class="form-input" value="{{ user.occupation|default:'' }}" placeholder="e.g. Software Developer">
+              </div>
+              <div class="form-group">
+                <label class="form-label-cp">Location</label>
+                <input type="text" name="location" class="form-input" value="{{ user.location|default:'' }}" placeholder="e.g. Nairobi, Kenya">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-cp">Bio</label>
+              <textarea name="bio" class="form-input" rows="3" placeholder="A short bio about yourself...">{{ user.bio|default:'' }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-cp">Profile Photo</label>
+              <div class="avatar-preview-wrap">
+                {% if user.avatar %}
+                  <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar-preview-img">
+                {% else %}
+                  <div class="avatar-preview-initials">
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                  </div>
+                {% endif %}
+                <div class="avatar-preview-info">
+                  <strong>Current photo</strong>
+                  Upload a new one below to replace it
+                </div>
+              </div>
+              <div class="file-input-wrap">
+                <input type="file" name="avatar" accept="image/*">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: KYC, Payment, Notifications -->
+        <div>
+
+          <!-- KYC & Identity -->
+          <div class="card-panel">
+            <div class="card-panel-title"><i class="fas fa-shield-halved"></i> KYC &amp; Identity</div>
+
+            <div class="form-group">
+              <label class="form-label-cp">National ID Number</label>
+              <input type="text" name="national_id" class="form-input" value="{{ user.national_id|default:'' }}" placeholder="e.g. 34xxxxxxx">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label-cp">KRA PIN</label>
+              <input type="text" name="kra_pin" class="form-input" value="{{ user.kra_pin|default:'' }}" placeholder="e.g. A002xxxxxxx">
+            </div>
+
+            <p class="help-text"><i class="fas fa-info-circle"></i> Fill both fields, save, then click <strong>Submit KYC</strong> on your profile page.</p>
+          </div>
+
+          <!-- Payment Details -->
+          <div class="card-panel">
+            <div class="card-panel-title"><i class="fas fa-credit-card"></i> Payment Details</div>
+
+            <div class="form-group">
+              <label class="form-label-cp">M-Pesa Number</label>
+              <input type="text" name="mpesa_number" class="form-input" value="{{ user.mpesa_number|default:'' }}" placeholder="e.g. 0712345678">
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label class="form-label-cp">Bank Name</label>
+                <input type="text" name="bank_name" class="form-input" value="{{ user.bank_name|default:'' }}" placeholder="e.g. KCB, Equity">
+              </div>
+              <div class="form-group">
+                <label class="form-label-cp">Bank Account Number</label>
+                <input type="text" name="bank_account" class="form-input" placeholder="Enter full number to update">
+              </div>
+            </div>
+            <p class="help-text"><i class="fas fa-lock"></i> Only the last 4 digits will be visible after saving.</p>
+          </div>
+
+          <!-- Notifications & Security -->
+          <div class="card-panel">
+            <div class="card-panel-title"><i class="fas fa-bell"></i> Notifications &amp; Security</div>
+
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label-text">M-Pesa payment alerts</div>
+                <div class="toggle-label-sub">Get notified for every M-Pesa transaction</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="mpesa_alerts" {% if prefs.mpesa_alerts %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label-text">SMS contribution reminders</div>
+                <div class="toggle-label-sub">Receive SMS before contribution due dates</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="sms_reminders" {% if prefs.sms_reminders %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label-text">Email reports</div>
+                <div class="toggle-label-sub">Periodic chama summaries to your email</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="email_reports" {% if prefs.email_reports %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="form-group" style="margin-top:12px;">
+              <label class="form-label-cp">Report Frequency</label>
+              <select name="report_frequency" class="form-input">
+                {% for val, label in prefs.FREQUENCY_CHOICES %}
+                  <option value="{{ val }}" {% if prefs.report_frequency == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label-text">Two-Factor Authentication</div>
+                <div class="toggle-label-sub">Add an extra layer of security to your account</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" name="two_fa_enabled" {% if prefs.two_fa_enabled %}checked{% endif %}>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- end edit-grid -->
+
+      <div class="form-actions">
+        <button type="submit" class="btn-save"><i class="fas fa-check"></i> Save Changes</button>
+        <a href="{% url 'profile' %}" class="btn-cancel"><i class="fas fa-times"></i> Cancel</a>
+      </div>
+
+    </form>
+
+  </div>
 </div>
 
-<style>
-.profile-page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
-.edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-@media (max-width: 768px) { .edit-grid { grid-template-columns: 1fr; } }
-.card { background: #fff; border: 0.5px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; }
-.card-title { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .85rem; }
-.form-group { margin-bottom: .85rem; }
-.form-group label { display: block; font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 4px; }
-.form-group input[type=text],
-.form-group input[type=email],
-.form-group input[type=file],
-.form-group textarea,
-.form-group select {
-  width: 100%; padding: 8px 10px; font-size: 13px;
-  border: 1px solid #e5e7eb; border-radius: 8px;
-  background: #fafafa; color: #111;
-  outline: none; transition: border .2s;
-}
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus { border-color: #1D9E75; background: #fff; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.help-text { font-size: 11px; color: #9ca3af; margin-top: 4px; }
-.toggle-row { padding: 8px 0; border-bottom: 0.5px solid #f3f4f6; }
-.toggle-row:last-of-type { border-bottom: none; }
-.toggle-label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #374151; cursor: pointer; }
-.toggle-label input[type=checkbox] { width: 16px; height: 16px; accent-color: #1D9E75; }
-.back-link { font-size: 13px; color: #1D9E75; text-decoration: none; }
-.back-link:hover { text-decoration: underline; }
-.btn-save {
-  padding: 9px 24px; background: #1D9E75; color: #fff;
-  border: none; border-radius: 8px; font-size: 14px;
-  font-weight: 500; cursor: pointer;
-}
-.btn-save:hover { background: #0F6E56; }
-.btn-cancel {
-  padding: 9px 24px; background: transparent; color: #6b7280;
-  border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;
-  text-decoration: none; font-weight: 500;
-}
-.alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 1rem; font-size: 13px; }
-.alert-success { background: #E1F5EE; color: #0F6E56; border: 1px solid #9FE1CB; }
-.alert-error   { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
-</style>
-{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const st = document.getElementById('sidebarToggle');
+  if(st) st.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
+</script>
+</body>
+</html>

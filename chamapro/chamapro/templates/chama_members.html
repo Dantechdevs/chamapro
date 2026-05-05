@@ -11,7 +11,6 @@
   <style>
     :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;--sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;--accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);}
     *{box-sizing:border-box;}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
-    /* SIDEBAR */
     .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
     .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
     .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
@@ -39,7 +38,6 @@
     .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
     .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
     .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
-    /* TOPBAR */
     .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
     .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
     .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
@@ -49,12 +47,10 @@
     .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
     .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
     .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
-    /* MAIN */
     .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
     .main-content{padding:24px;max-width:900px;}
     .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
     .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
-    /* MEMBERS HERO */
     .members-hero{background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 60%,var(--brand-light) 100%);border-radius:16px;padding:24px 28px;color:#fff;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
     .members-hero h2{font-size:22px;font-weight:800;margin:0;}
     .members-hero p{font-size:13px;opacity:.75;margin:4px 0 0;}
@@ -62,7 +58,6 @@
     .hero-stat{background:rgba(255,255,255,.15);border-radius:10px;padding:10px 18px;text-align:center;}
     .hero-stat .num{font-size:22px;font-weight:800;}
     .hero-stat .lbl{font-size:11px;opacity:.8;}
-    /* INVITE CARD */
     .invite-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:20px 22px;margin-bottom:16px;}
     .invite-card h6{font-size:14px;font-weight:700;margin-bottom:14px;}
     .form-label{font-size:13px;font-weight:600;color:#374151;margin-bottom:4px;}
@@ -70,7 +65,6 @@
     .form-control:focus,.form-select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,110,79,.1);}
     .btn-add{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;width:100%;justify-content:center;}
     .btn-add:hover{background:var(--brand-light);}
-    /* TABLE */
     .table-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
     .table-card-header{padding:14px 18px;border-bottom:1px solid var(--border);}
     .table-card-header h6{font-size:15px;font-weight:700;margin:0;}
@@ -163,17 +157,20 @@
       </div>
     </div>
   </nav>
+
+  <!-- SIDEBAR FOOTER: profile links fixed -->
   <div class="sidebar-footer">
     <div class="dropdown">
       <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
         <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
         <div class="user-info">
           <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-          <div class="user-role">{{ membership.get_role_display|default:"Member" }}</div>
+          <div class="user-role">{{ my_membership.get_role_display|default:"Member" }}</div>
         </div>
       </div>
       <ul class="dropdown-menu dropdown-menu-dark">
-        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="fas fa-pen me-2"></i>Edit Profile</a></li>
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
       </ul>
@@ -188,6 +185,7 @@
     <div class="dot"></div>
     <span>{{ chama.name|truncatechars:25 }}</span>
   </div>
+  <!-- TOPBAR RIGHT: profile links fixed -->
   <div class="topbar-right">
     <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
     <div class="dropdown">
@@ -196,7 +194,8 @@
       </div>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
-        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="fas fa-pen me-2"></i>Edit Profile</a></li>
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
       </ul>
@@ -208,7 +207,6 @@
 <div class="main-wrap">
   <div class="main-content">
 
-    <!-- Members Hero -->
     <div class="members-hero">
       <div>
         <h2><i class="fas fa-users me-2"></i>{{ chama.name }}</h2>
@@ -234,7 +232,6 @@
       {% endfor %}
     {% endif %}
 
-    <!-- Invite form -->
     {% if can_manage %}
     <div class="invite-card">
       <h6><i class="fas fa-user-plus me-2" style="color:var(--brand);"></i>Invite a Member</h6>
@@ -264,7 +261,6 @@
     </div>
     {% endif %}
 
-    <!-- Member list -->
     <div class="table-card">
       <div class="table-card-header">
         <h6>Members ({{ memberships|length }})</h6>
