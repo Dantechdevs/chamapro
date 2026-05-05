@@ -21,6 +21,11 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('dashboard/switch/<int:chama_id>/', views.switch_chama, name='switch_chama'),
 
+    # Profile
+    path('profile/', views.profile, name='profile'),
+    path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('profile/kyc/', views.profile_kyc, name='profile_kyc'),
+
     # Chama management
     path('chama/create/', views.chama_create, name='chama_create'),
     path('chama/<int:chama_id>/members/', views.chama_members, name='chama_members'),
@@ -43,20 +48,21 @@ urlpatterns = [
     path('chama/<int:chama_id>/loans/<int:loan_id>/', views.loan_detail, name='loan_detail'),
     path('chama/<int:chama_id>/loans/<int:loan_id>/approve/', views.loan_approve, name='loan_approve'),
     path('chama/<int:chama_id>/loans/<int:loan_id>/repay/', views.loan_repayment_add, name='loan_repayment_add'),
-    
+
+    # Reports & Exports
     path('chama/<int:chama_id>/reports/', views.reports, name='reports'),
     path('chama/<int:chama_id>/export/contributions/csv/', views.export_contributions_csv, name='export_contributions_csv'),
     path('chama/<int:chama_id>/export/loans/csv/', views.export_loans_csv, name='export_loans_csv'),
     path('chama/<int:chama_id>/export/members/csv/', views.export_members_csv, name='export_members_csv'),
     path('chama/<int:chama_id>/export/pdf/', views.export_report_pdf, name='export_report_pdf'),
     path('chama/<int:chama_id>/export/excel/', views.export_report_excel, name='export_report_excel'),
-    
-     # M-Pesa
+
+    # M-Pesa
     path('chama/<int:chama_id>/mpesa/push/', views.mpesa_stk_push, name='mpesa_stk_push'),
     path('chama/<int:chama_id>/mpesa/query/', views.mpesa_stk_query, name='mpesa_stk_query'),
     path('chama/<int:chama_id>/mpesa/transactions/', views.mpesa_transactions, name='mpesa_transactions'),
-    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),  
-    
-    # Wallets app (IMPORTANT)
+    path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
+
+    # Wallets app
     path('wallets/', include('wallets.urls')),
 ]
