@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile — ChamaPro{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+    <a href="{% url 'profile' %}" class="back-link">← Back to Profile</a>
+    <h2 style="margin:0;font-size:20px">Edit Profile</h2>
+  </div>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="edit-grid">
+
+      {# Personal info #}
+      <div class="card">
+        <div class="card-title">Personal Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" value="{{ user.email }}">
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="text" name="phone" value="{{ user.phone|default:'' }}" placeholder="e.g. 0712345678">
+        </div>
+        <div class="form-group">
+          <label>Occupation</label>
+          <input type="text" name="occupation" value="{{ user.occupation|default:'' }}" placeholder="e.g. Software Developer">
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" name="location" value="{{ user.location|default:'' }}" placeholder="e.g. Nairobi, Kenya">
+        </div>
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea name="bio" rows="3" placeholder="Short bio...">{{ user.bio|default:'' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label>Profile Photo</label>
+          {% if user.avatar %}
+            <div style="margin-bottom:6px"><img src="{{ user.avatar.url }}" style="width:48px;height:48px;border-radius:50%;object-fit:cover"></div>
+          {% endif %}
+          <input type="file" name="avatar" accept="image/*">
+        </div>
+      </div>
+
+      {# KYC / financial #}
+      <div>
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-title">KYC &amp; Identity</div>
+          <div class="form-group">
+            <label>National ID Number</label>
+            <input type="text" name="national_id" value="{{ user.national_id|default:'' }}" placeholder="e.g. 34xxxxxxx">
+          </div>
+          <div class="form-group">
+            <label>KRA PIN</label>
+            <input type="text" name="kra_pin" value="{{ user.kra_pin|default:'' }}" placeholder="e.g. A002xxxxxxx">
+          </div>
+          <p class="help-text">Fill both fields then save, then click Submit KYC on your profile page.</p>
+        </div>
+
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-title">Payment Details</div>
+          <div class="form-group">
+            <label>M-Pesa Number</label>
+            <input type="text" name="mpesa_number" value="{{ user.mpesa_number|default:'' }}" placeholder="e.g. 0712345678">
+          </div>
+          <div class="form-group">
+            <label>Bank Name</label>
+            <input type="text" name="bank_name" value="{{ user.bank_name|default:'' }}" placeholder="e.g. KCB, Equity">
+          </div>
+          <div class="form-group">
+            <label>Bank Account Number</label>
+            <input type="text" name="bank_account" placeholder="Stored masked — enter full number to update">
+            <p class="help-text">Only the last 4 digits will be visible after saving.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Notifications &amp; Security</div>
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <input type="checkbox" name="mpesa_alerts" {% if prefs.mpesa_alerts %}checked{% endif %}>
+              <span class="toggle-slider"></span>
+              M-Pesa payment alerts
+            </label>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <input type="checkbox" name="sms_reminders" {% if prefs.sms_reminders %}checked{% endif %}>
+              <span class="toggle-slider"></span>
+              SMS contribution reminders
+            </label>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <input type="checkbox" name="email_reports" {% if prefs.email_reports %}checked{% endif %}>
+              <span class="toggle-slider"></span>
+              Email reports
+            </label>
+          </div>
+          <div class="form-group" style="margin-top:.75rem">
+            <label>Report Frequency</label>
+            <select name="report_frequency">
+              {% for val, label in prefs.FREQUENCY_CHOICES %}
+                <option value="{{ val }}" {% if prefs.report_frequency == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <input type="checkbox" name="two_fa_enabled" {% if prefs.two_fa_enabled %}checked{% endif %}>
+              <span class="toggle-slider"></span>
+              Two-Factor Authentication
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </div>{# end edit-grid #}
+
+    <div style="margin-top:1.25rem;display:flex;gap:10px">
+      <button type="submit" class="btn-save">Save Changes</button>
+      <a href="{% url 'profile' %}" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+.profile-page { max-width: 1000px; margin: 0 auto; padding: 1.5rem 1rem; }
+.edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 768px) { .edit-grid { grid-template-columns: 1fr; } }
+.card { background: #fff; border: 0.5px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.25rem; }
+.card-title { font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .85rem; }
+.form-group { margin-bottom: .85rem; }
+.form-group label { display: block; font-size: 12px; font-weight: 500; color: #374151; margin-bottom: 4px; }
+.form-group input[type=text],
+.form-group input[type=email],
+.form-group input[type=file],
+.form-group textarea,
+.form-group select {
+  width: 100%; padding: 8px 10px; font-size: 13px;
+  border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #fafafa; color: #111;
+  outline: none; transition: border .2s;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus { border-color: #1D9E75; background: #fff; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.help-text { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+.toggle-row { padding: 8px 0; border-bottom: 0.5px solid #f3f4f6; }
+.toggle-row:last-of-type { border-bottom: none; }
+.toggle-label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #374151; cursor: pointer; }
+.toggle-label input[type=checkbox] { width: 16px; height: 16px; accent-color: #1D9E75; }
+.back-link { font-size: 13px; color: #1D9E75; text-decoration: none; }
+.back-link:hover { text-decoration: underline; }
+.btn-save {
+  padding: 9px 24px; background: #1D9E75; color: #fff;
+  border: none; border-radius: 8px; font-size: 14px;
+  font-weight: 500; cursor: pointer;
+}
+.btn-save:hover { background: #0F6E56; }
+.btn-cancel {
+  padding: 9px 24px; background: transparent; color: #6b7280;
+  border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;
+  text-decoration: none; font-weight: 500;
+}
+.alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 1rem; font-size: 13px; }
+.alert-success { background: #E1F5EE; color: #0F6E56; border: 1px solid #9FE1CB; }
+.alert-error   { background: #FCEBEB; color: #A32D2D; border: 1px solid #F7C1C1; }
+</style>
+{% endblock %}

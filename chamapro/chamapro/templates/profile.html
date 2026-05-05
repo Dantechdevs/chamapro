@@ -1,0 +1,439 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — ChamaPro{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+
+  {# ── Header card ─────────────────────────────────────────────────────────── #}
+  <div class="profile-header">
+    <div class="profile-avatar-wrap">
+      {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="Avatar" class="profile-avatar-img">
+      {% else %}
+        <div class="profile-avatar-initials">
+          {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+        </div>
+      {% endif %}
+      {% if user.kyc_status == 'verified' %}
+        <span class="kyc-badge" title="KYC Verified">✓</span>
+      {% endif %}
+    </div>
+
+    <div class="profile-header-info">
+      <h1>{{ user.get_full_name|default:user.username }}</h1>
+      <p class="profile-subline">
+        {{ user.email }}
+        {% if user.phone %} · {{ user.phone }}{% endif %}
+      </p>
+      <div class="profile-chips">
+        <span class="chip chip-green">{{ chama_count }} Chama{{ chama_count|pluralize }}</span>
+        <span class="chip chip-{% if user.kyc_status == 'verified' %}green{% elif user.kyc_status == 'pending' %}amber{% else %}gray{% endif %}">
+          KYC: {{ user.get_kyc_status_display }}
+        </span>
+        {% for m in memberships|slice:":3" %}
+          <span class="chip chip-blue">{{ m.get_role_display }} @ {{ m.chama.name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="profile-header-actions">
+      <a href="{% url 'profile_edit' %}" class="btn btn-outline">Edit Profile</a>
+      {% if user.kyc_status == 'unverified' %}
+        <form method="post" action="{% url 'profile_kyc' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline btn-amber">Submit KYC</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Stat cards ───────────────────────────────────────────────────────────── #}
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Contributed</div>
+      <div class="stat-value">KES {{ total_contributed|floatformat:0 }}</div>
+      <div class="stat-sub">across all chamas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Loan Balance</div>
+      <div class="stat-value">KES {{ active_loan_balance|floatformat:0 }}</div>
+      <div class="stat-sub">
+        {% if active_loan_balance > 0 %}outstanding{% else %}no active loans{% endif %}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Outstanding Fines</div>
+      <div class="stat-value {% if outstanding_fines > 0 %}text-red{% endif %}">
+        KES {{ outstanding_fines|floatformat:0 }}
+      </div>
+      <div class="stat-sub {% if outstanding_fines == 0 %}text-green{% endif %}">
+        {% if outstanding_fines == 0 %}all clear{% else %}unpaid penalties{% endif %}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Payment Rate</div>
+      <div class="stat-value">{{ payment_rate }}%</div>
+      <div class="stat-sub">
+        {% if payment_rate >= 90 %}excellent standing{% elif payment_rate >= 70 %}good standing{% else %}needs improvement{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-body">
+
+    {# ── Left column ────────────────────────────────────────────────────────── #}
+    <div class="profile-col-left">
+
+      {# Credit Score #}
+      <div class="card">
+        <div class="card-title">Credit Score</div>
+        <div class="credit-score-row">
+          <div class="score-ring score-ring-{{ credit_color }}">
+            <span class="score-num">{{ credit_score }}</span>
+            <span class="score-max">/ 850</span>
+          </div>
+          <div class="score-detail">
+            <div class="score-label score-label-{{ credit_color }}">{{ credit_label }}</div>
+            <p class="score-desc">Based on contributions, loan history, fines &amp; tenure</p>
+            <div class="progress-bar">
+              <div class="progress-fill progress-fill-{{ credit_color }}" style="width: {{ credit_pct }}%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="score-breakdown">
+          <div class="score-item">
+            <span>Contribution consistency</span>
+            <span class="text-green">{{ payment_rate }}%</span>
+          </div>
+          <div class="score-item">
+            <span>Outstanding fines</span>
+            <span class="{% if outstanding_fines == 0 %}text-green{% else %}text-red{% endif %}">
+              {% if outstanding_fines == 0 %}None{% else %}KES {{ outstanding_fines|floatformat:0 }}{% endif %}
+            </span>
+          </div>
+          <div class="score-item">
+            <span>Active chamas</span>
+            <span>{{ chama_count }}</span>
+          </div>
+        </div>
+      </div>
+
+      {# Personal Details #}
+      <div class="card">
+        <div class="card-title">Personal Details</div>
+        <div class="detail-row"><span>National ID</span><span>{% if user.national_id %}{{ user.national_id }}{% else %}<span class="muted">Not set</span>{% endif %}</span></div>
+        <div class="detail-row"><span>KRA PIN</span><span>{% if user.kra_pin %}{{ user.kra_pin }}{% else %}<span class="muted">Not set</span>{% endif %}</span></div>
+        <div class="detail-row"><span>M-Pesa No.</span><span>{% if user.mpesa_number %}{{ user.mpesa_number }}{% else %}<span class="muted">Not set</span>{% endif %}</span></div>
+        <div class="detail-row"><span>Bank</span>
+          <span>
+            {% if user.bank_name %}{{ user.bank_name }}{% if user.bank_account %} · {{ user.bank_account }}{% endif %}
+            {% else %}<span class="muted">Not set</span>{% endif %}
+          </span>
+        </div>
+        <div class="detail-row"><span>Occupation</span><span>{{ user.occupation|default:"—" }}</span></div>
+        <div class="detail-row"><span>Location</span><span>{{ user.location|default:"—" }}</span></div>
+        <div class="detail-row"><span>KYC Status</span>
+          <span class="chip chip-{% if user.kyc_status == 'verified' %}green{% elif user.kyc_status == 'pending' %}amber{% else %}gray{% endif %}">
+            {{ user.get_kyc_status_display }}
+          </span>
+        </div>
+        {% if user.bio %}
+          <div class="detail-row detail-bio"><span>Bio</span><span>{{ user.bio }}</span></div>
+        {% endif %}
+      </div>
+
+      {# Notifications #}
+      <div class="card">
+        <div class="card-title">Notifications &amp; Preferences</div>
+        <div class="detail-row"><span>M-Pesa alerts</span>
+          <span class="chip {% if prefs.mpesa_alerts %}chip-green{% else %}chip-gray{% endif %}">
+            {% if prefs.mpesa_alerts %}On{% else %}Off{% endif %}
+          </span>
+        </div>
+        <div class="detail-row"><span>SMS reminders</span>
+          <span class="chip {% if prefs.sms_reminders %}chip-green{% else %}chip-gray{% endif %}">
+            {% if prefs.sms_reminders %}On{% else %}Off{% endif %}
+          </span>
+        </div>
+        <div class="detail-row"><span>Email reports</span>
+          <span class="chip chip-blue">{{ prefs.get_report_frequency_display }}</span>
+        </div>
+        <div class="detail-row"><span>Two-Factor Auth</span>
+          <span class="chip {% if prefs.two_fa_enabled %}chip-green{% else %}chip-gray{% endif %}">
+            {% if prefs.two_fa_enabled %}Enabled{% else %}Disabled{% endif %}
+          </span>
+        </div>
+      </div>
+
+    </div>{# end left col #}
+
+    {# ── Right column ────────────────────────────────────────────────────────── #}
+    <div class="profile-col-right">
+
+      {# My Chamas #}
+      <div class="card">
+        <div class="card-title">My Chamas</div>
+        {% for stat in chama_stats %}
+          <div class="chama-row">
+            <div class="chama-icon">{{ stat.chama.name|slice:":2"|upper }}</div>
+            <div class="chama-info">
+              <div class="chama-name">{{ stat.chama.name }}</div>
+              <div class="chama-meta">
+                KES {{ stat.chama.contribution_amount|floatformat:0 }}/mo
+                · <strong>{{ stat.membership.get_role_display }}</strong>
+                · Contributed KES {{ stat.total_paid|floatformat:0 }}
+              </div>
+            </div>
+            <span class="chip {% if stat.membership.active %}chip-green{% else %}chip-gray{% endif %}">
+              {% if stat.membership.active %}Active{% else %}Inactive{% endif %}
+            </span>
+          </div>
+        {% empty %}
+          <p class="muted" style="padding: .5rem 0;">No chamas yet. <a href="{% url 'chama_create' %}">Create one →</a></p>
+        {% endfor %}
+      </div>
+
+      {# Contribution Trend #}
+      <div class="card">
+        <div class="card-title">Contribution Trend — Last 6 Months</div>
+        <div class="bar-chart">
+          {% for month in monthly_trend %}
+            {% widthratio month.amount max_trend 80 as bar_h %}
+            <div class="bar-col">
+              <div class="bar-fill {% if month.amount == 0 %}bar-fill-zero{% endif %}"
+                   style="height: {{ bar_h|default:4 }}px"
+                   title="KES {{ month.amount|floatformat:0 }}">
+              </div>
+              <div class="bar-label">{{ month.label }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Recent Activity #}
+      <div class="card">
+        <div class="card-title">Recent Activity</div>
+        {% for activity in recent_activity %}
+          <div class="activity-row">
+            <div class="activity-dot activity-dot-{{ activity.event_type }}"></div>
+            <div class="activity-body">
+              <div class="activity-text">
+                {% if activity.event_type == 'contribution' %}
+                  Paid <strong>KES {{ activity.amount|floatformat:0 }}</strong> contribution
+                  {% if activity.chama %}to {{ activity.chama.name }}{% endif %}
+                {% elif activity.event_type == 'loan_approved' %}
+                  Loan of <strong>KES {{ activity.amount|floatformat:0 }}</strong> approved
+                  {% if activity.chama %}— {{ activity.chama.name }}{% endif %}
+                {% elif activity.event_type == 'loan_repaid' %}
+                  Loan repaid: <strong>KES {{ activity.amount|floatformat:0 }}</strong>
+                {% elif activity.event_type == 'fine_issued' %}
+                  Fine of <strong>KES {{ activity.amount|floatformat:0 }}</strong> issued
+                  {% if activity.chama %}— {{ activity.chama.name }}{% endif %}
+                {% elif activity.event_type == 'chama_joined' %}
+                  Joined <strong>{% if activity.chama %}{{ activity.chama.name }}{% endif %}</strong>
+                {% elif activity.event_type == 'chama_created' %}
+                  Created chama <strong>{% if activity.chama %}{{ activity.chama.name }}{% endif %}</strong>
+                {% else %}
+                  {{ activity.get_event_type_display }}
+                  {% if activity.note %} — {{ activity.note }}{% endif %}
+                {% endif %}
+              </div>
+              <div class="activity-time">{{ activity.created_at|timesince }} ago</div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="muted" style="padding: .5rem 0;">No activity yet.</p>
+        {% endfor %}
+      </div>
+
+    </div>{# end right col #}
+  </div>{# end profile-body #}
+</div>{# end profile-page #}
+
+
+<style>
+/* ── Profile page styles ──────────────────────────────────────────────────── */
+.profile-page { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+/* Header */
+.profile-header {
+  background: linear-gradient(135deg, #0F6E56, #1D9E75);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar-img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,.4); }
+.profile-avatar-initials {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 600; color: #fff;
+  border: 3px solid rgba(255,255,255,.4);
+}
+.kyc-badge {
+  position: absolute; bottom: 2px; right: 2px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; color: #0F6E56;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #0F6E56;
+}
+.profile-header-info { flex: 1; color: #fff; }
+.profile-header-info h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+.profile-subline { font-size: 13px; opacity: .85; margin: 0 0 8px; }
+.profile-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.profile-header-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* Chips */
+.chip {
+  display: inline-block; padding: 3px 10px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+.chip-green  { background: #E1F5EE; color: #0F6E56; }
+.chip-amber  { background: #FAEEDA; color: #854F0B; }
+.chip-blue   { background: #E6F1FB; color: #185FA5; }
+.chip-gray   { background: #F1EFE8; color: #5F5E5A; }
+.chip-red    { background: #FCEBEB; color: #A32D2D; }
+
+/* Stat grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.stat-card {
+  background: #fff;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 10px;
+  padding: .9rem 1rem;
+  text-align: center;
+}
+.stat-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 600; color: #111; }
+.stat-sub   { font-size: 11px; color: #6b7280; margin-top: 3px; }
+.text-red   { color: #A32D2D !important; }
+.text-green { color: #0F6E56 !important; }
+
+/* Body layout */
+.profile-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+@media (max-width: 768px) {
+  .profile-body { grid-template-columns: 1fr; }
+}
+.profile-col-left, .profile-col-right { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Cards */
+.card {
+  background: #fff;
+  border: 0.5px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+.card-title {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: .85rem;
+}
+
+/* Credit score */
+.credit-score-row { display: flex; align-items: center; gap: 1rem; margin-bottom: .85rem; }
+.score-ring {
+  width: 64px; height: 64px; border-radius: 50%;
+  border: 5px solid #1D9E75;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.score-ring-green { border-color: #1D9E75; }
+.score-ring-blue  { border-color: #185FA5; }
+.score-ring-amber { border-color: #BA7517; }
+.score-ring-red   { border-color: #A32D2D; }
+.score-num { font-size: 17px; font-weight: 600; line-height: 1; color: #111; }
+.score-max { font-size: 9px; color: #9ca3af; }
+.score-label { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.score-label-green { color: #0F6E56; }
+.score-label-blue  { color: #185FA5; }
+.score-label-amber { color: #854F0B; }
+.score-label-red   { color: #A32D2D; }
+.score-desc { font-size: 12px; color: #6b7280; margin-bottom: 8px; }
+.progress-bar { height: 6px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+.progress-fill-green { background: #1D9E75; }
+.progress-fill-blue  { background: #185FA5; }
+.progress-fill-amber { background: #BA7517; }
+.progress-fill-red   { background: #A32D2D; }
+.score-breakdown { border-top: 0.5px solid #f3f4f6; padding-top: .75rem; display: flex; flex-direction: column; gap: 6px; }
+.score-item { display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; }
+.score-item .text-green { color: #0F6E56; font-weight: 600; }
+.score-item .text-red   { color: #A32D2D; font-weight: 600; }
+
+/* Detail rows */
+.detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; border-bottom: 0.5px solid #f3f4f6;
+  font-size: 13px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row > span:first-child { color: #6b7280; }
+.detail-row > span:last-child  { font-weight: 500; color: #111; text-align: right; max-width: 60%; }
+.detail-bio > span:last-child { font-style: italic; font-size: 12px; }
+.muted { color: #9ca3af !important; font-weight: 400 !important; }
+
+/* Chama rows */
+.chama-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 0.5px solid #f3f4f6;
+}
+.chama-row:last-child { border-bottom: none; }
+.chama-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: #E1F5EE; color: #0F6E56;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; flex-shrink: 0;
+}
+.chama-info { flex: 1; }
+.chama-name { font-size: 13px; font-weight: 600; color: #111; }
+.chama-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+/* Bar chart */
+.bar-chart {
+  display: flex; align-items: flex-end; gap: 10px;
+  height: 90px; padding-top: 8px;
+}
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bar-fill {
+  width: 100%; background: #1D9E75; border-radius: 3px 3px 0 0;
+  min-height: 4px; transition: height .3s ease;
+}
+.bar-fill-zero { background: #e5e7eb; }
+.bar-label { font-size: 10px; color: #9ca3af; }
+
+/* Activity timeline */
+.activity-row { display: flex; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid #f3f4f6; }
+.activity-row:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #1D9E75; margin-top: 5px; flex-shrink: 0;
+}
+.activity-dot-fine_issued { background: #BA7517; }
+.activity-dot-loan_approved { background: #185FA5; }
+.activity-dot-loan_repaid { background: #0F6E56; }
+.activity-dot-chama_joined, .activity-dot-chama_created { background: #534AB7; }
+.activity-text { font-size: 12px; color: #374151; }
+.activity-time { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+/* Buttons */
+.btn { padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-block; }
+.btn-outline { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.4); color: #fff; }
+.btn-outline:hover { background: rgba(255,255,255,.25); }
+.btn-amber { border-color: rgba(250,199,117,.6) !important; color: #FAEEDA !important; }
+</style>
+{% endblock %}

@@ -11,7 +11,11 @@ import csv
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from .models import User, Chama, Membership, Contribution, Penalty, Loan, LoanRepayment, MpesaTransaction
+from .models import (
+    User, Chama, Membership, Contribution, Penalty,
+    Loan, LoanRepayment, MpesaTransaction,
+    NotificationPreference, MemberActivity,
+)
 from .mpesa import mpesa
 
 
@@ -133,6 +137,156 @@ def switch_chama(request, chama_id):
     get_object_or_404(Membership, chama_id=chama_id, user=request.user, active=True)
     request.session['active_chama_id'] = chama_id
     return redirect('dashboard')
+
+
+# ─── Profile ─────────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def profile(request):
+    user = request.user
+
+    # Ensure notification prefs exist
+    prefs, _ = NotificationPreference.objects.get_or_create(user=user)
+
+    # All memberships with chama data
+    memberships = user.memberships.filter(active=True).select_related('chama').order_by('joined_at')
+
+    # Per-chama contribution totals
+    chama_stats = []
+    for m in memberships:
+        paid = m.chama.contributions.filter(
+            member=user, status='confirmed'
+        ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        last = m.chama.contributions.filter(
+            member=user, status='confirmed'
+        ).order_by('-date').first()
+        chama_stats.append({
+            'membership': m,
+            'chama': m.chama,
+            'total_paid': paid,
+            'last_contribution': last,
+        })
+
+    # Recent activity (last 10)
+    recent_activity = user.activities.select_related('chama').order_by('-created_at')[:10]
+
+    # Monthly contribution trend (last 6 months)
+    today = datetime.date.today()
+    monthly_trend = []
+    for i in range(5, -1, -1):
+        d = (today.replace(day=1) - datetime.timedelta(days=i * 30)).replace(day=1)
+        month_total = user.contributions.filter(
+            status='confirmed',
+            date__month=d.month,
+            date__year=d.year,
+        ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        monthly_trend.append({
+            'label': d.strftime('%b'),
+            'amount': float(month_total),
+        })
+
+    max_trend = max((m['amount'] for m in monthly_trend), default=1) or 1
+
+    context = {
+        'user': user,
+        'prefs': prefs,
+        'memberships': memberships,
+        'chama_stats': chama_stats,
+        'recent_activity': recent_activity,
+        'monthly_trend': monthly_trend,
+        'max_trend': max_trend,
+        'credit_score': user.credit_score(),
+        'credit_label': user.credit_score_label(),
+        'credit_color': user.credit_score_color(),
+        'credit_pct': int((user.credit_score() / 850) * 100),
+        'payment_rate': user.payment_rate(),
+        'total_contributed': user.total_contributed_all(),
+        'active_loan_balance': user.active_loan_balance(),
+        'outstanding_fines': user.outstanding_fines(),
+        'chama_count': memberships.count(),
+    }
+    return render(request, 'profile.html', context)
+
+
+@login_required(login_url='login')
+def profile_edit(request):
+    user = request.user
+    prefs, _ = NotificationPreference.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        # Personal details
+        user.first_name   = request.POST.get('first_name', '').strip()
+        user.last_name    = request.POST.get('last_name', '').strip()
+        user.email        = request.POST.get('email', '').strip()
+        user.phone        = request.POST.get('phone', '').strip() or None
+        user.national_id  = request.POST.get('national_id', '').strip() or None
+        user.kra_pin      = request.POST.get('kra_pin', '').strip() or None
+        user.occupation   = request.POST.get('occupation', '').strip() or None
+        user.location     = request.POST.get('location', '').strip() or None
+        user.bio          = request.POST.get('bio', '').strip() or None
+        user.mpesa_number = request.POST.get('mpesa_number', '').strip() or None
+        user.bank_name    = request.POST.get('bank_name', '').strip() or None
+
+        # Mask bank account — store only last 4 digits for display
+        bank_account = request.POST.get('bank_account', '').strip()
+        if bank_account:
+            user.bank_account = (
+                'x' * (len(bank_account) - 4) + bank_account[-4:]
+                if len(bank_account) > 4 else bank_account
+            )
+
+        # Avatar
+        if 'avatar' in request.FILES:
+            user.avatar = request.FILES['avatar']
+
+        user.save()
+
+        # Notification prefs
+        prefs.mpesa_alerts     = request.POST.get('mpesa_alerts') == 'on'
+        prefs.sms_reminders    = request.POST.get('sms_reminders') == 'on'
+        prefs.email_reports    = request.POST.get('email_reports') == 'on'
+        prefs.report_frequency = request.POST.get('report_frequency', 'weekly')
+        prefs.two_fa_enabled   = request.POST.get('two_fa_enabled') == 'on'
+        prefs.save()
+
+        messages.success(request, 'Profile updated successfully.')
+        return redirect('profile')
+
+    return render(request, 'profile_edit.html', {'user': user, 'prefs': prefs})
+
+
+@login_required(login_url='login')
+def profile_kyc(request):
+    """Admin can verify KYC; user can submit for review."""
+    user = request.user
+    if request.method == 'POST':
+        # User submits KYC docs (national_id + kra_pin must be filled)
+        if user.national_id and user.kra_pin:
+            user.kyc_status = 'pending'
+            user.save()
+            messages.success(request, 'KYC submitted for review.')
+        else:
+            messages.error(request, 'Please fill in National ID and KRA PIN in your profile first.')
+    return redirect('profile')
+
+
+# ─── Activity Logger ──────────────────────────────────────────────────────────
+
+def log_activity(user, event_type, chama=None, amount=None, note=None):
+    """
+    Record a timeline event for the user's activity feed.
+
+    Usage examples:
+        log_activity(request.user, 'contribution', chama=chama, amount=amount)
+        log_activity(loan.member, 'loan_approved', chama=chama, amount=loan.amount)
+    """
+    MemberActivity.objects.create(
+        user=user,
+        chama=chama,
+        event_type=event_type,
+        amount=amount,
+        note=note,
+    )
 
 
 # ─── Chama ────────────────────────────────────────────────────────────────────
