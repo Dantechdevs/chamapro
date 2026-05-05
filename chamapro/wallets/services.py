@@ -429,3 +429,103 @@ class AutoDeductService:
         for chama in Chama.objects.filter(is_active=True):
             summary[chama.name] = AutoDeductService.run_for_chama(chama)
         return summary
+
+class DepositService:
+    """
+    Handles all deposit lifecycle operations:
+      - record_mpesa()   → create Deposit from STK push
+      - record_manual()  → treasurer records cash / bank deposit
+      - confirm()        → treasurer confirms and credits wallet
+      - reject()         → treasurer rejects (no wallet credit)
+    """
+
+    @staticmethod
+    @transaction.atomic
+    def record_mpesa(wallet: Wallet, amount: Decimal, phone_number: str,
+                     reference: str = '') -> 'Deposit':
+        """
+        Create a PENDING M-Pesa deposit.
+        The STK push has already been initiated via mpesa.initiate_stk_push.
+        Call confirm() when the STK callback arrives.
+        """
+        from .models import Deposit
+        deposit = Deposit.objects.create(
+            wallet=wallet,
+            source=Deposit.Source.MPESA,
+            amount=amount,
+            status=Deposit.Status.PENDING,
+            phone_number=phone_number,
+            reference=reference,
+        )
+        logger.info("DEPOSIT_MPESA created: wallet=%s amount=%s ref=%s", wallet.pk, amount, reference)
+        return deposit
+
+    @staticmethod
+    @transaction.atomic
+    def record_manual(wallet: Wallet, amount: Decimal, source: str,
+                      reference: str, notes: str = '',
+                      proof_file=None, recorded_by=None) -> 'Deposit':
+        """
+        Treasurer records a cash or bank transfer deposit.
+        Starts as PENDING until confirm() is called.
+        """
+        from .models import Deposit
+        deposit = Deposit.objects.create(
+            wallet=wallet,
+            source=source,
+            amount=amount,
+            status=Deposit.Status.PENDING,
+            reference=reference,
+            notes=notes,
+            proof_file=proof_file,
+            confirmed_by=recorded_by,
+        )
+        logger.info("DEPOSIT_MANUAL created: wallet=%s source=%s amount=%s ref=%s",
+                    wallet.pk, source, amount, reference)
+        return deposit
+
+    @staticmethod
+    @transaction.atomic
+    def confirm(deposit, confirmed_by) -> 'Deposit':
+        """
+        Treasurer confirms a pending deposit → credits member wallet.
+        """
+        from .models import Deposit
+        if deposit.status not in (Deposit.Status.PENDING,):
+            raise ValueError("Only pending deposits can be confirmed.")
+
+        # Credit the wallet
+        WalletService.topup(
+            wallet=deposit.wallet,
+            amount=deposit.amount,
+            mpesa_reference=deposit.reference or _generate_ref(),
+            description=f"Deposit confirmed [{deposit.get_source_display()}] Ref: {deposit.reference}",
+        )
+
+        deposit.status = Deposit.Status.CREDITED
+        deposit.confirmed_by = confirmed_by
+        deposit.confirmed_at = timezone.now()
+        deposit.save()
+
+        logger.info("DEPOSIT_CONFIRMED: deposit=%s wallet=%s amount=%s by=%s",
+                    deposit.pk, deposit.wallet.pk, deposit.amount, confirmed_by)
+        return deposit
+
+    @staticmethod
+    @transaction.atomic
+    def reject(deposit, rejected_by, reason: str = '') -> 'Deposit':
+        """
+        Treasurer rejects a pending deposit — no wallet credit.
+        """
+        from .models import Deposit
+        if deposit.status != Deposit.Status.PENDING:
+            raise ValueError("Only pending deposits can be rejected.")
+
+        deposit.status = Deposit.Status.REJECTED
+        deposit.confirmed_by = rejected_by
+        deposit.confirmed_at = timezone.now()
+        deposit.notes = (deposit.notes + f"\nRejected: {reason}").strip()
+        deposit.save()
+
+        logger.info("DEPOSIT_REJECTED: deposit=%s reason=%s", deposit.pk, reason)
+        return deposit

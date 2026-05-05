@@ -190,3 +190,58 @@ class WithdrawalRequest(models.Model):
             f"Withdrawal KES {self.amount} – "
             f"{self.wallet.membership.user.get_full_name()} ({self.status})"
         )
+
+class Deposit(models.Model):
+    """
+    Formal deposit record for all sources: M-Pesa STK, cash, bank transfer.
+    Created by member (STK) or treasurer (manual/bank).
+    Status flows: pending → confirmed → credited (or rejected).
+    """
+
+    class Source(models.TextChoices):
+        MPESA  = 'mpesa',  'M-Pesa'
+        CASH   = 'cash',   'Cash'
+        BANK   = 'bank',   'Bank Transfer'
+
+    class Status(models.TextChoices):
+        PENDING   = 'pending',   'Pending'
+        CONFIRMED = 'confirmed', 'Confirmed'
+        CREDITED  = 'credited',  'Credited to Wallet'
+        REJECTED  = 'rejected',  'Rejected'
+
+    wallet       = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='deposits')
+    source       = models.CharField(max_length=10, choices=Source.choices, default=Source.MPESA)
+    amount       = models.DecimalField(max_digits=12, decimal_places=2)
+    status       = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDING)
+    reference    = models.CharField(max_length=100, blank=True, db_index=True,
+                                    help_text='M-Pesa receipt, bank ref, or manual note')
+    phone_number = models.CharField(max_length=15, blank=True,
+                                    help_text='For M-Pesa STK deposits')
+    proof_file   = models.FileField(upload_to='deposit_proofs/', blank=True, null=True,
+                                    help_text='Receipt image or bank slip (optional)')
+    notes        = models.TextField(blank=True)
+
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='confirmed_deposits',
+    )
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name        = 'Deposit'
+        verbose_name_plural = 'Deposits'
+        ordering            = ['-created_at']
+        indexes = [
+            models.Index(fields=['wallet', 'status']),
+            models.Index(fields=['reference']),
+        ]
+
+    def __str__(self):
+        return (
+            f"[{self.get_source_display()}] KES {self.amount} – "
+            f"{self.wallet.membership.user.get_full_name()} ({self.status})"
+        )

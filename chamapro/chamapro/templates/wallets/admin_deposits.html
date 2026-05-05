@@ -1,0 +1,278 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit Queue – {{ chama.name }} | ChamaPro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;--sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;--accent:#00c97a;--danger:#ef4444;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);}
+    *{box-sizing:border-box;}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;}
+    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;}.sidebar-logo .logo-text span{color:var(--accent);}
+    .nav-section{padding:10px 0 4px;}
+    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
+    .nav-item-wrap{padding:1px 10px;}
+    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
+    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-link-cp.active{background:var(--brand);color:#fff;}
+    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
+    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;}
+    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;}
+    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;}
+    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
+    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
+    .main-content{padding:24px;}
+    .page-title{font-size:20px;font-weight:800;margin:0;}
+    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+    .card-cp{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+    .card-header-cp{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+    .card-header-cp h6{font-size:14px;font-weight:700;margin:0;}
+    .filter-tabs{display:flex;gap:6px;flex-wrap:wrap;}
+    .filter-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;text-decoration:none;color:var(--muted);border:1.5px solid var(--border);background:#fff;transition:all .15s;}
+    .filter-tab.active,.filter-tab:hover{background:var(--brand);color:#fff;border-color:var(--brand);}
+    .dep-table{width:100%;border-collapse:collapse;}
+    .dep-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 16px;background:#f9fafb;border-bottom:1px solid var(--border);}
+    .dep-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+    .dep-table tr:last-child td{border-bottom:none;}
+    .member-avatar{width:32px;height:32px;border-radius:50%;background:var(--brand-xlight);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+    .badge-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    .badge-pending{background:#fef3c7;color:#92400e;}
+    .badge-credited{background:#d1fae5;color:#065f46;}
+    .badge-confirmed{background:#dbeafe;color:#1e40af;}
+    .badge-rejected{background:#fee2e2;color:#991b1b;}
+    .source-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+    .src-mpesa{background:#e6f5f0;color:var(--brand);}
+    .src-cash{background:#fef3c7;color:#d97706;}
+    .src-bank{background:#eff6ff;color:#3b82f6;}
+    .btn-confirm{background:var(--brand);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+    .btn-confirm:hover{background:var(--brand-light);}
+    .btn-reject-sm{background:#fee2e2;color:var(--danger);border:1px solid #fca5a5;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+    .btn-reject-sm:hover{background:var(--danger);color:#fff;}
+    .proof-link{font-size:11px;color:var(--brand);text-decoration:none;}
+    .proof-link:hover{text-decoration:underline;}
+    .empty-state{padding:40px;text-align:center;color:var(--muted);}
+    .empty-state i{font-size:36px;opacity:.3;margin-bottom:10px;display:block;}
+    .pag-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;}
+    .pag-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+    @media(max-width:768px){.sidebar{display:none;}.main-wrap{margin-left:0;}}
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">CP</div>
+    <div class="logo-text">Chama<span>Pro</span></div>
+  </div>
+  <nav style="flex:1;padding-bottom:8px;">
+    <div class="nav-section">
+      <div class="nav-item-wrap"><a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp"><i class="fas fa-wallet"></i> E-Wallet</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'deposit_page' chama.id %}" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'withdrawal_page' chama.id %}" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals</a></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Management</div>
+      <div class="nav-item-wrap"><a href="{% url 'chama_members' chama.id %}" class="nav-link-cp"><i class="fas fa-users"></i> Members</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'contributions' chama.id %}" class="nav-link-cp"><i class="fas fa-hand-holding-dollar"></i> Contributions</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp"><i class="fas fa-mobile-screen-button"></i> M-Pesa</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'loans' chama.id %}" class="nav-link-cp"><i class="fas fa-money-bill-wave"></i> Loans</a></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Admin Tools</div>
+      <div class="nav-item-wrap"><a href="{% url 'admin_deposits' chama.id %}" class="nav-link-cp active"><i class="fas fa-clipboard-check"></i> Deposit Queue</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'admin_withdrawals' chama.id %}" class="nav-link-cp"><i class="fas fa-list-check"></i> Withdrawal Queue</a></div>
+      <div class="nav-item-wrap"><a href="{% url 'reports' chama.id %}" class="nav-link-cp"><i class="fas fa-chart-bar"></i> Reports</a></div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="dropdown">
+      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="avatar">{{ request.user.first_name.0|upper }}{{ request.user.last_name.0|upper }}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="user-role">{{ membership.get_role_display }}</div>
+        </div>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <span style="font-weight:700;font-size:15px;">{{ chama.name }} — Deposit Queue</span>
+  <div class="topbar-right">
+    <div class="dropdown">
+      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">{{ request.user.first_name.0|upper }}{{ request.user.last_name.0|upper }}</div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="main-content">
+
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} alert-dismissible fade show mb-3" style="border-radius:10px;">
+      {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h1 class="page-title">Deposit Queue</h1>
+        <p class="page-sub">Review and confirm member deposits for {{ chama.name }}</p>
+      </div>
+      <a href="{% url 'deposit_page' chama.id %}" class="btn btn-sm" style="background:#f3f6f4;color:var(--text);border-radius:8px;font-weight:600;border:1.5px solid var(--border);">
+        <i class="fas fa-arrow-left me-1"></i> My Deposits
+      </a>
+    </div>
+
+    <div class="card-cp">
+      <div class="card-header-cp">
+        <h6><i class="fas fa-clipboard-check me-2"></i>All Deposits</h6>
+        <div class="filter-tabs">
+          <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+          <a href="?status=credited" class="filter-tab {% if status_filter == 'credited' %}active{% endif %}">Credited</a>
+          <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">Rejected</a>
+          <a href="?status=all" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">All</a>
+        </div>
+      </div>
+
+      {% if page_obj.object_list %}
+      <div style="overflow-x:auto;">
+        <table class="dep-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Source</th>
+              <th>Amount</th>
+              <th>Reference</th>
+              <th>Proof</th>
+              <th>Notes</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dep in page_obj %}
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="member-avatar">{{ dep.wallet.membership.user.first_name.0|upper }}{{ dep.wallet.membership.user.last_name.0|upper }}</div>
+                  <div>
+                    <div style="font-weight:600;font-size:13px;">{{ dep.wallet.membership.user.get_full_name }}</div>
+                    <div style="font-size:11px;color:var(--muted);">KES {{ dep.wallet.balance|floatformat:2|intcomma }} bal</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <div class="source-icon {% if dep.source == 'mpesa' %}src-mpesa{% elif dep.source == 'cash' %}src-cash{% else %}src-bank{% endif %}">
+                    <i class="fas {% if dep.source == 'mpesa' %}fa-mobile-screen-button{% elif dep.source == 'cash' %}fa-money-bill{% else %}fa-building-columns{% endif %}"></i>
+                  </div>
+                  {{ dep.get_source_display }}
+                </div>
+              </td>
+              <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--brand);">KES {{ dep.amount|floatformat:2|intcomma }}</td>
+              <td style="font-size:12px;color:var(--muted);">{{ dep.reference|default:"—" }}</td>
+              <td>
+                {% if dep.proof_file %}
+                <a href="{{ dep.proof_file.url }}" class="proof-link" target="_blank"><i class="fas fa-file me-1"></i>View</a>
+                {% else %}<span style="font-size:12px;color:var(--muted);">—</span>{% endif %}
+              </td>
+              <td style="font-size:12px;color:var(--muted);max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ dep.notes|default:"—" }}</td>
+              <td>
+                <span class="badge-status
+                  {% if dep.status == 'pending' %}badge-pending
+                  {% elif dep.status == 'credited' %}badge-credited
+                  {% elif dep.status == 'confirmed' %}badge-confirmed
+                  {% else %}badge-rejected{% endif %}">
+                  {{ dep.get_status_display }}
+                </span>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">{{ dep.created_at|date:"d M Y H:i" }}</td>
+              <td>
+                {% if dep.status == 'pending' %}
+                <div style="display:flex;gap:6px;">
+                  <form method="post" action="{% url 'confirm_deposit' chama.id dep.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-confirm" onclick="return confirm('Confirm and credit KES {{ dep.amount|floatformat:0 }} to {{ dep.wallet.membership.user.get_full_name }}?')">
+                      <i class="fas fa-check me-1"></i>Confirm
+                    </button>
+                  </form>
+                  <button class="btn-reject-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ dep.pk }}">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+
+                <!-- Reject Modal -->
+                <div class="modal fade" id="rejectModal{{ dep.pk }}" tabindex="-1">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="border-radius:14px;border:none;">
+                      <div class="modal-header"><h5 class="modal-title" style="font-weight:700;">Reject Deposit #{{ dep.pk }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                      <div class="modal-body">
+                        <p style="font-size:13px;color:var(--muted);">KES {{ dep.amount|floatformat:2|intcomma }} from {{ dep.wallet.membership.user.get_full_name }}. This will NOT credit the wallet.</p>
+                        <form method="post" action="{% url 'reject_deposit' chama.id dep.pk %}">
+                          {% csrf_token %}
+                          <label class="form-label-cp" style="font-size:13px;font-weight:600;">Reason for rejection</label>
+                          <textarea name="reason" class="form-control" rows="3" placeholder="e.g. Reference not found in bank statement..." required style="border-radius:8px;font-size:13px;"></textarea>
+                          <button type="submit" class="btn btn-danger w-100 mt-3" style="border-radius:8px;font-weight:700;">Reject Deposit</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% else %}
+                <span style="font-size:11px;color:var(--muted);">
+                  {% if dep.confirmed_by %}by {{ dep.confirmed_by.get_full_name }}{% endif %}
+                  {% if dep.confirmed_at %}<br>{{ dep.confirmed_at|date:"d M Y" }}{% endif %}
+                </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page_obj.has_other_pages %}
+      <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:center;">
+        {% if page_obj.has_previous %}<a href="?status={{ status_filter }}&page={{ page_obj.previous_page_number }}" class="pag-btn">«</a>{% endif %}
+        <span class="pag-btn active">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?status={{ status_filter }}&page={{ page_obj.next_page_number }}" class="pag-btn">»</a>{% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-clipboard-check"></i>
+        <p>No {% if status_filter != 'all' %}{{ status_filter }}{% endif %} deposits found.</p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -4,29 +4,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ chama.name }} – Reports</title>
+  <title>{{ chama.name }} – Reports | ChamaPro</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;--success:#10b981;--border:#e5e7eb;--muted:#6b7280;}
-    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:#111827;}
-    .page-shell{max-width:1100px;margin:0 auto;padding:24px 20px;}
-    .back-link{font-size:13px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-bottom:18px;}
-    .back-link:hover{color:var(--brand);}
-    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-    .page-title{font-size:22px;font-weight:800;margin:0;}
+    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;--sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;--accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;--success:#10b981;--warning:#f59e0b;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);}
+    *{box-sizing:border-box;}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
+    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
+    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+    .sidebar-logo .logo-text span{color:var(--accent);}
+    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
+    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
+    .chama-btn .chama-icon{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
+    .chama-btn .chama-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nav-section{padding:10px 0 4px;}
+    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
+    .nav-item-wrap{padding:1px 10px;}
+    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
+    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-link-cp.active{background:var(--brand);color:#fff;}
+    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
+    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
+    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
+    .sidebar-user:hover{background:rgba(255,255,255,.07);}
+    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+    .sidebar-user .user-info{flex:1;min-width:0;}
+    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
+    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
+    /* TOPBAR */
+    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
+    .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
+    .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+    .topbar-group-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
+    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
+    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
+    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+    /* MAIN */
+    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
+    .main-content{padding:24px;}
+    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
     .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+    /* CONTENT */
     .export-bar{display:flex;gap:8px;flex-wrap:wrap;}
     .btn-export{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;border:1.5px solid var(--border);background:#fff;color:#374151;text-decoration:none;transition:all .15s;cursor:pointer;}
     .btn-export:hover{border-color:var(--brand);color:var(--brand);}
     .btn-export.primary{background:var(--brand);color:#fff;border-color:var(--brand);}
-    .btn-export.primary:hover{background:var(--brand-light);}
-
-    /* Stat cards */
+    .btn-export.primary:hover{background:var(--brand-light);color:#fff;}
     .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-    .stat-card{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:3px solid var(--brand);}
+    .stat-card{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:var(--card-shadow);border-top:3px solid var(--brand);}
     .stat-card.warning{border-top-color:var(--warning);}
     .stat-card.danger{border-top-color:var(--danger);}
     .stat-card.info{border-top-color:var(--info);}
@@ -34,199 +70,311 @@
     .stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px;}
     .stat-value{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
     .stat-sub{font-size:11px;color:var(--muted);margin-top:3px;}
-
-    /* Cards */
-    .card-cp{background:#fff;border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden;margin-bottom:16px;}
+    .card-cp{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:16px;}
     .card-header-cp{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
     .card-header-cp h6{font-size:14px;font-weight:700;margin:0;}
-
-    /* Health progress */
     .health-row{margin-bottom:14px;}
     .health-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;}
     .health-bar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;}
     .health-fill{height:100%;border-radius:4px;transition:width .6s;}
-
-    /* Member table */
     table{width:100%;border-collapse:collapse;}
     thead th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:9px 14px;background:#f9fafb;border-bottom:1px solid var(--border);}
     tbody td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
     tbody tr:last-child td{border-bottom:none;}
     tbody tr:hover{background:#fafafa;}
-    .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+    .avatar-sm{width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
     .mono{font-family:'DM Mono',monospace;font-weight:600;}
     .arrears-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
     .arrears-ok{background:#d1fae5;color:#065f46;}
     .arrears-due{background:#fee2e2;color:#991b1b;}
-
+    @media(max-width:768px){.sidebar{width:0;overflow:hidden;}.topbar,.main-wrap{left:0;margin-left:0;}.sidebar.open{width:var(--sidebar-w);}}
     @media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
     @media(max-width:500px){.stat-grid{grid-template-columns:1fr 1fr;}}
   </style>
 </head>
 <body>
-<div class="page-shell">
-  <a href="{% url 'dashboard' %}" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a>
 
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Reports & Analytics</h1>
-      <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Generated {{ today|date:"F d, Y" }}</p>
-    </div>
-    <div class="export-bar">
-      <a href="{% url 'export_contributions_csv' chama.id %}" class="btn-export">
-        <i class="fas fa-file-csv"></i> Contributions CSV
-      </a>
-      <a href="{% url 'export_members_csv' chama.id %}" class="btn-export">
-        <i class="fas fa-users"></i> Members CSV
-      </a>
-      <a href="{% url 'export_loans_csv' chama.id %}" class="btn-export">
-        <i class="fas fa-money-bill-wave"></i> Loans CSV
-      </a>
-      <a href="{% url 'export_report_excel' chama.id %}" class="btn-export">
-        <i class="fas fa-file-excel" style="color:#217346;"></i> Excel
-      </a>
-      <a href="{% url 'export_report_pdf' chama.id %}" class="btn-export primary">
-        <i class="fas fa-file-pdf"></i> PDF Report
-      </a>
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="plan-banner">
+    <span>Free Plan</span>
+    <a href="#" class="upgrade-btn">UPGRADE</a>
+  </div>
+  <div class="sidebar-logo">
+    <div class="logo-icon">CP</div>
+    <div class="logo-text">Chama<span>Pro</span></div>
+  </div>
+  <div class="chama-selector-wrap">
+    <div class="dropdown">
+      <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="chama-icon"><i class="fas fa-users" style="font-size:11px;"></i></div>
+        <span class="chama-name">{{ chama.name }}</span>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
+        <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
+      </ul>
     </div>
   </div>
-
-  <!-- Stat cards -->
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Total Contributions</div>
-      <div class="stat-value">KES {{ total_contributions|floatformat:2 }}</div>
-      <div class="stat-sub">This month: KES {{ this_month_contributions|floatformat:2 }}</div>
+  <nav style="flex:1;padding-bottom:8px;">
+    <div class="nav-section">
+      <div class="nav-item-wrap">
+        <a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp"><i class="fas fa-wallet"></i> E-Wallet</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals <span class="badge-soon">SOON</span></a>
+      </div>
     </div>
-    <div class="stat-card warning">
-      <div class="stat-label">Outstanding Loans</div>
-      <div class="stat-value">KES {{ total_outstanding|floatformat:2 }}</div>
-      <div class="stat-sub">{{ active_loans }} active loan{{ active_loans|pluralize }}</div>
+    <div class="nav-section">
+      <div class="nav-section-label">Management</div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'chama_members' chama.id %}" class="nav-link-cp"><i class="fas fa-users"></i> Members</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'contributions' chama.id %}" class="nav-link-cp"><i class="fas fa-hand-holding-dollar"></i> Contributions</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp"><i class="fas fa-mobile-screen-button"></i> M-Pesa</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'loans' chama.id %}" class="nav-link-cp"><i class="fas fa-money-bill-wave"></i> Loans</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-triangle-exclamation"></i> Fines <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span></a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a>
+      </div>
     </div>
-    <div class="stat-card success">
-      <div class="stat-label">Interest Earned</div>
-      <div class="stat-value">KES {{ total_interest_earned|floatformat:2 }}</div>
-      <div class="stat-sub">From repaid loans</div>
+    <div class="nav-section">
+      <div class="nav-section-label">Reports</div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'reports' chama.id %}" class="nav-link-cp active"><i class="fas fa-chart-bar"></i> Reports</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp"><i class="fas fa-download"></i> Download Data</a>
+      </div>
+      <div class="nav-item-wrap">
+        <a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a>
+      </div>
     </div>
-    <div class="stat-card danger">
-      <div class="stat-label">Unpaid Penalties</div>
-      <div class="stat-value">KES {{ unpaid_penalties|floatformat:2 }}</div>
-      <div class="stat-sub">Total fines: KES {{ total_penalties|floatformat:2 }}</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="dropdown">
+      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="user-role">{{ membership.get_role_display|default:"Member" }}</div>
+        </div>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
     </div>
   </div>
+</aside>
 
-  <div class="row g-3 mb-3">
-    <!-- Contributions chart -->
-    <div class="col-lg-8">
-      <div class="card-cp">
-        <div class="card-header-cp">
-          <h6>Contributions Trend (Last 12 Months)</h6>
-        </div>
-        <div style="padding:16px;">
-          <canvas id="contribChart" height="200"></canvas>
-        </div>
+<!-- TOPBAR -->
+<header class="topbar">
+  <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+  <div class="topbar-group-badge">
+    <div class="dot"></div>
+    <span>{{ chama.name|truncatechars:25 }}</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+    <div class="dropdown">
+      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
+        {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+      </div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
+        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="main-content">
+
+    <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h1 class="page-title">Reports & Analytics</h1>
+        <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Generated {{ today|date:"F d, Y" }}</p>
+      </div>
+      <div class="export-bar">
+        <a href="{% url 'export_contributions_csv' chama.id %}" class="btn-export">
+          <i class="fas fa-file-csv"></i> Contributions CSV
+        </a>
+        <a href="{% url 'export_members_csv' chama.id %}" class="btn-export">
+          <i class="fas fa-users"></i> Members CSV
+        </a>
+        <a href="{% url 'export_loans_csv' chama.id %}" class="btn-export">
+          <i class="fas fa-money-bill-wave"></i> Loans CSV
+        </a>
+        <a href="{% url 'export_report_excel' chama.id %}" class="btn-export">
+          <i class="fas fa-file-excel" style="color:#217346;"></i> Excel
+        </a>
+        <a href="{% url 'export_report_pdf' chama.id %}" class="btn-export primary">
+          <i class="fas fa-file-pdf"></i> PDF Report
+        </a>
       </div>
     </div>
 
-    <!-- Financial health -->
-    <div class="col-lg-4">
-      <div class="card-cp" style="height:100%;">
-        <div class="card-header-cp"><h6>Financial Health</h6></div>
-        <div style="padding:18px;">
-          <div class="health-row">
-            <div class="health-label">
-              <span>Loan Repayment Rate</span>
-              <strong>{{ repayment_rate }}%</strong>
-            </div>
-            <div class="health-bar">
-              <div class="health-fill" style="width:{{ repayment_rate }}%;background:var(--success);"></div>
-            </div>
-          </div>
-          <div class="health-row">
-            <div class="health-label">
-              <span>Loans vs Contributions</span>
-              <strong>{{ contrib_to_loan_ratio }}%</strong>
-            </div>
-            <div class="health-bar">
-              <div class="health-fill" style="width:{{ contrib_to_loan_ratio }}%;background:var(--warning);"></div>
-            </div>
-          </div>
-          <div class="health-row">
-            <div class="health-label">
-              <span>Active Members</span>
-              <strong>{{ total_members }}</strong>
-            </div>
-            <div class="health-bar">
-              <div class="health-fill" style="width:100%;background:var(--brand);"></div>
-            </div>
-          </div>
+    <!-- Stat cards -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Contributions</div>
+        <div class="stat-value">KES {{ total_contributions|floatformat:2 }}</div>
+        <div class="stat-sub">This month: KES {{ this_month_contributions|floatformat:2 }}</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-label">Outstanding Loans</div>
+        <div class="stat-value">KES {{ total_outstanding|floatformat:2 }}</div>
+        <div class="stat-sub">{{ active_loans }} active loan{{ active_loans|pluralize }}</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-label">Interest Earned</div>
+        <div class="stat-value">KES {{ total_interest_earned|floatformat:2 }}</div>
+        <div class="stat-sub">From repaid loans</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-label">Unpaid Penalties</div>
+        <div class="stat-value">KES {{ unpaid_penalties|floatformat:2 }}</div>
+        <div class="stat-sub">Total fines: KES {{ total_penalties|floatformat:2 }}</div>
+      </div>
+    </div>
 
-          <!-- Loan donut -->
-          <div style="margin-top:16px;">
-            <canvas id="loanChart" height="160"></canvas>
+    <div class="row g-3 mb-3">
+      <!-- Contributions chart -->
+      <div class="col-lg-8">
+        <div class="card-cp">
+          <div class="card-header-cp">
+            <h6>Contributions Trend (Last 12 Months)</h6>
+          </div>
+          <div style="padding:16px;">
+            <canvas id="contribChart" height="200"></canvas>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Member contribution summary -->
-  <div class="card-cp">
-    <div class="card-header-cp">
-      <h6>Member Contribution Summary</h6>
-      <a href="{% url 'export_members_csv' chama.id %}" class="btn-export" style="font-size:12px;padding:5px 12px;">
-        <i class="fas fa-download"></i> Export
-      </a>
-    </div>
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Member</th>
-            <th>Role</th>
-            <th>Total Paid</th>
-            <th>Last Contribution</th>
-            <th>Arrears</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in member_summary %}
-          <tr>
-            <td style="color:var(--muted);font-size:12px;">{{ forloop.counter }}</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div class="avatar">{{ row.member.first_name.0|upper }}{{ row.member.last_name.0|upper }}</div>
-                <div>
-                  <div style="font-weight:600;">{{ row.member.get_full_name|default:row.member.username }}</div>
-                  <div style="font-size:11px;color:var(--muted);">{{ row.member.email }}</div>
-                </div>
+      <!-- Financial health -->
+      <div class="col-lg-4">
+        <div class="card-cp" style="height:100%;">
+          <div class="card-header-cp"><h6>Financial Health</h6></div>
+          <div style="padding:18px;">
+            <div class="health-row">
+              <div class="health-label">
+                <span>Loan Repayment Rate</span>
+                <strong>{{ repayment_rate }}%</strong>
               </div>
-            </td>
-            <td style="font-size:12px;color:var(--muted);">{{ row.role }}</td>
-            <td class="mono">KES {{ row.total_paid|floatformat:2 }}</td>
-            <td style="font-size:12px;color:var(--muted);">
-              {% if row.last_contribution %}{{ row.last_contribution|date:"M d, Y" }}{% else %}—{% endif %}
-            </td>
-            <td>
-              {% if row.arrears > 0 %}
-                <span class="arrears-badge arrears-due">KES {{ row.arrears|floatformat:2 }}</span>
-              {% else %}
-                <span class="arrears-badge arrears-ok">Current</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">No members yet.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+              <div class="health-bar">
+                <div class="health-fill" style="width:{{ repayment_rate }}%;background:var(--success);"></div>
+              </div>
+            </div>
+            <div class="health-row">
+              <div class="health-label">
+                <span>Loans vs Contributions</span>
+                <strong>{{ contrib_to_loan_ratio }}%</strong>
+              </div>
+              <div class="health-bar">
+                <div class="health-fill" style="width:{{ contrib_to_loan_ratio }}%;background:var(--warning);"></div>
+              </div>
+            </div>
+            <div class="health-row">
+              <div class="health-label">
+                <span>Active Members</span>
+                <strong>{{ total_members }}</strong>
+              </div>
+              <div class="health-bar">
+                <div class="health-fill" style="width:100%;background:var(--brand);"></div>
+              </div>
+            </div>
+            <div style="margin-top:16px;">
+              <canvas id="loanChart" height="160"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
+    <!-- Member contribution summary -->
+    <div class="card-cp">
+      <div class="card-header-cp">
+        <h6>Member Contribution Summary</h6>
+        <a href="{% url 'export_members_csv' chama.id %}" class="btn-export" style="font-size:12px;padding:5px 12px;">
+          <i class="fas fa-download"></i> Export
+        </a>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Member</th>
+              <th>Role</th>
+              <th>Total Paid</th>
+              <th>Last Contribution</th>
+              <th>Arrears</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in member_summary %}
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">{{ forloop.counter }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="avatar-sm">{{ row.member.first_name.0|upper }}{{ row.member.last_name.0|upper }}</div>
+                  <div>
+                    <div style="font-weight:600;">{{ row.member.get_full_name|default:row.member.username }}</div>
+                    <div style="font-size:11px;color:var(--muted);">{{ row.member.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">{{ row.role }}</td>
+              <td class="mono">KES {{ row.total_paid|floatformat:2 }}</td>
+              <td style="font-size:12px;color:var(--muted);">
+                {% if row.last_contribution %}{{ row.last_contribution|date:"M d, Y" }}{% else %}—{% endif %}
+              </td>
+              <td>
+                {% if row.arrears > 0 %}
+                  <span class="arrears-badge arrears-due">KES {{ row.arrears|floatformat:2 }}</span>
+                {% else %}
+                  <span class="arrears-badge arrears-ok">Current</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted);">No members yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Contributions trend chart
+  const st = document.getElementById('sidebarToggle');
+  if(st) st.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
+
   new Chart(document.getElementById('contribChart'), {
     type: 'bar',
     data: {
@@ -250,7 +398,6 @@
     }
   });
 
-  // Loan status donut
   new Chart(document.getElementById('loanChart'), {
     type: 'doughnut',
     data: {
@@ -273,6 +420,5 @@
     }
   });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

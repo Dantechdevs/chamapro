@@ -152,16 +152,17 @@
             <i class="fas fa-wallet"></i> E-Wallet <span class="badge-new">NEW</span>
           </a>
         </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'wallet_topup' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-arrow-down-to-bracket"></i> Deposits
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'wallet_withdraw' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-arrow-up-from-bracket"></i> Withdrawals
-          </a>
-        </div>
+       <div class="nav-item-wrap">
+  <a href="{% if active_chama %}{% url 'deposit_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
+    <i class="fas fa-arrow-down-to-bracket"></i> Deposits
+  </a>
+</div>
+
+<div class="nav-item-wrap">
+  <a href="{% if active_chama %}{% url 'withdrawal_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
+    <i class="fas fa-arrow-up-from-bracket"></i> Withdrawals
+  </a>
+</div>
       </div>
 
       <div class="nav-section">

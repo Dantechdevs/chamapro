@@ -14,8 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from chamapro.models import Chama, Membership
-from .models import Wallet, WalletTransaction, GroupWallet, WithdrawalRequest
-from .services import WalletService, InsufficientFundsError, WalletFrozenError
+from .models import Wallet, WalletTransaction, GroupWallet, WithdrawalRequest, Deposit
+from .services import WalletService, DepositService, InsufficientFundsError, WalletFrozenError
 from .mpesa import initiate_stk_push, process_stk_callback, process_b2c_result
 
 logger = logging.getLogger(__name__)
@@ -329,3 +329,203 @@ def b2c_result(request):
 def b2c_timeout(request):
     logger.warning("B2C timeout hit. Body: %s", request.body)
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
+
+# ─────────────────────────────────────────────
+# DEPOSITS — Member view
+# ─────────────────────────────────────────────
+
+@login_required
+def deposit_page(request, chama_id):
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+    wallet     = _get_or_create_wallet(membership)
+
+    deposits   = wallet.deposits.all().order_by('-created_at')
+    paginator  = Paginator(deposits, 15)
+    page_obj   = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'chama':       chama,
+        'membership':  membership,
+        'wallet':      wallet,
+        'page_obj':    page_obj,
+        'active_chama': chama,
+        'is_admin':    _is_admin_or_manager(membership),
+    }
+    return render(request, 'wallets/deposits.html', context)
+
+
+@login_required
+@require_POST
+def submit_manual_deposit(request, chama_id):
+    """Member submits a manual deposit record (cash/bank) for treasurer to confirm."""
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+    wallet     = _get_or_create_wallet(membership)
+
+    source    = request.POST.get('source', Deposit.Source.CASH)
+    reference = request.POST.get('reference', '').strip()
+    notes     = request.POST.get('notes', '').strip()
+    proof     = request.FILES.get('proof_file')
+    amount_raw = request.POST.get('amount', '').strip()
+
+    try:
+        amount = Decimal(amount_raw)
+        if amount <= 0:
+            raise ValueError("Amount must be positive.")
+    except (InvalidOperation, ValueError) as e:
+        messages.error(request, str(e))
+        return redirect('deposit_page', chama_id=chama_id)
+
+    DepositService.record_manual(
+        wallet=wallet,
+        amount=amount,
+        source=source,
+        reference=reference,
+        notes=notes,
+        proof_file=proof,
+        recorded_by=request.user,
+    )
+    messages.success(request, f"Deposit of KES {amount:,.2f} submitted. Awaiting treasurer confirmation.")
+    return redirect('deposit_page', chama_id=chama_id)
+
+
+# ─────────────────────────────────────────────
+# DEPOSITS — Admin queue
+# ─────────────────────────────────────────────
+
+@login_required
+def admin_deposits(request, chama_id):
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+
+    if not _is_admin_or_manager(membership):
+        messages.error(request, "Access denied.")
+        return redirect('deposit_page', chama_id=chama_id)
+
+    status_filter = request.GET.get('status', 'pending')
+    deposits = Deposit.objects.filter(
+        wallet__membership__chama=chama,
+    ).select_related('wallet__membership__user', 'confirmed_by')
+
+    if status_filter != 'all':
+        deposits = deposits.filter(status=status_filter)
+
+    deposits = deposits.order_by('-created_at')
+    paginator = Paginator(deposits, 20)
+    page_obj  = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'chama':         chama,
+        'membership':    membership,
+        'page_obj':      page_obj,
+        'status_filter': status_filter,
+        'active_chama':  chama,
+        'is_admin':      True,
+        'status_choices': Deposit.Status.choices,
+    }
+    return render(request, 'wallets/admin_deposits.html', context)
+
+
+@login_required
+@require_POST
+def confirm_deposit(request, chama_id, deposit_id):
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+
+    if not _is_admin_or_manager(membership):
+        messages.error(request, "Access denied.")
+        return redirect('admin_deposits', chama_id=chama_id)
+
+    deposit = get_object_or_404(Deposit, pk=deposit_id, wallet__membership__chama=chama)
+    try:
+        DepositService.confirm(deposit, request.user)
+        messages.success(request, f"Deposit #{deposit.pk} confirmed — KES {deposit.amount:,.2f} credited to {deposit.wallet.membership.user.get_full_name()}.")
+    except Exception as exc:
+        messages.error(request, f"Could not confirm: {exc}")
+
+    return redirect('admin_deposits', chama_id=chama_id)
+
+
+@login_required
+@require_POST
+def reject_deposit(request, chama_id, deposit_id):
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+
+    if not _is_admin_or_manager(membership):
+        messages.error(request, "Access denied.")
+        return redirect('admin_deposits', chama_id=chama_id)
+
+    deposit = get_object_or_404(Deposit, pk=deposit_id, wallet__membership__chama=chama)
+    reason  = request.POST.get('reason', '').strip()
+
+    try:
+        DepositService.reject(deposit, request.user, reason)
+        messages.success(request, f"Deposit #{deposit.pk} rejected.")
+    except Exception as exc:
+        messages.error(request, f"Could not reject: {exc}")
+
+    return redirect('admin_deposits', chama_id=chama_id)
+
+
+# ─────────────────────────────────────────────
+# WITHDRAWALS — Dedicated member page
+# ─────────────────────────────────────────────
+
+@login_required
+def withdrawal_page(request, chama_id):
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+    wallet     = _get_or_create_wallet(membership)
+
+    withdrawals = wallet.withdrawal_requests.all().order_by('-created_at')
+    paginator   = Paginator(withdrawals, 15)
+    page_obj    = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'chama':       chama,
+        'membership':  membership,
+        'wallet':      wallet,
+        'page_obj':    page_obj,
+        'active_chama': chama,
+        'is_admin':    _is_admin_or_manager(membership),
+    }
+    return render(request, 'wallets/withdrawals.html', context)
+
+
+# ─────────────────────────────────────────────
+# WITHDRAWALS — Admin queue
+# ─────────────────────────────────────────────
+
+@login_required
+def admin_withdrawals(request, chama_id):
+    chama      = get_object_or_404(Chama, pk=chama_id)
+    membership = _get_membership(request.user, chama)
+
+    if not _is_admin_or_manager(membership):
+        messages.error(request, "Access denied.")
+        return redirect('withdrawal_page', chama_id=chama_id)
+
+    status_filter = request.GET.get('status', 'pending')
+    withdrawals = WithdrawalRequest.objects.filter(
+        wallet__membership__chama=chama,
+    ).select_related('wallet__membership__user', 'approved_by')
+
+    if status_filter != 'all':
+        withdrawals = withdrawals.filter(status=status_filter)
+
+    withdrawals = withdrawals.order_by('-created_at')
+    paginator   = Paginator(withdrawals, 20)
+    page_obj    = paginator.get_page(request.GET.get('page', 1))
+
+    context = {
+        'chama':          chama,
+        'membership':     membership,
+        'page_obj':       page_obj,
+        'status_filter':  status_filter,
+        'active_chama':   chama,
+        'is_admin':       True,
+        'status_choices': WithdrawalRequest.Status.choices,
+    }
+    return render(request, 'wallets/admin_withdrawals.html', context)
