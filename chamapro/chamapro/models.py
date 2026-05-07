@@ -29,29 +29,23 @@ class User(AbstractUser):
     def __str__(self):
         return self.get_full_name() or self.username
 
-    # ── Credit score (0–850) ──────────────────────────────────────────────────
     def credit_score(self):
         score = 0
-
-        # 1. Contribution consistency (max 300 pts)
-        all_contribs   = self.contributions.count()
-        confirmed      = self.contributions.filter(status='confirmed').count()
+        all_contribs = self.contributions.count()
+        confirmed    = self.contributions.filter(status='confirmed').count()
         if all_contribs > 0:
             score += int((confirmed / all_contribs) * 300)
 
-        # 2. Loan repayment history (max 250 pts)
         total_loans  = self.loans.exclude(status__in=['pending', 'rejected']).count()
         repaid_loans = self.loans.filter(status='repaid').count()
         if total_loans > 0:
             score += int((repaid_loans / total_loans) * 250)
         else:
-            score += 150  # no loans = neutral
+            score += 150
 
-        # 3. Zero unpaid fines (max 200 pts)
         unpaid_fines = self.penalties.filter(status='unpaid').count()
         score += max(0, 200 - (unpaid_fines * 40))
 
-        # 4. Membership tenure (max 100 pts)
         earliest = self.memberships.filter(active=True).order_by('joined_at').first()
         if earliest:
             months = (timezone.now() - earliest.joined_at).days // 30
@@ -125,16 +119,16 @@ class Chama(models.Model):
 
 class Membership(models.Model):
     ROLE_CHOICES = [
-        ('admin', 'Admin'),
+        ('admin',     'Admin'),
         ('treasurer', 'Treasurer'),
         ('secretary', 'Secretary'),
-        ('member', 'Member'),
+        ('member',    'Member'),
     ]
-    chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='memberships')
-    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='memberships')
-    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='member')
+    chama     = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='memberships')
+    user      = models.ForeignKey('User', on_delete=models.CASCADE, related_name='memberships')
+    role      = models.CharField(max_length=30, choices=ROLE_CHOICES, default='member')
     joined_at = models.DateTimeField(default=timezone.now)
-    active = models.BooleanField(default=True)
+    active    = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('chama', 'user')
@@ -157,25 +151,25 @@ class Membership(models.Model):
 
 class Contribution(models.Model):
     PAYMENT_METHODS = [
-        ('mpesa', 'M-Pesa'),
-        ('bank', 'Bank Transfer'),
-        ('cash', 'Cash'),
+        ('mpesa',  'M-Pesa'),
+        ('bank',   'Bank Transfer'),
+        ('cash',   'Cash'),
         ('cheque', 'Cheque'),
     ]
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
+        ('pending',   'Pending'),
         ('confirmed', 'Confirmed'),
-        ('rejected', 'Rejected'),
+        ('rejected',  'Rejected'),
     ]
-    chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='contributions')
-    member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='contributions')
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    chama          = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='contributions')
+    member         = models.ForeignKey('User', on_delete=models.CASCADE, related_name='contributions')
+    amount         = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cash')
-    reference = models.CharField(max_length=255, blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
-    date = models.DateField(default=timezone.now)
-    recorded_by = models.ForeignKey(
+    reference      = models.CharField(max_length=255, blank=True, null=True)
+    notes          = models.TextField(blank=True, null=True)
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
+    date           = models.DateField(default=timezone.now)
+    recorded_by    = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='recorded_contributions'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -189,23 +183,23 @@ class Contribution(models.Model):
 
 class Penalty(models.Model):
     PENALTY_REASONS = [
-        ('late_contribution', 'Late Contribution'),
+        ('late_contribution',   'Late Contribution'),
         ('missed_contribution', 'Missed Contribution'),
-        ('meeting_absence', 'Meeting Absence'),
-        ('other', 'Other'),
+        ('meeting_absence',     'Meeting Absence'),
+        ('other',               'Other'),
     ]
     STATUS_CHOICES = [
         ('unpaid', 'Unpaid'),
-        ('paid', 'Paid'),
+        ('paid',   'Paid'),
         ('waived', 'Waived'),
     ]
-    chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='penalties')
-    member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='penalties')
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    reason = models.CharField(max_length=50, choices=PENALTY_REASONS, default='late_contribution')
+    chama       = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='penalties')
+    member      = models.ForeignKey('User', on_delete=models.CASCADE, related_name='penalties')
+    amount      = models.DecimalField(max_digits=12, decimal_places=2)
+    reason      = models.CharField(max_length=50, choices=PENALTY_REASONS, default='late_contribution')
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unpaid')
-    issued_by = models.ForeignKey(
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='unpaid')
+    issued_by   = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='issued_penalties'
     )
     issued_at = models.DateTimeField(auto_now_add=True)
@@ -219,34 +213,33 @@ class Penalty(models.Model):
 
 class Loan(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending Approval'),
+        ('pending',  'Pending Approval'),
         ('approved', 'Approved'),
-        ('active', 'Active'),
-        ('overdue', 'Overdue'),
-        ('repaid', 'Fully Repaid'),
+        ('active',   'Active'),
+        ('overdue',  'Overdue'),
+        ('repaid',   'Fully Repaid'),
         ('rejected', 'Rejected'),
     ]
     PURPOSE_CHOICES = [
-        ('business', 'Business Investment'),
+        ('business',  'Business Investment'),
         ('education', 'Education'),
-        ('medical', 'Medical Expenses'),
-        ('home', 'Home Improvement'),
+        ('medical',   'Medical Expenses'),
+        ('home',      'Home Improvement'),
         ('emergency', 'Emergency'),
-        ('other', 'Other'),
+        ('other',     'Other'),
     ]
-
-    chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='loans')
-    member = models.ForeignKey('User', on_delete=models.CASCADE, related_name='loans')
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    chama         = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='loans')
+    member        = models.ForeignKey('User', on_delete=models.CASCADE, related_name='loans')
+    amount        = models.DecimalField(max_digits=12, decimal_places=2)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=10)
-    term_months = models.PositiveSmallIntegerField(default=3)
-    purpose = models.CharField(max_length=50, choices=PURPOSE_CHOICES, default='other')
-    description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    applied_at = models.DateField(default=timezone.now)
-    approved_at = models.DateField(null=True, blank=True)
-    due_date = models.DateField(null=True, blank=True)
-    approved_by = models.ForeignKey(
+    term_months   = models.PositiveSmallIntegerField(default=3)
+    purpose       = models.CharField(max_length=50, choices=PURPOSE_CHOICES, default='other')
+    description   = models.TextField(blank=True, null=True)
+    status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    applied_at    = models.DateField(default=timezone.now)
+    approved_at   = models.DateField(null=True, blank=True)
+    due_date      = models.DateField(null=True, blank=True)
+    approved_by   = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_loans'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -283,25 +276,24 @@ class Loan(models.Model):
 
 class LoanRepayment(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
+        ('pending',   'Pending'),
         ('confirmed', 'Confirmed'),
-        ('rejected', 'Rejected'),
+        ('rejected',  'Rejected'),
     ]
     PAYMENT_METHODS = [
-        ('mpesa', 'M-Pesa'),
-        ('bank', 'Bank Transfer'),
-        ('cash', 'Cash'),
+        ('mpesa',  'M-Pesa'),
+        ('bank',   'Bank Transfer'),
+        ('cash',   'Cash'),
         ('cheque', 'Cheque'),
     ]
-
-    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    loan           = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name='repayments')
+    amount         = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='cash')
-    reference = models.CharField(max_length=255, blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
-    date = models.DateField(default=timezone.now)
-    recorded_by = models.ForeignKey(
+    reference      = models.CharField(max_length=255, blank=True, null=True)
+    notes          = models.TextField(blank=True, null=True)
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
+    date           = models.DateField(default=timezone.now)
+    recorded_by    = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='recorded_repayments'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -315,18 +307,18 @@ class LoanRepayment(models.Model):
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = [
-        ('contribution', 'Contribution'),
-        ('expense', 'Expense'),
+        ('contribution',   'Contribution'),
+        ('expense',        'Expense'),
         ('loan_repayment', 'Loan Repayment'),
-        ('withdrawal', 'Withdrawal'),
+        ('withdrawal',     'Withdrawal'),
     ]
-    chama = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='transactions')
-    member = models.ForeignKey('User', null=True, blank=True, on_delete=models.SET_NULL, related_name='transactions')
-    type = models.CharField(max_length=50, choices=TRANSACTION_TYPES)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    reference = models.CharField(max_length=255, null=True, blank=True)
-    notes = models.TextField(blank=True, null=True)
-    meta = models.JSONField(default=dict, blank=True)
+    chama      = models.ForeignKey(Chama, on_delete=models.CASCADE, related_name='transactions')
+    member     = models.ForeignKey('User', null=True, blank=True, on_delete=models.SET_NULL, related_name='transactions')
+    type       = models.CharField(max_length=50, choices=TRANSACTION_TYPES)
+    amount     = models.DecimalField(max_digits=12, decimal_places=2)
+    reference  = models.CharField(max_length=255, null=True, blank=True)
+    notes      = models.TextField(blank=True, null=True)
+    meta       = models.JSONField(default=dict, blank=True)
     created_by = models.ForeignKey('User', null=True, blank=True, related_name='created_transactions', on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -338,33 +330,28 @@ class Transaction(models.Model):
 
 class MpesaTransaction(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('success', 'Success'),
-        ('failed', 'Failed'),
+        ('pending',   'Pending'),
+        ('success',   'Success'),
+        ('failed',    'Failed'),
         ('cancelled', 'Cancelled'),
     ]
     TYPE_CHOICES = [
-        ('contribution', 'Contribution'),
+        ('contribution',   'Contribution'),
         ('loan_repayment', 'Loan Repayment'),
     ]
-
     chama               = models.ForeignKey('Chama', on_delete=models.CASCADE, related_name='mpesa_transactions')
     member              = models.ForeignKey('User', on_delete=models.CASCADE, related_name='mpesa_transactions')
     phone               = models.CharField(max_length=20)
     amount              = models.DecimalField(max_digits=12, decimal_places=2)
     transaction_type    = models.CharField(max_length=20, choices=TYPE_CHOICES, default='contribution')
-
     checkout_request_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     merchant_request_id = models.CharField(max_length=100, null=True, blank=True)
     mpesa_receipt       = models.CharField(max_length=50, null=True, blank=True)
-
     status              = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     result_code         = models.CharField(max_length=10, null=True, blank=True)
     result_desc         = models.TextField(null=True, blank=True)
-
     contribution        = models.OneToOneField('Contribution', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
     loan_repayment      = models.OneToOneField('LoanRepayment', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
-
     created_at          = models.DateTimeField(auto_now_add=True)
     updated_at          = models.DateTimeField(auto_now=True)
 
@@ -419,3 +406,79 @@ class MemberActivity(models.Model):
 
     def __str__(self):
         return f'{self.user} – {self.event_type}'
+
+
+# ── Subscription ──────────────────────────────────────────────────────────────
+
+class SubscriptionPayment(models.Model):
+    """Tracks each M-Pesa STK Push attempt for a plan upgrade."""
+
+    PLAN_CHOICES = [
+        ('premium', 'Premium'),
+        ('pro',     'Pro'),
+    ]
+    BILLING_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('annual',  'Annual'),
+    ]
+    STATUS_CHOICES = [
+        ('pending',   'Pending'),
+        ('completed', 'Completed'),
+        ('failed',    'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    user                = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_payments')
+    plan                = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    billing_cycle       = models.CharField(max_length=10, choices=BILLING_CHOICES, default='monthly')
+    amount              = models.PositiveIntegerField()
+    phone               = models.CharField(max_length=15)
+    checkout_request_id = models.CharField(max_length=100, unique=True)
+    mpesa_receipt       = models.CharField(max_length=50, blank=True)
+    status              = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    failure_reason      = models.TextField(blank=True)
+    created_at          = models.DateTimeField(auto_now_add=True)
+    updated_at          = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} — {self.plan} ({self.status})"
+
+
+class UserSubscription(models.Model):
+    """Tracks the active subscription for each user."""
+
+    PLAN_CHOICES = [
+        ('free',    'Free'),
+        ('premium', 'Premium'),
+        ('pro',     'Pro'),
+    ]
+    BILLING_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('annual',  'Annual'),
+    ]
+
+    user          = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
+    plan          = models.CharField(max_length=20, choices=PLAN_CHOICES, default='free')
+    billing_cycle = models.CharField(max_length=10, choices=BILLING_CHOICES, default='monthly')
+    amount_paid   = models.PositiveIntegerField(default=0)
+    is_active     = models.BooleanField(default=True)
+    expires_at    = models.DateTimeField(null=True, blank=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} — {self.plan}"
+
+    @property
+    def is_premium_or_above(self):
+        return self.plan in ('premium', 'pro') and self.is_active
+
+    @property
+    def is_pro(self):
+        return self.plan == 'pro' and self.is_active

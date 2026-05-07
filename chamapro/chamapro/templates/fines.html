@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Fines — {{ chama.name }}{% endblock %}
+
+{% block content %}
+<div class="fines-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">Fines &amp; Penalties</h1>
+      <p class="page-sub">{{ chama.name }}</p>
+    </div>
+    <div class="page-header-right">
+      <a href="{% url 'fine_report' chama.id %}" class="btn btn-outline">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Member Report
+      </a>
+      {% if can_manage %}
+      <button class="btn btn-primary" onclick="openModal('addFineModal')">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Issue Fine
+      </button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if messages %}
+  <div class="messages-wrap">
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Stats cards -->
+  <div class="stats-grid">
+    <div class="stat-card stat-card--red">
+      <div class="stat-icon">⚠️</div>
+      <div class="stat-body">
+        <div class="stat-label">Total Unpaid</div>
+        <div class="stat-value">KES {{ total_unpaid|floatformat:2|intcomma }}</div>
+        <div class="stat-sub">{{ count_unpaid }} outstanding fine{{ count_unpaid|pluralize }}</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--green">
+      <div class="stat-icon">✅</div>
+      <div class="stat-body">
+        <div class="stat-label">Total Paid</div>
+        <div class="stat-value">KES {{ total_paid|floatformat:2|intcomma }}</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--amber">
+      <div class="stat-icon">🤝</div>
+      <div class="stat-body">
+        <div class="stat-label">Total Waived</div>
+        <div class="stat-value">KES {{ total_waived|floatformat:2|intcomma }}</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--blue">
+      <div class="stat-icon">📋</div>
+      <div class="stat-body">
+        <div class="stat-label">All Fines</div>
+        <div class="stat-value">KES {{ total_fines|floatformat:2|intcomma }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <form method="get" class="filters-form">
+      <select name="status" onchange="this.form.submit()" class="filter-select">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+        <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="reason" onchange="this.form.submit()" class="filter-select">
+        <option value="">All Reasons</option>
+        {% for val, label in penalty_reasons %}
+        <option value="{{ val }}" {% if reason_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <select name="member" onchange="this.form.submit()" class="filter-select">
+        <option value="">All Members</option>
+        {% for m in members %}
+        <option value="{{ m.user.id }}" {% if member_filter == m.user.id|stringformat:"s" %}selected{% endif %}>
+          {{ m.user.get_full_name|default:m.user.username }}
+        </option>
+        {% endfor %}
+      </select>
+      {% if status_filter or reason_filter or member_filter %}
+      <a href="{% url 'fines' chama.id %}" class="btn btn-ghost btn-sm">Clear filters</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Fines table -->
+  <div class="table-card">
+    {% if penalties %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Member</th>
+          <th>Reason</th>
+          <th>Amount</th>
+          <th>Issued By</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in penalties %}
+        <tr>
+          <td class="text-muted">{{ forloop.counter }}</td>
+          <td>
+            <div class="member-cell">
+              <div class="avatar-sm">{{ p.member.get_full_name|first|default:p.member.username|first }}</div>
+              <div>
+                <div class="member-name">{{ p.member.get_full_name|default:p.member.username }}</div>
+                <div class="text-muted text-xs">{{ p.member.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="reason-badge reason-{{ p.reason }}">{{ p.get_reason_display }}</span>
+            {% if p.description %}
+            <div class="text-muted text-xs mt-1">{{ p.description|truncatechars:40 }}</div>
+            {% endif %}
+          </td>
+          <td class="font-semibold">KES {{ p.amount|floatformat:2|intcomma }}</td>
+          <td class="text-muted">{{ p.issued_by.get_full_name|default:p.issued_by.username|default:"System" }}</td>
+          <td class="text-muted">{{ p.issued_at|date:"M d, Y" }}</td>
+          <td>
+            <span class="status-badge status-{{ p.status }}">
+              {% if p.status == 'unpaid' %}⚠️{% elif p.status == 'paid' %}✅{% else %}🤝{% endif %}
+              {{ p.get_status_display }}
+            </span>
+          </td>
+          <td>
+            <div class="action-btns">
+              {% if can_manage %}
+                {% if p.status == 'unpaid' %}
+                <!-- Mark Paid -->
+                <form method="post" action="{% url 'fine_update_status' chama.id p.id %}" style="display:inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="status" value="paid">
+                  <button type="submit" class="btn-icon btn-icon--green" title="Mark Paid">✓</button>
+                </form>
+                <!-- Waive -->
+                <form method="post" action="{% url 'fine_update_status' chama.id p.id %}" style="display:inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="status" value="waived">
+                  <button type="submit" class="btn-icon btn-icon--amber" title="Waive Fine"
+                    onclick="return confirm('Waive this fine for {{ p.member.get_full_name }}?')">🤝</button>
+                </form>
+                <!-- Pay via M-Pesa -->
+                <button class="btn-icon btn-icon--blue" title="Pay via M-Pesa"
+                  onclick="openMpesaModal({{ p.id }}, '{{ p.member.mpesa_number|default:'' }}', {{ p.amount }})">📱</button>
+                {% endif %}
+                <!-- Delete (admin only) -->
+                {% if my_membership.role == 'admin' %}
+                <form method="post" action="{% url 'fine_delete' chama.id p.id %}" style="display:inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn-icon btn-icon--red" title="Delete"
+                    onclick="return confirm('Delete this fine permanently?')">🗑</button>
+                </form>
+                {% endif %}
+              {% else %}
+                {% if p.status == 'unpaid' and request.user == p.member %}
+                <button class="btn btn-sm btn-primary"
+                  onclick="openMpesaModal({{ p.id }}, '{{ request.user.mpesa_number|default:'' }}', {{ p.amount }})">
+                  Pay via M-Pesa
+                </button>
+                {% endif %}
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🎉</div>
+      <div class="empty-title">No fines found</div>
+      <div class="empty-sub">
+        {% if status_filter or reason_filter or member_filter %}
+          No fines match your current filters.
+        {% else %}
+          All members are in good standing!
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- ── Add Fine Modal ─────────────────────────────────────────────────────── -->
+{% if can_manage %}
+<div id="addFineModal" class="modal-backdrop" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Issue Fine</h3>
+      <button class="modal-close" onclick="closeModal('addFineModal')">✕</button>
+    </div>
+    <form method="post" action="{% url 'fine_add' chama.id %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Member *</label>
+          <select name="member_id" required class="form-control">
+            <option value="">Select member...</option>
+            {% for m in members %}
+            <option value="{{ m.user.id }}">{{ m.user.get_full_name|default:m.user.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount (KES) *</label>
+            <input type="number" name="amount" min="1" step="0.01" required class="form-control" placeholder="e.g. 500">
+          </div>
+          <div class="form-group">
+            <label>Reason *</label>
+            <select name="reason" class="form-control">
+              {% for val, label in penalty_reasons %}
+              <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes (optional)</label>
+          <textarea name="description" rows="2" class="form-control" placeholder="Additional details..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('addFineModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Issue Fine</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── M-Pesa Payment Modal ────────────────────────────────────────────────── -->
+<div id="mpesaModal" class="modal-backdrop" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Pay Fine via M-Pesa</h3>
+      <button class="modal-close" onclick="closeModal('mpesaModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="mpesaForm">
+        <p class="text-muted mb-3">Amount: <strong id="mpesaAmount"></strong></p>
+        <div class="form-group">
+          <label>M-Pesa Phone Number</label>
+          <input type="tel" id="mpesaPhone" class="form-control" placeholder="e.g. 0712345678">
+        </div>
+      </div>
+      <div id="mpesaStatus" style="display:none" class="mpesa-status">
+        <div class="spinner"></div>
+        <p id="mpesaStatusMsg">Sending STK Push...</p>
+      </div>
+      <div id="mpesaResult" style="display:none"></div>
+    </div>
+    <div class="modal-footer" id="mpesaFooter">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('mpesaModal')">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="submitMpesa()">Send STK Push</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.fines-page { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+.page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; gap:1rem; flex-wrap:wrap; }
+.page-title  { font-size:1.5rem; font-weight:700; color:#111; margin:0 0 .2rem; }
+.page-sub    { color:#6b7280; font-size:.9rem; margin:0; }
+.page-header-right { display:flex; gap:.75rem; align-items:center; flex-wrap:wrap; }
+
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+.stat-card  { background:#fff; border-radius:12px; padding:1.25rem; display:flex; gap:1rem; align-items:center;
+              border:1px solid #e5e7eb; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+.stat-card--red   { border-left:4px solid #ef4444; }
+.stat-card--green { border-left:4px solid #10b981; }
+.stat-card--amber { border-left:4px solid #f59e0b; }
+.stat-card--blue  { border-left:4px solid #3b82f6; }
+.stat-icon   { font-size:1.8rem; }
+.stat-label  { font-size:.75rem; color:#6b7280; text-transform:uppercase; letter-spacing:.05em; }
+.stat-value  { font-size:1.25rem; font-weight:700; color:#111; }
+.stat-sub    { font-size:.75rem; color:#9ca3af; }
+
+.filters-bar  { margin-bottom:1rem; }
+.filters-form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+.filter-select { padding:.45rem .75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:.875rem; background:#fff;
+                 color:#374151; cursor:pointer; }
+.filter-select:focus { outline:none; border-color:#0d6e4f; }
+
+.table-card   { background:#fff; border-radius:12px; border:1px solid #e5e7eb; overflow:hidden; }
+.data-table   { width:100%; border-collapse:collapse; font-size:.875rem; }
+.data-table th { padding:.75rem 1rem; text-align:left; font-size:.75rem; text-transform:uppercase;
+                 letter-spacing:.05em; color:#6b7280; background:#f9fafb; border-bottom:1px solid #e5e7eb; }
+.data-table td { padding:.875rem 1rem; border-bottom:1px solid #f3f4f6; vertical-align:middle; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:hover td { background:#fafafa; }
+
+.member-cell { display:flex; gap:.75rem; align-items:center; }
+.avatar-sm   { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#0d6e4f,#10b981);
+               color:#fff; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700;
+               flex-shrink:0; }
+.member-name { font-weight:500; color:#111; }
+.text-muted  { color:#6b7280; }
+.text-xs     { font-size:.75rem; }
+.mt-1        { margin-top:.25rem; }
+.font-semibold { font-weight:600; }
+
+.reason-badge { display:inline-flex; align-items:center; padding:.2rem .6rem; border-radius:20px; font-size:.75rem; font-weight:500; }
+.reason-late_contribution  { background:#fef3c7; color:#92400e; }
+.reason-missed_contribution{ background:#fee2e2; color:#991b1b; }
+.reason-meeting_absence    { background:#ede9fe; color:#5b21b6; }
+.reason-other              { background:#f3f4f6; color:#374151; }
+.reason-late_loan_repayment{ background:#ffedd5; color:#9a3412; }
+
+.status-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.25rem .7rem; border-radius:20px; font-size:.75rem; font-weight:600; }
+.status-unpaid { background:#fee2e2; color:#991b1b; }
+.status-paid   { background:#d1fae5; color:#065f46; }
+.status-waived { background:#fef3c7; color:#92400e; }
+
+.action-btns { display:flex; gap:.35rem; align-items:center; flex-wrap:wrap; }
+.btn-icon    { width:30px; height:30px; border-radius:6px; border:none; cursor:pointer; font-size:.85rem;
+               display:inline-flex; align-items:center; justify-content:center; transition:.15s; }
+.btn-icon--green { background:#d1fae5; color:#065f46; } .btn-icon--green:hover { background:#a7f3d0; }
+.btn-icon--amber { background:#fef3c7; color:#92400e; } .btn-icon--amber:hover { background:#fde68a; }
+.btn-icon--blue  { background:#dbeafe; color:#1e40af; } .btn-icon--blue:hover  { background:#bfdbfe; }
+.btn-icon--red   { background:#fee2e2; color:#991b1b; } .btn-icon--red:hover   { background:#fecaca; }
+
+.empty-state  { text-align:center; padding:3rem 1rem; }
+.empty-icon   { font-size:3rem; margin-bottom:.75rem; }
+.empty-title  { font-size:1.1rem; font-weight:600; color:#374151; margin-bottom:.4rem; }
+.empty-sub    { color:#9ca3af; }
+
+/* Buttons */
+.btn { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem 1rem; border-radius:8px; font-size:.875rem;
+       font-weight:500; cursor:pointer; border:none; text-decoration:none; transition:.15s; }
+.btn-primary { background:#0d6e4f; color:#fff; } .btn-primary:hover { background:#0a5c41; }
+.btn-outline  { background:#fff; color:#374151; border:1px solid #e5e7eb; } .btn-outline:hover { background:#f9fafb; }
+.btn-ghost    { background:transparent; color:#6b7280; } .btn-ghost:hover { background:#f3f4f6; }
+.btn-sm       { padding:.35rem .7rem; font-size:.8rem; }
+
+/* Modal */
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; display:flex; align-items:center; justify-content:center; padding:1rem; }
+.modal       { background:#fff; border-radius:16px; width:100%; max-width:500px; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+.modal-header{ padding:1.25rem 1.5rem; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; }
+.modal-header h3 { margin:0; font-size:1.1rem; font-weight:700; }
+.modal-close { background:none; border:none; font-size:1.1rem; cursor:pointer; color:#6b7280; padding:.25rem; border-radius:4px; }
+.modal-close:hover { background:#f3f4f6; }
+.modal-body  { padding:1.5rem; }
+.modal-footer{ padding:1rem 1.5rem; border-top:1px solid #e5e7eb; display:flex; justify-content:flex-end; gap:.75rem; }
+.form-group  { margin-bottom:1rem; }
+.form-row    { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+.form-group label { display:block; font-size:.875rem; font-weight:500; color:#374151; margin-bottom:.35rem; }
+.form-control { width:100%; padding:.55rem .75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:.875rem;
+                color:#111; background:#fff; box-sizing:border-box; }
+.form-control:focus { outline:none; border-color:#0d6e4f; box-shadow:0 0 0 3px rgba(13,110,79,.1); }
+textarea.form-control { resize:vertical; }
+
+.messages-wrap { margin-bottom:1rem; }
+.alert { padding:.75rem 1rem; border-radius:8px; margin-bottom:.5rem; font-size:.875rem; }
+.alert-success { background:#d1fae5; color:#065f46; }
+.alert-error   { background:#fee2e2; color:#991b1b; }
+.alert-warning { background:#fef3c7; color:#92400e; }
+
+.mpesa-status { text-align:center; padding:1rem 0; }
+.spinner { width:32px; height:32px; border:3px solid #e5e7eb; border-top-color:#0d6e4f; border-radius:50%;
+           animation:spin .8s linear infinite; margin:0 auto 1rem; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.mb-3 { margin-bottom:.75rem; }
+</style>
+
+<script>
+function openModal(id) {
+  document.getElementById(id).style.display = 'flex';
+}
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+  // Reset M-Pesa modal state
+  if (id === 'mpesaModal') {
+    document.getElementById('mpesaForm').style.display = 'block';
+    document.getElementById('mpesaStatus').style.display = 'none';
+    document.getElementById('mpesaResult').style.display = 'none';
+    document.getElementById('mpesaFooter').style.display = 'flex';
+  }
+}
+
+let currentPenaltyId = null;
+
+function openMpesaModal(penaltyId, phone, amount) {
+  currentPenaltyId = penaltyId;
+  document.getElementById('mpesaPhone').value = phone || '';
+  document.getElementById('mpesaAmount').textContent = 'KES ' + parseFloat(amount).toLocaleString('en-KE', {minimumFractionDigits:2});
+  document.getElementById('mpesaForm').style.display = 'block';
+  document.getElementById('mpesaStatus').style.display = 'none';
+  document.getElementById('mpesaResult').style.display = 'none';
+  document.getElementById('mpesaFooter').style.display = 'flex';
+  openModal('mpesaModal');
+}
+
+function submitMpesa() {
+  const phone = document.getElementById('mpesaPhone').value.trim();
+  if (!phone) { alert('Please enter a phone number.'); return; }
+
+  document.getElementById('mpesaForm').style.display = 'none';
+  document.getElementById('mpesaStatus').style.display = 'block';
+  document.getElementById('mpesaFooter').style.display = 'none';
+  document.getElementById('mpesaStatusMsg').textContent = 'Sending STK Push...';
+
+  fetch(`{% url 'fines' chama.id %}`.replace('/fines/', `/fines/${currentPenaltyId}/pay-mpesa/`), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}',
+    },
+    body: JSON.stringify({ phone }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('mpesaStatus').style.display = 'none';
+    const resultEl = document.getElementById('mpesaResult');
+    resultEl.style.display = 'block';
+    if (data.success) {
+      resultEl.innerHTML = `<div class="alert alert-success">✅ ${data.message}<br><small>Check your phone and enter your M-Pesa PIN.</small></div>`;
+      // Poll for result
+      if (data.checkout_request_id) {
+        setTimeout(() => pollFinePayment(data.checkout_request_id), 5000);
+      }
+    } else {
+      resultEl.innerHTML = `<div class="alert alert-error">❌ ${data.error}</div>`;
+      document.getElementById('mpesaFooter').style.display = 'flex';
+    }
+  })
+  .catch(() => {
+    document.getElementById('mpesaStatus').style.display = 'none';
+    document.getElementById('mpesaResult').innerHTML = '<div class="alert alert-error">❌ Network error. Please try again.</div>';
+    document.getElementById('mpesaResult').style.display = 'block';
+    document.getElementById('mpesaFooter').style.display = 'flex';
+  });
+}
+
+function pollFinePayment(checkoutId, attempts = 0) {
+  if (attempts > 10) return;
+  const statusEl = document.getElementById('mpesaResult');
+  fetch('{% url "mpesa_stk_query" chama.id %}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+    body: JSON.stringify({ checkout_request_id: checkoutId }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'success') {
+      statusEl.innerHTML = '<div class="alert alert-success">✅ Payment confirmed! Refreshing...</div>';
+      setTimeout(() => location.reload(), 2000);
+    } else if (data.status === 'pending') {
+      setTimeout(() => pollFinePayment(checkoutId, attempts + 1), 5000);
+    } else {
+      statusEl.innerHTML = `<div class="alert alert-error">❌ Payment ${data.status}. ${data.error || ''}</div>`;
+    }
+  });
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id);
+  });
+});
+</script>
+{% endblock %}

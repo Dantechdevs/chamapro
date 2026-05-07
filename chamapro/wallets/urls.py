@@ -37,4 +37,5 @@ urlpatterns = [
     path('mpesa/stk-callback/',  views.stk_callback,  name='stk_callback'),
     path('mpesa/b2c-result/',    views.b2c_result,     name='b2c_result'),
     path('mpesa/b2c-timeout/',   views.b2c_timeout,    name='b2c_timeout'),
+
 ]

@@ -144,14 +144,9 @@ def switch_chama(request, chama_id):
 @login_required(login_url='login')
 def profile(request):
     user = request.user
-
-    # Ensure notification prefs exist
     prefs, _ = NotificationPreference.objects.get_or_create(user=user)
-
-    # All memberships with chama data
     memberships = user.memberships.filter(active=True).select_related('chama').order_by('joined_at')
 
-    # Per-chama contribution totals
     chama_stats = []
     for m in memberships:
         paid = m.chama.contributions.filter(
@@ -167,10 +162,8 @@ def profile(request):
             'last_contribution': last,
         })
 
-    # Recent activity (last 10)
     recent_activity = user.activities.select_related('chama').order_by('-created_at')[:10]
 
-    # Monthly contribution trend (last 6 months)
     today = datetime.date.today()
     monthly_trend = []
     for i in range(5, -1, -1):
@@ -180,10 +173,7 @@ def profile(request):
             date__month=d.month,
             date__year=d.year,
         ).aggregate(t=Sum('amount'))['t'] or Decimal('0')
-        monthly_trend.append({
-            'label': d.strftime('%b'),
-            'amount': float(month_total),
-        })
+        monthly_trend.append({'label': d.strftime('%b'), 'amount': float(month_total)})
 
     max_trend = max((m['amount'] for m in monthly_trend), default=1) or 1
 
@@ -214,7 +204,6 @@ def profile_edit(request):
     prefs, _ = NotificationPreference.objects.get_or_create(user=user)
 
     if request.method == 'POST':
-        # Personal details
         user.first_name   = request.POST.get('first_name', '').strip()
         user.last_name    = request.POST.get('last_name', '').strip()
         user.email        = request.POST.get('email', '').strip()
@@ -227,7 +216,6 @@ def profile_edit(request):
         user.mpesa_number = request.POST.get('mpesa_number', '').strip() or None
         user.bank_name    = request.POST.get('bank_name', '').strip() or None
 
-        # Mask bank account — store only last 4 digits for display
         bank_account = request.POST.get('bank_account', '').strip()
         if bank_account:
             user.bank_account = (
@@ -235,13 +223,11 @@ def profile_edit(request):
                 if len(bank_account) > 4 else bank_account
             )
 
-        # Avatar
         if 'avatar' in request.FILES:
             user.avatar = request.FILES['avatar']
 
         user.save()
 
-        # Notification prefs
         prefs.mpesa_alerts     = request.POST.get('mpesa_alerts') == 'on'
         prefs.sms_reminders    = request.POST.get('sms_reminders') == 'on'
         prefs.email_reports    = request.POST.get('email_reports') == 'on'
@@ -257,10 +243,8 @@ def profile_edit(request):
 
 @login_required(login_url='login')
 def profile_kyc(request):
-    """Admin can verify KYC; user can submit for review."""
     user = request.user
     if request.method == 'POST':
-        # User submits KYC docs (national_id + kra_pin must be filled)
         if user.national_id and user.kra_pin:
             user.kyc_status = 'pending'
             user.save()
@@ -279,6 +263,10 @@ def log_activity(user, event_type, chama=None, amount=None, note=None):
     Usage examples:
         log_activity(request.user, 'contribution', chama=chama, amount=amount)
         log_activity(loan.member, 'loan_approved', chama=chama, amount=loan.amount)
+        log_activity(loan.member, 'loan_repaid', chama=chama, amount=amount_val)
+        log_activity(member, 'fine_issued', chama=chama, amount=float(amount))
+        log_activity(request.user, 'chama_created', chama=chama)
+        log_activity(invitee, 'chama_joined', chama=chama)
     """
     MemberActivity.objects.create(
         user=user,
@@ -528,6 +516,212 @@ def penalty_add(request, chama_id):
     return redirect('contributions', chama_id=chama_id)
 
 
+# ─── Fines ────────────────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def fines(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    qs = chama.penalties.select_related('member', 'issued_by').order_by('-issued_at')
+
+    status_filter = request.GET.get('status', '')
+    member_filter = request.GET.get('member', '')
+    reason_filter = request.GET.get('reason', '')
+
+    if status_filter: qs = qs.filter(status=status_filter)
+    if member_filter: qs = qs.filter(member_id=member_filter)
+    if reason_filter: qs = qs.filter(reason=reason_filter)
+
+    total_fines  = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_unpaid = chama.penalties.filter(status='unpaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_paid   = chama.penalties.filter(status='paid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_waived = chama.penalties.filter(status='waived').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    count_unpaid = chama.penalties.filter(status='unpaid').count()
+
+    members = chama.memberships.filter(active=True).select_related('user')
+
+    context = {
+        'chama':           chama,
+        'my_membership':   my,
+        'can_manage':      my.role in ('admin', 'treasurer'),
+        'penalties':       qs,
+        'members':         members,
+        'total_fines':     total_fines,
+        'total_unpaid':    total_unpaid,
+        'total_paid':      total_paid,
+        'total_waived':    total_waived,
+        'count_unpaid':    count_unpaid,
+        'status_filter':   status_filter,
+        'member_filter':   member_filter,
+        'reason_filter':   reason_filter,
+        'penalty_reasons': Penalty.PENALTY_REASONS,
+        'status_choices':  Penalty.STATUS_CHOICES,
+    }
+    return render(request, 'chamapro/fines.html', context)
+
+
+@login_required(login_url='login')
+def fine_add(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    if my.role not in ('admin', 'treasurer'):
+        messages.error(request, 'Only admins and treasurers can issue fines.')
+        return redirect('fines', chama_id=chama_id)
+
+    if request.method == 'POST':
+        member_id   = request.POST.get('member_id')
+        amount      = request.POST.get('amount', '').strip()
+        reason      = request.POST.get('reason', 'other')
+        description = request.POST.get('description', '').strip()
+
+        errors = []
+        if not member_id: errors.append('Please select a member.')
+        if not amount:    errors.append('Amount is required.')
+        try:
+            amount_val = Decimal(amount)
+            if amount_val <= 0: errors.append('Amount must be greater than 0.')
+        except Exception:
+            errors.append('Invalid amount.')
+
+        if errors:
+            for e in errors: messages.error(request, e)
+            return redirect('fines', chama_id=chama_id)
+
+        member  = get_object_or_404(User, id=member_id)
+        penalty = Penalty.objects.create(
+            chama=chama, member=member,
+            amount=Decimal(amount), reason=reason,
+            description=description or None,
+            issued_by=request.user, status='unpaid',
+        )
+        log_activity(member, 'fine_issued', chama=chama, amount=float(penalty.amount),
+                     note=f'{penalty.get_reason_display()} — KES {penalty.amount}')
+        messages.success(request, f'Fine of KES {penalty.amount:,.2f} issued to {member.get_full_name()}.')
+
+    return redirect('fines', chama_id=chama_id)
+
+
+@login_required(login_url='login')
+def fine_update_status(request, chama_id, penalty_id):
+    chama   = get_object_or_404(Chama, id=chama_id)
+    my      = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    penalty = get_object_or_404(Penalty, id=penalty_id, chama=chama)
+
+    if my.role not in ('admin', 'treasurer'):
+        messages.error(request, 'Permission denied.')
+        return redirect('fines', chama_id=chama_id)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in ('unpaid', 'paid', 'waived'):
+            old_status     = penalty.status
+            penalty.status = new_status
+            penalty.save()
+            if new_status == 'paid' and old_status != 'paid':
+                log_activity(penalty.member, 'fine_paid', chama=chama,
+                             amount=float(penalty.amount),
+                             note=f'Fine paid — KES {penalty.amount}')
+                messages.success(request, f'Fine marked as paid for {penalty.member.get_full_name()}.')
+            elif new_status == 'waived':
+                messages.success(request, f'Fine waived for {penalty.member.get_full_name()}.')
+            else:
+                messages.success(request, 'Fine status updated.')
+
+    return redirect('fines', chama_id=chama_id)
+
+
+@login_required(login_url='login')
+def fine_delete(request, chama_id, penalty_id):
+    chama   = get_object_or_404(Chama, id=chama_id)
+    my      = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    penalty = get_object_or_404(Penalty, id=penalty_id, chama=chama)
+
+    if my.role != 'admin':
+        messages.error(request, 'Only admins can delete fines.')
+        return redirect('fines', chama_id=chama_id)
+
+    penalty.delete()
+    messages.success(request, 'Fine deleted.')
+    return redirect('fines', chama_id=chama_id)
+
+
+@login_required(login_url='login')
+def fine_pay_mpesa(request, chama_id, penalty_id):
+    chama   = get_object_or_404(Chama, id=chama_id)
+    my      = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    penalty = get_object_or_404(Penalty, id=penalty_id, chama=chama, status='unpaid')
+
+    if request.user != penalty.member and my.role not in ('admin', 'treasurer'):
+        return JsonResponse({'success': False, 'error': 'Permission denied.'})
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    try:
+        data  = json.loads(request.body)
+        phone = data.get('phone', '').strip()
+    except Exception:
+        phone = request.POST.get('phone', '').strip()
+
+    if not phone:
+        phone = penalty.member.mpesa_number or ''
+
+    if not phone:
+        return JsonResponse({'success': False, 'error': 'No phone number provided.'})
+
+    try:
+        result = mpesa.stk_push(
+            phone_number=phone,
+            amount=int(penalty.amount),
+            account_reference=f'FINE-{penalty.id}',
+            transaction_desc=f'Fine: {penalty.get_reason_display()}',
+        )
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+    if result.get('ResponseCode') == '0':
+        return JsonResponse({
+            'success': True,
+            'message': f'STK Push sent to {phone}. Enter your M-Pesa PIN.',
+            'checkout_request_id': result.get('CheckoutRequestID'),
+        })
+    return JsonResponse({'success': False, 'error': result.get('errorMessage', 'STK Push failed.')})
+
+
+@login_required(login_url='login')
+def fine_report(request, chama_id):
+    chama       = get_object_or_404(Chama, id=chama_id)
+    my          = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    memberships = chama.memberships.filter(active=True).select_related('user')
+    report_data = []
+
+    for m in memberships:
+        mf     = chama.penalties.filter(member=m.user)
+        total  = mf.aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        unpaid = mf.filter(status='unpaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        paid   = mf.filter(status='paid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        waived = mf.filter(status='waived').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        latest = mf.order_by('-issued_at').first()
+        report_data.append({
+            'member': m.user, 'role': m.get_role_display(),
+            'total': total, 'unpaid': unpaid, 'paid': paid,
+            'waived': waived, 'count': mf.count(), 'latest_fine': latest,
+        })
+
+    report_data.sort(key=lambda x: x['unpaid'], reverse=True)
+
+    return render(request, 'chamapro/fine_report.html', {
+        'chama':        chama,
+        'my_membership': my,
+        'can_manage':   my.role in ('admin', 'treasurer'),
+        'report_data':  report_data,
+    })
+
+
+
+
 # ─── Loans ────────────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
@@ -745,11 +939,11 @@ def reports(request, chama_id):
             'arrears': max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0')),
         })
 
-    total_loans       = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    total_outstanding = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    active_loans      = chama.loans.filter(status__in=['active', 'overdue']).count()
-    total_overdue     = chama.loans.filter(status='overdue').count()
-    total_pending     = chama.loans.filter(status='pending').count()
+    total_loans        = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_outstanding  = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    active_loans       = chama.loans.filter(status__in=['active', 'overdue']).count()
+    total_overdue      = chama.loans.filter(status='overdue').count()
+    total_pending      = chama.loans.filter(status='pending').count()
     total_repaid_count = chama.loans.filter(status='repaid').count()
 
     total_interest_earned = Decimal('0')
@@ -1094,10 +1288,6 @@ def export_report_excel(request, chama_id):
 
 @login_required(login_url='login')
 def mpesa_stk_push(request, chama_id):
-    """
-    Initiate STK Push for a contribution payment.
-    Called via AJAX from the contributions page.
-    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
@@ -1164,7 +1354,6 @@ def mpesa_stk_push(request, chama_id):
 
 @login_required(login_url='login')
 def mpesa_stk_query(request, chama_id):
-    """Check STK Push status — called by frontend polling."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
@@ -1208,11 +1397,6 @@ def mpesa_stk_query(request, chama_id):
 @csrf_exempt
 @require_POST
 def mpesa_callback(request):
-    """
-    Safaricom STK Push callback — receives payment confirmation.
-    This URL must be publicly accessible (use ngrok for local testing).
-    No authentication needed — Safaricom calls this directly.
-    """
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -1283,11 +1467,8 @@ def mpesa_callback(request):
     return JsonResponse({'ResultCode': 0, 'ResultDesc': 'Accepted'})
 
 
-# ── M-Pesa transaction history ────────────────────────────────────────────────
-
 @login_required(login_url='login')
 def mpesa_transactions(request, chama_id):
-    """View all M-Pesa transactions for a chama."""
     chama = get_object_or_404(Chama, id=chama_id)
     my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
@@ -1300,3 +1481,145 @@ def mpesa_transactions(request, chama_id):
         'can_manage': my.role in ('admin', 'treasurer'),
     }
     return render(request, 'mpesa_transactions.html', context)
+
+
+# ─── Upgrade / Subscription ───────────────────────────────────────────────────
+
+PLAN_PRICES = {
+    'premium': {'monthly': 999,  'annual': 9588},
+    'pro':     {'monthly': 2499, 'annual': 23988},
+}
+
+
+@login_required(login_url='login')
+def upgrade(request):
+    membership   = Membership.objects.filter(user=request.user).select_related('chama').first()
+    active_chama = membership.chama if membership else None
+    return render(request, 'chamapro/upgrade.html', {
+        'active_chama': active_chama,
+    })
+
+
+@login_required(login_url='login')
+def upgrade_pay(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+    try:
+        body    = json.loads(request.body)
+        phone   = body.get('phone', '').strip()
+        amount  = int(body.get('amount', 0))
+        plan    = body.get('plan', '')
+        billing = body.get('billing', 'monthly')
+    except (json.JSONDecodeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+
+    if not phone or not phone.startswith('254') or len(phone) != 12:
+        return JsonResponse({'success': False, 'error': 'Invalid phone number. Use 254XXXXXXXXX format.'})
+    if plan not in PLAN_PRICES:
+        return JsonResponse({'success': False, 'error': 'Invalid plan selected.'})
+    if amount != PLAN_PRICES[plan][billing]:
+        return JsonResponse({'success': False, 'error': 'Amount mismatch. Please refresh and try again.'})
+
+    try:
+        description = f'ChamaPro {plan.title()} Plan - {billing.title()}'
+        result = mpesa.stk_push(
+            phone_number=phone,
+            amount=amount,
+            account_reference='ChamaPro-Upgrade',
+            transaction_desc=description,
+        )
+
+        if result.get('ResponseCode') == '0':
+            checkout_id = result.get('CheckoutRequestID')
+            from .models import SubscriptionPayment
+            SubscriptionPayment.objects.create(
+                user=request.user,
+                plan=plan,
+                billing_cycle=billing,
+                amount=amount,
+                phone=phone,
+                checkout_request_id=checkout_id,
+                status='pending',
+            )
+            return JsonResponse({
+                'success': True,
+                'message': f'STK Push sent to +{phone}. Enter your M-Pesa PIN to complete.',
+                'checkout_request_id': checkout_id,
+            })
+        else:
+            return JsonResponse({'success': False, 'error': result.get('errorMessage', 'M-Pesa request failed.')})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required(login_url='login')
+def upgrade_poll(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=405)
+
+    try:
+        body        = json.loads(request.body)
+        checkout_id = body.get('checkout_request_id', '')
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error'}, status=400)
+
+    try:
+        from .models import SubscriptionPayment
+        payment = SubscriptionPayment.objects.get(
+            checkout_request_id=checkout_id,
+            user=request.user,
+        )
+
+        if payment.status == 'completed':
+            return JsonResponse({'status': 'success', 'receipt': payment.mpesa_receipt})
+        elif payment.status == 'failed':
+            return JsonResponse({'status': 'failed', 'error': payment.failure_reason or 'Payment failed.'})
+        elif payment.status == 'cancelled':
+            return JsonResponse({'status': 'cancelled'})
+
+        result      = mpesa.stk_query(checkout_id)
+        result_code = result.get('ResultCode')
+
+        if result_code == '0':
+            _activate_subscription(request.user, payment.plan, payment.billing_cycle, payment.amount)
+            receipt        = result.get('MpesaReceiptNumber', '')
+            payment.status = 'completed'
+            payment.mpesa_receipt = receipt
+            payment.save()
+            return JsonResponse({'status': 'success', 'receipt': receipt})
+        elif result_code == '1032':
+            payment.status = 'cancelled'
+            payment.save()
+            return JsonResponse({'status': 'cancelled'})
+        elif result_code is not None and result_code != '':
+            payment.status         = 'failed'
+            payment.failure_reason = result.get('ResultDesc', 'Payment failed.')
+            payment.save()
+            return JsonResponse({'status': 'failed', 'error': payment.failure_reason})
+
+        return JsonResponse({'status': 'pending'})
+
+    except Exception:
+        return JsonResponse({'status': 'pending'})
+
+
+def _activate_subscription(user, plan, billing_cycle, amount):
+    from .models import UserSubscription
+    from django.utils import timezone
+    from datetime import timedelta
+
+    days    = 365 if billing_cycle == 'annual' else 30
+    expires = timezone.now() + timedelta(days=days)
+
+    UserSubscription.objects.update_or_create(
+        user=user,
+        defaults={
+            'plan': plan,
+            'billing_cycle': billing_cycle,
+            'amount_paid': amount,
+            'expires_at': expires,
+            'is_active': True,
+        }
+    )

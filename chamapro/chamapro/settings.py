@@ -48,13 +48,14 @@ ROOT_URLCONF = 'chamapro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],   # ← change this line
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'chamapro.context_processors.user_subscription',  # ← added
             ],
         },
     },
@@ -86,7 +87,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Africa/Nairobi'  # ← Changed to Nairobi time
+TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
@@ -108,20 +109,10 @@ MESSAGE_TAGS = {messages.ERROR: 'danger'}
 
 
 # ── M-Pesa Daraja API ─────────────────────────────────────────────────────────
-# Get credentials from https://developer.safaricom.co.ke
-# Create an account → My Apps → Create App → Copy keys below
 
-MPESA_ENV             = os.getenv('MPESA_ENV', 'sandbox')        # change to 'production' when live
-MPESA_CONSUMER_KEY    = os.getenv('MPESA_CONSUMER_KEY', '')       # from Daraja portal
-MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET', '')    # from Daraja portal
-MPESA_SHORTCODE       = os.getenv('MPESA_SHORTCODE', '174379')    # sandbox default shortcode
-MPESA_PASSKEY         = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')  # sandbox default passkey
+MPESA_ENV             = os.getenv('MPESA_ENV', 'sandbox')
+MPESA_CONSUMER_KEY    = os.getenv('MPESA_CONSUMER_KEY', '')
+MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET', '')
+MPESA_SHORTCODE       = os.getenv('MPESA_SHORTCODE', '174379')
+MPESA_PASSKEY         = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
 MPESA_CALLBACK_URL    = os.getenv('MPESA_CALLBACK_URL', 'https://yourcallback.ngrok.io/mpesa/callback/')
-
-# ── How to test locally ───────────────────────────────────────────────────────
-# 1. Install ngrok:  https://ngrok.com/download
-# 2. Run your server: python manage.py runserver
-# 3. In another terminal: ngrok http 8000
-# 4. Copy the https URL e.g. https://abc123.ngrok-free.app
-# 5. Update MPESA_CALLBACK_URL above with that URL + /mpesa/callback/
-# 6. Sandbox test phone: 254708374149

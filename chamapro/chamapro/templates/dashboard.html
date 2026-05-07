@@ -113,9 +113,14 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="plan-banner">
-      <span>Free Plan</span>
-      <a href="#" class="upgrade-btn">UPGRADE</a>
-    </div>
+  {% if user_subscription.is_premium_or_above %}
+    <span>✓ {{ user_subscription.get_plan_display }}</span>
+    <span style="font-size:10px;opacity:.5;">Active</span>
+  {% else %}
+    <span>Free Plan</span>
+    <a href="{% url 'upgrade' %}" class="upgrade-btn">UPGRADE</a>
+  {% endif %}
+</div>
 
     <div class="sidebar-logo">
       <div class="logo-icon">CP</div>

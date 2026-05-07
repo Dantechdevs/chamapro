@@ -39,8 +39,14 @@ urlpatterns = [
     path('chama/<int:chama_id>/contributions/<int:contribution_id>/delete/', views.contribution_delete, name='contribution_delete'),
     path('chama/<int:chama_id>/contributions/<int:contribution_id>/status/', views.contribution_status_update, name='contribution_status_update'),
 
-    # Penalties
+    # Penalties / Fines
     path('chama/<int:chama_id>/penalties/add/', views.penalty_add, name='penalty_add'),
+    path('chama/<int:chama_id>/fines/', views.fines, name='fines'),
+    path('chama/<int:chama_id>/fines/add/', views.fine_add, name='fine_add'),
+    path('chama/<int:chama_id>/fines/report/', views.fine_report, name='fine_report'),
+    path('chama/<int:chama_id>/fines/<int:penalty_id>/status/', views.fine_update_status, name='fine_update_status'),
+    path('chama/<int:chama_id>/fines/<int:penalty_id>/delete/', views.fine_delete, name='fine_delete'),
+    path('chama/<int:chama_id>/fines/<int:penalty_id>/pay-mpesa/', views.fine_pay_mpesa, name='fine_pay_mpesa'),
 
     # Loans
     path('chama/<int:chama_id>/loans/', views.loans, name='loans'),
@@ -65,4 +71,9 @@ urlpatterns = [
 
     # Wallets app
     path('wallets/', include('wallets.urls')),
+
+    # Upgrade / Subscription
+    path('upgrade/', views.upgrade, name='upgrade'),
+    path('upgrade/pay/', views.upgrade_pay, name='upgrade_pay'),
+    path('upgrade/poll/', views.upgrade_poll, name='upgrade_poll'),
 ]
