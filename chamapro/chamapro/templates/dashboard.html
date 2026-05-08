@@ -1,530 +1,296 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChamaPro – Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;--sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;--accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);}
-    *{box-sizing:border-box;}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
-    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
-    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
-    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
-    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
-    .sidebar-logo .logo-text span{color:var(--accent);}
-    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
-    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
-    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
-    .chama-btn .chama-icon{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
-    .chama-btn .chama-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .nav-section{padding:10px 0 4px;}
-    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
-    .nav-item-wrap{padding:1px 10px;}
-    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
-    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
-    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .nav-link-cp.active{background:var(--brand);color:#fff;}
-    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
-    .badge-new{margin-left:auto;font-size:9px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:20px;font-weight:700;}
-    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
-    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
-    .sidebar-user:hover{background:rgba(255,255,255,.07);}
-    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
-    .sidebar-user .user-info{flex:1;min-width:0;}
-    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
-    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
-    .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;cursor:pointer;}
-    .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
-    .topbar-group-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
-    .topbar-quick-actions{background:var(--brand);color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;}
-    .topbar-quick-actions:hover{background:var(--brand-light);}
-    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
-    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
-    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
-    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
-    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
-    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
-    .main-content{padding:24px;}
-    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
-    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
-    .fin-summary{background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 60%,var(--brand-light) 100%);border-radius:16px;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(13,110,79,.3);margin-bottom:20px;}
-    .fin-summary-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;}
-    .fin-summary-header h6{color:rgba(255,255,255,.7);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:0;font-weight:600;}
-    .fin-summary-header .view-group-btn{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:4px;}
-    .fin-summary-body{display:grid;grid-template-columns:repeat(3,1fr);}
-    .fin-stat{padding:18px 20px;border-right:1px solid rgba(255,255,255,.1);position:relative;}
-    .fin-stat:last-child{border-right:none;}
-    .fin-stat-label{font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:600;}
-    .fin-stat-value{font-size:22px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
-    .fin-stat-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;}
-    .fin-stat-icon{position:absolute;right:16px;top:18px;font-size:22px;opacity:.12;}
-    .balances-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
-    .balances-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;}
-    .balances-tab{padding:12px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;}
-    .balances-tab.active{color:var(--brand);border-bottom-color:var(--brand);}
-    .balances-header{display:grid;grid-template-columns:30px 1fr 120px 120px;gap:8px;padding:8px 16px;background:#f9fafb;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
-    .balance-row{display:grid;grid-template-columns:30px 1fr 120px 120px;gap:8px;padding:10px 16px;border-top:1px solid var(--border);align-items:center;transition:background .1s;}
-    .balance-row:hover{background:#fafafa;}
-    .balance-row .member-num{font-size:12px;color:var(--muted);font-weight:600;}
-    .balance-row .member-name{font-size:13.5px;font-weight:600;color:var(--brand);text-decoration:none;}
-    .balance-row .member-name:hover{text-decoration:underline;}
-    .balance-row .paid{font-size:13px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;}
-    .balance-row .arrears{font-size:13px;font-weight:700;color:var(--danger);font-family:'DM Mono',monospace;}
-    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-    .stat-card{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;}
-    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
-    .stat-card.warning::before{background:var(--accent2);}
-    .stat-card.danger::before{background:var(--danger);}
-    .stat-card.info::before{background:var(--info);}
-    .stat-card .stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;}
-    .stat-card .stat-value{font-size:20px;font-weight:800;color:var(--text);font-family:'DM Mono',monospace;letter-spacing:-.5px;}
-    .stat-card .stat-icon{position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
-    .stat-card .stat-icon.green{background:var(--brand-xlight);color:var(--brand);}
-    .stat-card .stat-icon.yellow{background:#fef3c7;color:var(--accent2);}
-    .stat-card .stat-icon.red{background:#fee2e2;color:var(--danger);}
-    .stat-card .stat-icon.blue{background:#eff6ff;color:var(--info);}
-    .activity-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
-    .card-header-cp{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-    .card-header-cp h6{font-size:14px;font-weight:700;margin:0;}
-    .card-header-cp a{font-size:12px;color:var(--brand);text-decoration:none;font-weight:600;}
-    .chart-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
-    .chart-tabs{display:flex;gap:4px;}
-    .chart-tab{font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:600;}
-    .chart-tab.active{background:var(--brand);color:#fff;border-color:var(--brand);}
-    .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-    .quick-card{background:#fff;border-radius:12px;padding:16px;box-shadow:var(--card-shadow);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-decoration:none;color:var(--text);transition:transform .15s,box-shadow .15s;border:1.5px solid transparent;}
-    .quick-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:var(--brand-xlight);color:var(--text);}
-    .quick-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-    .quick-label{font-size:12px;font-weight:700;text-align:center;}
-    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
-    .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
-    @media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
-    @media(max-width:900px){.fin-summary-body{grid-template-columns:repeat(2,1fr);}.quick-grid{grid-template-columns:repeat(2,1fr);}}
-    @media(max-width:768px){.sidebar{width:0;overflow:hidden;}.topbar,.main-wrap{left:0;margin-left:0;}.sidebar.open{width:var(--sidebar-w);}.stat-grid{grid-template-columns:1fr 1fr;}}
-  </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load humanize %}
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="plan-banner">
-  {% if user_subscription.is_premium_or_above %}
-    <span>✓ {{ user_subscription.get_plan_display }}</span>
-    <span style="font-size:10px;opacity:.5;">Active</span>
+{% block title %}ChamaPro – Dashboard{% endblock %}
+
+{% block nav_dashboard %}active{% endblock %}
+
+{% block extra_css %}
+.fin-summary{background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 60%,var(--brand-light) 100%);border-radius:16px;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(13,110,79,.3);margin-bottom:20px;}
+.fin-summary-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;}
+.fin-summary-header h6{color:rgba(255,255,255,.7);font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:0;font-weight:600;}
+.fin-summary-header .view-group-btn{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:4px;}
+.fin-summary-body{display:grid;grid-template-columns:repeat(3,1fr);}
+.fin-stat{padding:18px 20px;border-right:1px solid rgba(255,255,255,.1);position:relative;}
+.fin-stat:last-child{border-right:none;}
+.fin-stat-label{font-size:11px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:600;}
+.fin-stat-value{font-size:22px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
+.fin-stat-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px;}
+.fin-stat-icon{position:absolute;right:16px;top:18px;font-size:22px;opacity:.12;}
+.balances-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+.balances-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 16px;}
+.balances-tab{padding:12px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;}
+.balances-tab.active{color:var(--brand);border-bottom-color:var(--brand);}
+.balances-header{display:grid;grid-template-columns:30px 1fr 120px 120px;gap:8px;padding:8px 16px;background:#f9fafb;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);}
+.balance-row{display:grid;grid-template-columns:30px 1fr 120px 120px;gap:8px;padding:10px 16px;border-top:1px solid var(--border);align-items:center;transition:background .1s;}
+.balance-row:hover{background:#fafafa;}
+.balance-row .member-num{font-size:12px;color:var(--muted);font-weight:600;}
+.balance-row .member-name{font-size:13.5px;font-weight:600;color:var(--brand);text-decoration:none;}
+.balance-row .member-name:hover{text-decoration:underline;}
+.balance-row .paid{font-size:13px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;}
+.balance-row .arrears{font-size:13px;font-weight:700;color:var(--danger);font-family:'DM Mono',monospace;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat-card{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--brand);}
+.stat-card.warning::before{background:var(--accent2);}
+.stat-card.danger::before{background:var(--danger);}
+.stat-card.info::before{background:var(--info);}
+.stat-card .stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;}
+.stat-card .stat-value{font-size:20px;font-weight:800;color:var(--text);font-family:'DM Mono',monospace;letter-spacing:-.5px;}
+.stat-card .stat-icon{position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.stat-card .stat-icon.green{background:var(--brand-xlight);color:var(--brand);}
+.stat-card .stat-icon.yellow{background:#fef3c7;color:var(--accent2);}
+.stat-card .stat-icon.red{background:#fee2e2;color:var(--danger);}
+.stat-card .stat-icon.blue{background:#eff6ff;color:var(--info);}
+.activity-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+.card-header-cp{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-header-cp h6{font-size:14px;font-weight:700;margin:0;}
+.card-header-cp a{font-size:12px;color:var(--brand);text-decoration:none;font-weight:600;}
+.chart-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+.chart-tabs{display:flex;gap:4px;}
+.chart-tab{font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-weight:600;}
+.chart-tab.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.quick-card{background:#fff;border-radius:12px;padding:16px;box-shadow:var(--card-shadow);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-decoration:none;color:var(--text);transition:transform .15s,box-shadow .15s;border:1.5px solid transparent;}
+.quick-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:var(--brand-xlight);color:var(--text);}
+.quick-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.quick-label{font-size:12px;font-weight:700;text-align:center;}
+.badge-new{margin-left:auto;font-size:9px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:20px;font-weight:700;}
+.topbar-quick-actions{background:var(--brand);color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;}
+.topbar-quick-actions:hover{background:var(--brand-light);}
+@media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:900px){.fin-summary-body{grid-template-columns:repeat(2,1fr);}.quick-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){.stat-grid{grid-template-columns:1fr 1fr;}}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-sub">Welcome back, {{ user.first_name|default:user.username }} 👋 &nbsp;·&nbsp; <span id="current-date"></span></p>
+  </div>
+  {% if active_chama %}
+  <a href="{% url 'chama_members' active_chama.id %}" class="btn btn-sm" style="background:var(--brand);color:#fff;border-radius:8px;font-weight:600;font-size:13px;">
+    <i class="fas fa-users me-1"></i> Manage Members
+  </a>
   {% else %}
-    <span>Free Plan</span>
-    <a href="{% url 'upgrade' %}" class="upgrade-btn">UPGRADE</a>
+  <a href="{% url 'chama_create' %}" class="btn btn-sm" style="background:var(--brand);color:#fff;border-radius:8px;font-weight:600;font-size:13px;">
+    <i class="fas fa-plus me-1"></i> Create Chama
+  </a>
   {% endif %}
 </div>
 
-    <div class="sidebar-logo">
-      <div class="logo-icon">CP</div>
-      <div class="logo-text">Chama<span>Pro</span></div>
-    </div>
+{% if not active_chama %}
+<div class="text-center py-5" style="background:#fff;border-radius:16px;box-shadow:var(--card-shadow);">
+  <div style="font-size:48px;margin-bottom:16px;">🏦</div>
+  <h4 style="font-weight:800;">No Chama Yet</h4>
+  <p class="text-muted mb-4">Create or join a chama to get started.</p>
+  <a href="{% url 'chama_create' %}" class="btn" style="background:var(--brand);color:#fff;font-weight:700;border-radius:10px;padding:10px 28px;">
+    <i class="fas fa-plus me-2"></i>Create Your First Chama
+  </a>
+</div>
+{% else %}
 
-    {% if active_chama %}
-    <div class="chama-selector-wrap">
-      <div class="dropdown">
-        <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
-          <div class="chama-icon"><i class="fas fa-users" style="font-size:11px;"></i></div>
-          <span class="chama-name">{{ active_chama.name }}</span>
-        </div>
-        <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
-          {% for chama in chamas %}
-          <li><a class="dropdown-item" href="{% url 'switch_chama' chama.id %}">{{ chama.name }}</a></li>
-          {% endfor %}
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
-        </ul>
-      </div>
-    </div>
-    {% endif %}
-
-    <nav style="flex:1;padding-bottom:8px;">
-      <div class="nav-section">
-        <div class="nav-item-wrap">
-          <a href="{% url 'dashboard' %}" class="nav-link-cp active">
-            <i class="fas fa-th-large"></i> Dashboard
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'wallet_dashboard' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-wallet"></i> E-Wallet <span class="badge-new">NEW</span>
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'deposit_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-arrow-down-to-bracket"></i> Deposits
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'withdrawal_page' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-arrow-up-from-bracket"></i> Withdrawals
-          </a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-label">Management</div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'chama_members' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-users"></i> Members
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'contributions' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-hand-holding-dollar"></i> Contributions
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'mpesa_transactions' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-mobile-screen-button"></i> M-Pesa
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'loans' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-money-bill-wave"></i> Loans
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="#" class="nav-link-cp">
-            <i class="fas fa-triangle-exclamation"></i> Fines
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="#" class="nav-link-cp">
-            <i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span>
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="#" class="nav-link-cp">
-            <i class="fas fa-right-left"></i> Contribution Transfers <span class="badge-soon">SOON</span>
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="#" class="nav-link-cp">
-            <i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span>
-          </a>
-        </div>
-      </div>
-
-      <div class="nav-section">
-        <div class="nav-section-label">Reports</div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'reports' active_chama.id %}{% else %}{% url 'chama_create' %}{% endif %}" class="nav-link-cp">
-            <i class="fas fa-chart-bar"></i> Reports
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="#" class="nav-link-cp">
-            <i class="fas fa-file-lines"></i> Audit Logs <span class="badge-soon">SOON</span>
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="{% if active_chama %}{% url 'export_report_excel' active_chama.id %}{% else %}#{% endif %}" class="nav-link-cp">
-            <i class="fas fa-download"></i> Download Data
-          </a>
-        </div>
-        <div class="nav-item-wrap">
-          <a href="#" class="nav-link-cp">
-            <i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span>
-          </a>
-        </div>
-      </div>
-    </nav>
-
-    <!-- SIDEBAR FOOTER: Profile link wired up -->
-    <div class="sidebar-footer">
-      <div class="dropdown">
-        <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
-          <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
-          <div class="user-info">
-            <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-            <div class="user-role">{{ active_membership.get_role_display|default:"Member" }}</div>
-          </div>
-        </div>
-        <ul class="dropdown-menu dropdown-menu-dark">
-          <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-          <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="fas fa-pen me-2"></i>Edit Profile</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </aside>
-
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-    <button class="topbar-quick-actions" data-bs-toggle="modal" data-bs-target="#quickActionsModal">
-      <i class="fas fa-bolt"></i> QUICK ACTIONS <i class="fas fa-chevron-down" style="font-size:10px;"></i>
-    </button>
-    {% if active_chama %}
-    <div class="topbar-group-badge">
-      <div class="dot"></div>
-      <span>{{ active_chama.name|truncatechars:25 }}</span>
-    </div>
-    {% endif %}
-    <div class="topbar-right">
-      <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
-      <!-- TOPBAR AVATAR: Profile link wired up -->
-      <div class="dropdown">
-        <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
-          {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
-        </div>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
-          <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-          <li><a class="dropdown-item" href="{% url 'profile_edit' %}"><i class="fas fa-pen me-2"></i>Edit Profile</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN -->
-  <div class="main-wrap">
-    <div class="main-content">
-
-      <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-          <h1 class="page-title">Dashboard</h1>
-          <p class="page-sub">Welcome back, {{ user.first_name|default:user.username }} 👋 &nbsp;·&nbsp; <span id="current-date"></span></p>
-        </div>
-        {% if active_chama %}
-        <a href="{% url 'chama_members' active_chama.id %}" class="btn btn-sm" style="background:var(--brand);color:#fff;border-radius:8px;font-weight:600;font-size:13px;">
-          <i class="fas fa-users me-1"></i> Manage Members
-        </a>
-        {% else %}
-        <a href="{% url 'chama_create' %}" class="btn btn-sm" style="background:var(--brand);color:#fff;border-radius:8px;font-weight:600;font-size:13px;">
-          <i class="fas fa-plus me-1"></i> Create Chama
-        </a>
-        {% endif %}
-      </div>
-
-      {% if not active_chama %}
-      <div class="text-center py-5" style="background:#fff;border-radius:16px;box-shadow:var(--card-shadow);">
-        <div style="font-size:48px;margin-bottom:16px;">🏦</div>
-        <h4 style="font-weight:800;">No Chama Yet</h4>
-        <p class="text-muted mb-4">Create or join a chama to get started.</p>
-        <a href="{% url 'chama_create' %}" class="btn" style="background:var(--brand);color:#fff;font-weight:700;border-radius:10px;padding:10px 28px;">
-          <i class="fas fa-plus me-2"></i>Create Your First Chama
-        </a>
-      </div>
-      {% else %}
-
-      <!-- STAT CARDS -->
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fas fa-coins"></i></div>
-          <div class="stat-label">Total Contributions</div>
-          <div class="stat-value">KES {{ active_chama.total_contributions|floatformat:2 }}</div>
-        </div>
-        <div class="stat-card warning">
-          <div class="stat-icon yellow"><i class="fas fa-money-bill-wave"></i></div>
-          <div class="stat-label">Outstanding Loans</div>
-          <div class="stat-value">KES {{ active_chama.total_loans_outstanding|floatformat:2 }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fas fa-users"></i></div>
-          <div class="stat-label">Active Members</div>
-          <div class="stat-value">{{ active_chama.member_count }}</div>
-        </div>
-        <div class="stat-card info">
-          <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
-          <div class="stat-label">Next Meeting</div>
-          <div class="stat-value" style="font-size:15px;">Not set</div>
-        </div>
-      </div>
-
-      <div class="row g-3 mb-3">
-        <div class="col-lg-8">
-          <div class="fin-summary">
-            <div class="fin-summary-header">
-              <h6><i class="fas fa-info-circle me-2"></i>YOUR GROUP INFORMATION</h6>
-              <a href="{% url 'chama_members' active_chama.id %}" class="view-group-btn">View Group <i class="fas fa-arrow-right"></i></a>
-            </div>
-            <div class="fin-summary-body">
-              <div class="fin-stat">
-                <i class="fas fa-building fin-stat-icon"></i>
-                <div class="fin-stat-label">Cash at Bank</div>
-                <div class="fin-stat-value">KES 0.00</div>
-                <div class="fin-stat-sub">Group bank account</div>
-              </div>
-              <div class="fin-stat">
-                <i class="fas fa-coins fin-stat-icon"></i>
-                <div class="fin-stat-label">Total Contributions</div>
-                <div class="fin-stat-value">KES {{ active_chama.total_contributions|floatformat:2 }}</div>
-                <div class="fin-stat-sub">All time total</div>
-              </div>
-              <div class="fin-stat">
-                <i class="fas fa-money-bills fin-stat-icon"></i>
-                <div class="fin-stat-label">Outstanding Loans</div>
-                <div class="fin-stat-value">KES {{ active_chama.total_loans_outstanding|floatformat:2 }}</div>
-                <div class="fin-stat-sub">Active & overdue</div>
-              </div>
-            </div>
-            <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);">
-              <canvas id="summaryChart" height="90"></canvas>
-            </div>
-            <div style="padding:10px 20px 16px;display:flex;gap:20px;flex-wrap:wrap;">
-              <span style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:#00c97a;display:inline-block;border-radius:2px;"></span>Contributions</span>
-              <span style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:#f59e0b;display:inline-block;border-radius:2px;"></span>Fines</span>
-              <span style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:#ef4444;display:inline-block;border-radius:2px;"></span>Expenses</span>
-            </div>
-          </div>
-
-          <div class="chart-card">
-            <div class="card-header-cp">
-              <h6>Contributions Trend</h6>
-              <div class="chart-tabs">
-                <button class="chart-tab active">Monthly</button>
-                <button class="chart-tab">Quarterly</button>
-                <button class="chart-tab">Yearly</button>
-              </div>
-            </div>
-            <div style="padding:16px;">
-              <canvas id="contributionsChart" height="180"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4">
-          <div class="balances-card mb-3">
-            <div class="card-header-cp">
-              <h6>Balances</h6>
-              <a href="{% url 'contributions' active_chama.id %}">View all</a>
-            </div>
-            <div class="balances-tabs">
-              <div class="balances-tab active">Contributions</div>
-              <div class="balances-tab">Fines</div>
-            </div>
-            <div class="balances-header">
-              <span>#</span><span>Name</span><span style="text-align:right;">Paid</span><span style="text-align:right;">Arrears</span>
-            </div>
-            {% for m in active_chama.memberships.all %}{% if m.active %}
-            <div class="balance-row">
-              <span class="member-num">{{ forloop.counter }}</span>
-              <a class="member-name" href="{% url 'chama_members' active_chama.id %}">{{ m.user.get_full_name|default:m.user.username }}</a>
-              <span class="paid" style="text-align:right;">0.00</span>
-              <span class="arrears" style="text-align:right;">{{ active_chama.contribution_amount }}</span>
-            </div>
-            {% endif %}{% empty %}
-            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No members yet</div>
-            {% endfor %}
-          </div>
-
-          <div class="activity-card">
-            <div class="card-header-cp">
-              <h6>Upcoming Meetings</h6>
-              <a href="#">Schedule</a>
-            </div>
-            <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">
-              <i class="fas fa-calendar-xmark" style="font-size:24px;margin-bottom:8px;display:block;opacity:.4;"></i>
-              No meetings scheduled yet
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Access -->
-      <div class="mb-3">
-        <h6 style="font-weight:700;margin-bottom:12px;">Quick Access</h6>
-        <div class="quick-grid">
-          <a href="{% url 'chama_members' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#e6f5f0;color:var(--brand);"><i class="fas fa-users"></i></div>
-            <div class="quick-label">Members</div>
-          </a>
-          <a href="{% url 'contributions' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-hand-holding-dollar"></i></div>
-            <div class="quick-label">Contributions</div>
-          </a>
-          <a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div>
-            <div class="quick-label">M-Pesa</div>
-          </a>
-          <a href="{% url 'loans' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#fee2e2;color:#ef4444;"><i class="fas fa-money-bill-wave"></i></div>
-            <div class="quick-label">Loans</div>
-          </a>
-          <a href="{% url 'reports' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#f3e8ff;color:#9333ea;"><i class="fas fa-chart-pie"></i></div>
-            <div class="quick-label">Reports</div>
-          </a>
-          <a href="{% url 'export_report_pdf' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#fff7ed;color:#ea580c;"><i class="fas fa-file-pdf"></i></div>
-            <div class="quick-label">PDF Report</div>
-          </a>
-          <a href="{% url 'export_report_excel' active_chama.id %}" class="quick-card">
-            <div class="quick-icon" style="background:#ecfdf5;color:#10b981;"><i class="fas fa-file-excel"></i></div>
-            <div class="quick-label">Excel Export</div>
-          </a>
-          <!-- Profile quick access card -->
-          <a href="{% url 'profile' %}" class="quick-card">
-            <div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-circle"></i></div>
-            <div class="quick-label">My Profile</div>
-          </a>
-          <a href="{% url 'chama_create' %}" class="quick-card">
-            <div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-plus-circle"></i></div>
-            <div class="quick-label">New Chama</div>
-          </a>
-          <a href="{% url 'logout' %}" class="quick-card">
-            <div class="quick-icon" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-sign-out-alt"></i></div>
-            <div class="quick-label">Logout</div>
-          </a>
-        </div>
-      </div>
-
-      {% endif %}
-    </div>
+<!-- STAT CARDS -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fas fa-coins"></i></div>
+    <div class="stat-label">Total Contributions</div>
+    <div class="stat-value">KES {{ active_chama.total_contributions|floatformat:2 }}</div>
   </div>
+  <div class="stat-card warning">
+    <div class="stat-icon yellow"><i class="fas fa-money-bill-wave"></i></div>
+    <div class="stat-label">Outstanding Loans</div>
+    <div class="stat-value">KES {{ active_chama.total_loans_outstanding|floatformat:2 }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fas fa-users"></i></div>
+    <div class="stat-label">Active Members</div>
+    <div class="stat-value">{{ active_chama.member_count }}</div>
+  </div>
+  <div class="stat-card info">
+    <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+    <div class="stat-label">Next Meeting</div>
+    <div class="stat-value" style="font-size:15px;">Not set</div>
+  </div>
+</div>
 
-  <!-- Quick Actions Modal -->
-  <div class="modal fade" id="quickActionsModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content" style="border-radius:16px;border:none;">
-        <div class="modal-header" style="border-bottom:1px solid var(--border);">
-          <h5 class="modal-title" style="font-weight:700;">Quick Actions</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="row g-3 mb-3">
+  <div class="col-lg-8">
+    <div class="fin-summary">
+      <div class="fin-summary-header">
+        <h6><i class="fas fa-info-circle me-2"></i>YOUR GROUP INFORMATION</h6>
+        <a href="{% url 'chama_members' active_chama.id %}" class="view-group-btn">View Group <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="fin-summary-body">
+        <div class="fin-stat">
+          <i class="fas fa-building fin-stat-icon"></i>
+          <div class="fin-stat-label">Cash at Bank</div>
+          <div class="fin-stat-value">KES 0.00</div>
+          <div class="fin-stat-sub">Group bank account</div>
         </div>
-        <div class="modal-body">
-          <div class="row g-3">
-            <div class="col-6"><a href="{% url 'chama_create' %}" class="quick-card"><div class="quick-icon" style="background:var(--brand-xlight);color:var(--brand);"><i class="fas fa-plus"></i></div><div class="quick-label">New Chama</div></a></div>
-            <!-- Profile link in quick actions modal -->
-            <div class="col-6"><a href="{% url 'profile' %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-circle"></i></div><div class="quick-label">My Profile</div></a></div>
-            {% if active_chama %}
-            <div class="col-6"><a href="{% url 'chama_members' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-plus"></i></div><div class="quick-label">Invite Member</div></a></div>
-            <div class="col-6"><a href="{% url 'wallet_dashboard' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#e6f5f0;color:var(--brand);"><i class="fas fa-wallet"></i></div><div class="quick-label">E-Wallet</div></a></div>
-            <div class="col-6"><a href="{% url 'contributions' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-plus-circle"></i></div><div class="quick-label">Contributions</div></a></div>
-            <div class="col-6"><a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div><div class="quick-label">M-Pesa</div></a></div>
-            <div class="col-6"><a href="{% url 'loans' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fee2e2;color:#ef4444;"><i class="fas fa-file-invoice-dollar"></i></div><div class="quick-label">Loans</div></a></div>
-            <div class="col-6"><a href="{% url 'reports' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#f3e8ff;color:#9333ea;"><i class="fas fa-chart-bar"></i></div><div class="quick-label">Reports</div></a></div>
-            <div class="col-6"><a href="{% url 'export_report_pdf' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fff7ed;color:#ea580c;"><i class="fas fa-file-pdf"></i></div><div class="quick-label">Download PDF</div></a></div>
-            {% endif %}
-          </div>
+        <div class="fin-stat">
+          <i class="fas fa-coins fin-stat-icon"></i>
+          <div class="fin-stat-label">Total Contributions</div>
+          <div class="fin-stat-value">KES {{ active_chama.total_contributions|floatformat:2 }}</div>
+          <div class="fin-stat-sub">All time total</div>
         </div>
+        <div class="fin-stat">
+          <i class="fas fa-money-bills fin-stat-icon"></i>
+          <div class="fin-stat-label">Outstanding Loans</div>
+          <div class="fin-stat-value">KES {{ active_chama.total_loans_outstanding|floatformat:2 }}</div>
+          <div class="fin-stat-sub">Active & overdue</div>
+        </div>
+      </div>
+      <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);">
+        <canvas id="summaryChart" height="90"></canvas>
+      </div>
+      <div style="padding:10px 20px 16px;display:flex;gap:20px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:#00c97a;display:inline-block;border-radius:2px;"></span>Contributions</span>
+        <span style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:#f59e0b;display:inline-block;border-radius:2px;"></span>Fines</span>
+        <span style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:6px;"><span style="width:12px;height:3px;background:#ef4444;display:inline-block;border-radius:2px;"></span>Expenses</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="card-header-cp">
+        <h6>Contributions Trend</h6>
+        <div class="chart-tabs">
+          <button class="chart-tab active">Monthly</button>
+          <button class="chart-tab">Quarterly</button>
+          <button class="chart-tab">Yearly</button>
+        </div>
+      </div>
+      <div style="padding:16px;">
+        <canvas id="contributionsChart" height="180"></canvas>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    const st = document.getElementById('sidebarToggle');
-    if(st) st.addEventListener('click',()=>document.querySelector('.sidebar').classList.toggle('open'));
-    const sCtx = document.getElementById('summaryChart');
-    if(sCtx) new Chart(sCtx,{type:'line',data:{labels:['Jan','02','03','04','05','06','07','08','09','10','11','12'],datasets:[{label:'Contributions',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#00c97a',tension:.4,pointRadius:3,borderWidth:2,fill:false},{label:'Fines',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#f59e0b',tension:.4,pointRadius:3,borderWidth:2,fill:false},{label:'Expenses',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#ef4444',tension:.4,pointRadius:3,borderWidth:2,fill:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}},beginAtZero:true}}}});
-    const cCtx = document.getElementById('contributionsChart');
-    if(cCtx) new Chart(cCtx,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],datasets:[{label:'Contributions (KES)',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(13,110,79,.15)',borderColor:'#0d6e4f',borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}});
-    document.querySelectorAll('.balances-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.balances-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
-    document.querySelectorAll('.chart-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.chart-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
-  </script>
-</body>
-</html>
+  <div class="col-lg-4">
+    <div class="balances-card mb-3">
+      <div class="card-header-cp">
+        <h6>Balances</h6>
+        <a href="{% url 'contributions' active_chama.id %}">View all</a>
+      </div>
+      <div class="balances-tabs">
+        <div class="balances-tab active">Contributions</div>
+        <div class="balances-tab">Fines</div>
+      </div>
+      <div class="balances-header">
+        <span>#</span><span>Name</span><span style="text-align:right;">Paid</span><span style="text-align:right;">Arrears</span>
+      </div>
+      {% for m in active_chama.memberships.all %}{% if m.active %}
+      <div class="balance-row">
+        <span class="member-num">{{ forloop.counter }}</span>
+        <a class="member-name" href="{% url 'chama_members' active_chama.id %}">{{ m.user.get_full_name|default:m.user.username }}</a>
+        <span class="paid" style="text-align:right;">0.00</span>
+        <span class="arrears" style="text-align:right;">{{ active_chama.contribution_amount }}</span>
+      </div>
+      {% endif %}{% empty %}
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No members yet</div>
+      {% endfor %}
+    </div>
+
+    <div class="activity-card">
+      <div class="card-header-cp">
+        <h6>Upcoming Meetings</h6>
+        <a href="#">Schedule</a>
+      </div>
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">
+        <i class="fas fa-calendar-xmark" style="font-size:24px;margin-bottom:8px;display:block;opacity:.4;"></i>
+        No meetings scheduled yet
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Access -->
+<div class="mb-3">
+  <h6 style="font-weight:700;margin-bottom:12px;">Quick Access</h6>
+  <div class="quick-grid">
+    <a href="{% url 'chama_members' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#e6f5f0;color:var(--brand);"><i class="fas fa-users"></i></div>
+      <div class="quick-label">Members</div>
+    </a>
+    <a href="{% url 'contributions' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-hand-holding-dollar"></i></div>
+      <div class="quick-label">Contributions</div>
+    </a>
+    <a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div>
+      <div class="quick-label">M-Pesa</div>
+    </a>
+    <a href="{% url 'loans' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#fee2e2;color:#ef4444;"><i class="fas fa-money-bill-wave"></i></div>
+      <div class="quick-label">Loans</div>
+    </a>
+    <a href="{% url 'reports' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#f3e8ff;color:#9333ea;"><i class="fas fa-chart-pie"></i></div>
+      <div class="quick-label">Reports</div>
+    </a>
+    <a href="{% url 'export_report_pdf' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#fff7ed;color:#ea580c;"><i class="fas fa-file-pdf"></i></div>
+      <div class="quick-label">PDF Report</div>
+    </a>
+    <a href="{% url 'export_report_excel' active_chama.id %}" class="quick-card">
+      <div class="quick-icon" style="background:#ecfdf5;color:#10b981;"><i class="fas fa-file-excel"></i></div>
+      <div class="quick-label">Excel Export</div>
+    </a>
+    <a href="{% url 'profile' %}" class="quick-card">
+      <div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-circle"></i></div>
+      <div class="quick-label">My Profile</div>
+    </a>
+    <a href="{% url 'chama_create' %}" class="quick-card">
+      <div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-plus-circle"></i></div>
+      <div class="quick-label">New Chama</div>
+    </a>
+    <a href="{% url 'logout' %}" class="quick-card">
+      <div class="quick-icon" style="background:#f1f5f9;color:#64748b;"><i class="fas fa-sign-out-alt"></i></div>
+      <div class="quick-label">Logout</div>
+    </a>
+  </div>
+</div>
+
+{% endif %}
+
+<!-- Quick Actions Modal -->
+<div class="modal fade" id="quickActionsModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:700;">Quick Actions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6"><a href="{% url 'chama_create' %}" class="quick-card"><div class="quick-icon" style="background:var(--brand-xlight);color:var(--brand);"><i class="fas fa-plus"></i></div><div class="quick-label">New Chama</div></a></div>
+          <div class="col-6"><a href="{% url 'profile' %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-circle"></i></div><div class="quick-label">My Profile</div></a></div>
+          {% if active_chama %}
+          <div class="col-6"><a href="{% url 'chama_members' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-user-plus"></i></div><div class="quick-label">Invite Member</div></a></div>
+          <div class="col-6"><a href="{% url 'wallet_dashboard' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#e6f5f0;color:var(--brand);"><i class="fas fa-wallet"></i></div><div class="quick-label">E-Wallet</div></a></div>
+          <div class="col-6"><a href="{% url 'contributions' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-plus-circle"></i></div><div class="quick-label">Contributions</div></a></div>
+          <div class="col-6"><a href="{% url 'mpesa_transactions' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#e6f5f0;color:#0d6e4f;"><i class="fas fa-mobile-screen-button"></i></div><div class="quick-label">M-Pesa</div></a></div>
+          <div class="col-6"><a href="{% url 'loans' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fee2e2;color:#ef4444;"><i class="fas fa-file-invoice-dollar"></i></div><div class="quick-label">Loans</div></a></div>
+          <div class="col-6"><a href="{% url 'reports' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#f3e8ff;color:#9333ea;"><i class="fas fa-chart-bar"></i></div><div class="quick-label">Reports</div></a></div>
+          <div class="col-6"><a href="{% url 'export_report_pdf' active_chama.id %}" class="quick-card"><div class="quick-icon" style="background:#fff7ed;color:#ea580c;"><i class="fas fa-file-pdf"></i></div><div class="quick-label">Download PDF</div></a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const sCtx = document.getElementById('summaryChart');
+  if(sCtx) new Chart(sCtx,{type:'line',data:{labels:['Jan','02','03','04','05','06','07','08','09','10','11','12'],datasets:[{label:'Contributions',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#00c97a',tension:.4,pointRadius:3,borderWidth:2,fill:false},{label:'Fines',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#f59e0b',tension:.4,pointRadius:3,borderWidth:2,fill:false},{label:'Expenses',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#ef4444',tension:.4,pointRadius:3,borderWidth:2,fill:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}},beginAtZero:true}}}});
+  const cCtx = document.getElementById('contributionsChart');
+  if(cCtx) new Chart(cCtx,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],datasets:[{label:'Contributions (KES)',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(13,110,79,.15)',borderColor:'#0d6e4f',borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}});
+  document.querySelectorAll('.balances-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.balances-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
+  document.querySelectorAll('.chart-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.chart-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
+</script>
+{% endblock %}

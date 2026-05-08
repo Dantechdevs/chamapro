@@ -1,375 +1,182 @@
+{% extends 'base.html' %}
 {% load static humanize %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Group Wallet – {{ chama.name }} | ChamaPro</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root{--brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;--sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;--accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);}
-    *{box-sizing:border-box;}body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
 
-    /* Sidebar */
-    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
-    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
-    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
-    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
-    .sidebar-logo .logo-text span{color:var(--accent);}
-    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
-    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
-    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
-    .chama-btn .chama-icon{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
-    .chama-btn .chama-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .nav-section{padding:10px 0 4px;}
-    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
-    .nav-item-wrap{padding:1px 10px;}
-    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
-    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
-    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .nav-link-cp.active{background:var(--brand);color:#fff;}
-    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
-    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
-    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
-    .sidebar-user:hover{background:rgba(255,255,255,.07);}
-    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
-    .sidebar-user .user-info{flex:1;min-width:0;}
-    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
-    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
-    .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
+{% block title %}Group Wallet – {{ chama.name }} | ChamaPro{% endblock %}
+{% block nav_wallet %}active{% endblock %}
 
-    /* Topbar */
-    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
-    .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
-    .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
-    .topbar-group-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
-    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
-    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
-    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
-    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
-    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+{% block extra_css %}
+.grp-hero{background:linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#4f46e5 100%);border-radius:18px;padding:28px;color:#fff;box-shadow:0 4px 24px rgba(79,70,229,.3);margin-bottom:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.grp-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.55);margin-bottom:6px;}
+.grp-stat .value{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;}
+.grp-stat .sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;}
+.section-title{font-size:15px;font-weight:700;margin-bottom:12px;}
+.req-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:20px;}
+.req-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.req-header h6{font-size:14px;font-weight:700;margin:0;}
+.req-row{display:grid;grid-template-columns:1fr 100px 120px 140px;gap:8px;padding:12px 18px;border-top:1px solid var(--border);align-items:center;}
+.req-row:hover{background:#fafafa;}
+.req-member{font-size:13px;font-weight:600;}
+.req-phone{font-size:12px;color:var(--muted);}
+.req-amount{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--danger);}
+.req-date{font-size:11px;color:var(--muted);}
+.req-actions{display:flex;gap:6px;}
+.btn-approve{background:var(--brand);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-reject{background:#fff;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-approve:hover{background:var(--brand-light);}
+.btn-reject:hover{background:#fee2e2;}
+.status-badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;display:inline-block;}
+.status-pending{background:#fef3c7;color:#d97706;}
+.status-approved{background:#e6f5f0;color:var(--brand);}
+.status-paid{background:#dcfce7;color:#16a34a;}
+.status-rejected{background:#fee2e2;color:var(--danger);}
+.status-failed{background:#f1f5f9;color:var(--muted);}
+.member-wallets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px;}
+.mw-card{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:var(--card-shadow);}
+.mw-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+.mw-balance{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;color:var(--brand);}
+.mw-frozen{color:var(--danger);font-size:11px;}
+@media(max-width:768px){.grp-hero{grid-template-columns:1fr;}.req-row{grid-template-columns:1fr;}}
+{% endblock %}
 
-    /* Layout */
-    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
-    .main-content{padding:24px;}
-    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
-    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
-
-    /* Group wallet specific */
-    .grp-hero{background:linear-gradient(135deg,#1e1b4b 0%,#3730a3 60%,#4f46e5 100%);border-radius:18px;padding:28px;color:#fff;box-shadow:0 4px 24px rgba(79,70,229,.3);margin-bottom:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-    .grp-stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.55);margin-bottom:6px;}
-    .grp-stat .value{font-size:24px;font-weight:800;font-family:'DM Mono',monospace;}
-    .grp-stat .sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:3px;}
-    .section-title{font-size:15px;font-weight:700;margin-bottom:12px;}
-    .req-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:20px;}
-    .req-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-    .req-header h6{font-size:14px;font-weight:700;margin:0;}
-    .req-row{display:grid;grid-template-columns:1fr 100px 120px 140px;gap:8px;padding:12px 18px;border-top:1px solid var(--border);align-items:center;}
-    .req-row:hover{background:#fafafa;}
-    .req-member{font-size:13px;font-weight:600;}
-    .req-phone{font-size:12px;color:var(--muted);}
-    .req-amount{font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--danger);}
-    .req-date{font-size:11px;color:var(--muted);}
-    .req-actions{display:flex;gap:6px;}
-    .btn-approve{background:var(--brand);color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
-    .btn-reject{background:#fff;color:var(--danger);border:1px solid var(--danger);border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
-    .btn-approve:hover{background:var(--brand-light);}
-    .btn-reject:hover{background:#fee2e2;}
-    .status-badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:700;display:inline-block;}
-    .status-pending{background:#fef3c7;color:#d97706;}
-    .status-approved{background:#e6f5f0;color:var(--brand);}
-    .status-paid{background:#dcfce7;color:#16a34a;}
-    .status-rejected{background:#fee2e2;color:var(--danger);}
-    .status-failed{background:#f1f5f9;color:var(--muted);}
-    .member-wallets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:20px;}
-    .mw-card{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:var(--card-shadow);}
-    .mw-name{font-size:13px;font-weight:700;margin-bottom:4px;}
-    .mw-balance{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;color:var(--brand);}
-    .mw-frozen{color:var(--danger);font-size:11px;}
-    .modal-content{border-radius:16px;border:none;}
-    .form-control:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,110,79,.1);}
-
-    @media(max-width:768px){.sidebar{width:0;overflow:hidden;}.topbar,.main-wrap{left:0;margin-left:0;}.sidebar.open{width:var(--sidebar-w);}.grp-hero{grid-template-columns:1fr;}.req-row{grid-template-columns:1fr;}}
-  </style>
-</head>
-<body>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="plan-banner">
-    <span>Free Plan</span>
-    <a href="#" class="upgrade-btn">UPGRADE</a>
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="page-title">Group Wallet</h1>
+    <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Admin View</p>
   </div>
-  <div class="sidebar-logo">
-    <div class="logo-icon">CP</div>
-    <div class="logo-text">Chama<span>Pro</span></div>
+  <a href="{% url 'wallet_dashboard' chama.id %}"
+     style="font-size:13px;color:var(--brand);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:6px;">
+    <i class="fas fa-arrow-left"></i> My Wallet
+  </a>
+</div>
+
+<!-- Group hero -->
+<div class="grp-hero">
+  <div class="grp-stat">
+    <div class="label">Group Balance</div>
+    <div class="value">KES {{ group_wallet.balance|floatformat:2|intcomma }}</div>
+    <div class="sub">Available treasury</div>
   </div>
-  <div class="chama-selector-wrap">
-    <div class="dropdown">
-      <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
-        <div class="chama-icon"><i class="fas fa-users" style="font-size:11px;"></i></div>
-        <span class="chama-name">{{ chama.name }}</span>
-      </div>
-      <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
-        <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
-      </ul>
-    </div>
+  <div class="grp-stat">
+    <div class="label">Total Received</div>
+    <div class="value">KES {{ group_wallet.total_contributions_received|floatformat:2|intcomma }}</div>
+    <div class="sub">All contributions</div>
   </div>
-  <nav style="flex:1;padding-bottom:8px;">
-    <div class="nav-section">
-      <div class="nav-item-wrap">
-        <a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp active"><i class="fas fa-wallet"></i> E-Wallet</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits <span class="badge-soon">SOON</span></a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals <span class="badge-soon">SOON</span></a>
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Management</div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'chama_members' chama.id %}" class="nav-link-cp"><i class="fas fa-users"></i> Members</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'contributions' chama.id %}" class="nav-link-cp"><i class="fas fa-hand-holding-dollar"></i> Contributions</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp"><i class="fas fa-mobile-screen-button"></i> M-Pesa</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'loans' chama.id %}" class="nav-link-cp"><i class="fas fa-money-bill-wave"></i> Loans</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="/chama/1/fines/" class="nav-link-cp"><i class="fas fa-triangle-exclamation"></i> Fines</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span></a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a>
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Reports</div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'reports' chama.id %}" class="nav-link-cp"><i class="fas fa-chart-bar"></i> Reports</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp"><i class="fas fa-download"></i> Download Data</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a>
-      </div>
-    </div>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="dropdown">
-      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
-        <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
-        <div class="user-info">
-          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-          <div class="user-role">{{ membership.get_role_display|default:"Admin" }}</div>
-        </div>
-      </div>
-      <ul class="dropdown-menu dropdown-menu-dark">
-        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</aside>
-
-<!-- TOPBAR -->
-<header class="topbar">
-  <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-  <div class="topbar-group-badge">
-    <div class="dot"></div>
-    <span>{{ chama.name|truncatechars:25 }}</span>
-  </div>
-  <div class="topbar-right">
-    <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
-    <div class="dropdown">
-      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
-        {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
-      </div>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
-        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</header>
-
-<!-- MAIN -->
-<div class="main-wrap">
-  <div class="main-content">
-
-    <div class="d-flex align-items-center justify-content-between mb-4">
-      <div>
-        <h1 class="page-title">Group Wallet</h1>
-        <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Admin View</p>
-      </div>
-      <a href="{% url 'wallet_dashboard' chama.id %}"
-         style="font-size:13px;color:var(--brand);text-decoration:none;font-weight:600;display:flex;align-items:center;gap:6px;">
-        <i class="fas fa-arrow-left"></i> My Wallet
-      </a>
-    </div>
-
-    {% for msg in messages %}
-    <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show" style="border-radius:10px;">
-      {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-
-    <!-- Group hero -->
-    <div class="grp-hero">
-      <div class="grp-stat">
-        <div class="label">Group Balance</div>
-        <div class="value">KES {{ group_wallet.balance|floatformat:2|intcomma }}</div>
-        <div class="sub">Available treasury</div>
-      </div>
-      <div class="grp-stat">
-        <div class="label">Total Received</div>
-        <div class="value">KES {{ group_wallet.total_contributions_received|floatformat:2|intcomma }}</div>
-        <div class="sub">All contributions</div>
-      </div>
-      <div class="grp-stat">
-        <div class="label">Total Disbursed</div>
-        <div class="value">KES {{ group_wallet.total_disbursed|floatformat:2|intcomma }}</div>
-        <div class="sub">Payouts & expenses</div>
-      </div>
-    </div>
-
-    <!-- Pending withdrawals -->
-    <div class="section-title">
-      Pending Withdrawals
-      {% if pending_requests %}
-      <span style="background:var(--danger);color:#fff;font-size:11px;border-radius:20px;padding:2px 8px;font-weight:700;vertical-align:middle;">{{ pending_requests.count }}</span>
-      {% endif %}
-    </div>
-
-    <div class="req-card">
-      <div class="req-header"><h6>Awaiting Approval</h6></div>
-
-      {% for req in pending_requests %}
-      <div class="req-row">
-        <div>
-          <div class="req-member">{{ req.wallet.membership.user.get_full_name }}</div>
-          <div class="req-phone">{{ req.phone_number }}</div>
-          <div class="req-date">{{ req.created_at|date:"d M Y, H:i" }}</div>
-        </div>
-        <div class="req-amount">KES {{ req.amount|floatformat:2|intcomma }}</div>
-        <div><span class="status-badge status-pending">Pending</span></div>
-        <div class="req-actions">
-          <form method="post" action="{% url 'approve_withdrawal' chama.id req.pk %}" style="display:inline;">
-            {% csrf_token %}
-            <button class="btn-approve" onclick="return confirm('Approve KES {{ req.amount }} withdrawal?')">
-              <i class="fas fa-check"></i> Approve
-            </button>
-          </form>
-          <button class="btn-reject" data-bs-toggle="modal" data-bs-target="#rejectModal{{ req.pk }}">
-            <i class="fas fa-xmark"></i> Reject
-          </button>
-        </div>
-      </div>
-
-      <!-- Per-request reject modal -->
-      <div class="modal fade" id="rejectModal{{ req.pk }}" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h6 class="modal-title" style="font-weight:700;">Reject Withdrawal</h6>
-              <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <p style="font-size:13px;color:var(--muted);">
-                KES {{ req.amount|floatformat:2|intcomma }} will be returned to
-                {{ req.wallet.membership.user.get_full_name }}'s wallet.
-              </p>
-              <form method="post" action="{% url 'reject_withdrawal' chama.id req.pk %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                  <label class="form-label" style="font-size:13px;font-weight:600;">Reason (optional)</label>
-                  <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Insufficient group funds"></textarea>
-                </div>
-                <button type="submit" class="btn w-100" style="background:var(--danger);color:#fff;font-weight:700;border-radius:10px;">
-                  Confirm Reject
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      {% empty %}
-      <div style="padding:30px;text-align:center;color:var(--muted);font-size:13px;">
-        <i class="fas fa-circle-check" style="font-size:24px;color:var(--brand);opacity:.4;display:block;margin-bottom:8px;"></i>
-        No pending withdrawals
-      </div>
-      {% endfor %}
-    </div>
-
-    <!-- Member wallet balances -->
-    <div class="section-title">Member Wallet Balances</div>
-    <div class="member-wallets-grid">
-      {% for w in member_wallets %}
-      <div class="mw-card">
-        <div class="mw-name">{{ w.membership.user.get_full_name }}</div>
-        <div class="mw-balance">KES {{ w.balance|floatformat:2|intcomma }}</div>
-        {% if w.is_frozen %}<div class="mw-frozen"><i class="fas fa-lock"></i> Frozen</div>{% endif %}
-      </div>
-      {% empty %}
-      <p style="color:var(--muted);font-size:13px;">No member wallets yet.</p>
-      {% endfor %}
-    </div>
-
-    <!-- Withdrawal history -->
-    <div class="section-title">Withdrawal History</div>
-    <div class="req-card">
-      <div class="req-header"><h6>All Requests</h6></div>
-      {% for req in page_obj %}
-      <div class="req-row">
-        <div>
-          <div class="req-member">{{ req.wallet.membership.user.get_full_name }}</div>
-          <div class="req-phone">{{ req.phone_number }}</div>
-          <div class="req-date">{{ req.created_at|date:"d M Y, H:i" }}</div>
-        </div>
-        <div class="req-amount">KES {{ req.amount|floatformat:2|intcomma }}</div>
-        <div><span class="status-badge status-{{ req.status }}">{{ req.get_status_display }}</span></div>
-        <div style="font-size:11px;color:var(--muted);">
-          {% if req.approved_by %}By {{ req.approved_by.get_full_name }}<br>{{ req.approved_at|date:"d M Y" }}{% else %}—{% endif %}
-        </div>
-      </div>
-      {% empty %}
-      <div style="padding:30px;text-align:center;color:var(--muted);font-size:13px;">No requests yet.</div>
-      {% endfor %}
-
-      {% if page_obj.has_other_pages %}
-      <div style="padding:14px;text-align:center;border-top:1px solid var(--border);display:flex;justify-content:center;gap:16px;align-items:center;">
-        {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" style="color:var(--brand);font-size:13px;text-decoration:none;">← Prev</a>{% endif %}
-        <span style="font-size:13px;color:var(--muted);">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" style="color:var(--brand);font-size:13px;text-decoration:none;">Next →</a>{% endif %}
-      </div>
-      {% endif %}
-    </div>
-
+  <div class="grp-stat">
+    <div class="label">Total Disbursed</div>
+    <div class="value">KES {{ group_wallet.total_disbursed|floatformat:2|intcomma }}</div>
+    <div class="sub">Payouts & expenses</div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  const st = document.getElementById('sidebarToggle');
-  if(st) st.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
-</script>
-</body>
-</html>
+<!-- Pending withdrawals -->
+<div class="section-title">
+  Pending Withdrawals
+  {% if pending_requests %}
+  <span style="background:var(--danger);color:#fff;font-size:11px;border-radius:20px;padding:2px 8px;font-weight:700;vertical-align:middle;">{{ pending_requests.count }}</span>
+  {% endif %}
+</div>
+
+<div class="req-card">
+  <div class="req-header"><h6>Awaiting Approval</h6></div>
+  {% for req in pending_requests %}
+  <div class="req-row">
+    <div>
+      <div class="req-member">{{ req.wallet.membership.user.get_full_name }}</div>
+      <div class="req-phone">{{ req.phone_number }}</div>
+      <div class="req-date">{{ req.created_at|date:"d M Y, H:i" }}</div>
+    </div>
+    <div class="req-amount">KES {{ req.amount|floatformat:2|intcomma }}</div>
+    <div><span class="status-badge status-pending">Pending</span></div>
+    <div class="req-actions">
+      <form method="post" action="{% url 'approve_withdrawal' chama.id req.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button class="btn-approve" onclick="return confirm('Approve KES {{ req.amount }} withdrawal?')">
+          <i class="fas fa-check"></i> Approve
+        </button>
+      </form>
+      <button class="btn-reject" data-bs-toggle="modal" data-bs-target="#rejectModal{{ req.pk }}">
+        <i class="fas fa-xmark"></i> Reject
+      </button>
+    </div>
+  </div>
+
+  <!-- Reject modal -->
+  <div class="modal fade" id="rejectModal{{ req.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title" style="font-weight:700;">Reject Withdrawal</h6>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--muted);">
+            KES {{ req.amount|floatformat:2|intcomma }} will be returned to
+            {{ req.wallet.membership.user.get_full_name }}'s wallet.
+          </p>
+          <form method="post" action="{% url 'reject_withdrawal' chama.id req.pk %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label">Reason (optional)</label>
+              <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Insufficient group funds"></textarea>
+            </div>
+            <button type="submit" class="btn w-100" style="background:var(--danger);color:#fff;font-weight:700;border-radius:10px;">
+              Confirm Reject
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div style="padding:30px;text-align:center;color:var(--muted);font-size:13px;">
+    <i class="fas fa-circle-check" style="font-size:24px;color:var(--brand);opacity:.4;display:block;margin-bottom:8px;"></i>
+    No pending withdrawals
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Member wallet balances -->
+<div class="section-title">Member Wallet Balances</div>
+<div class="member-wallets-grid">
+  {% for w in member_wallets %}
+  <div class="mw-card">
+    <div class="mw-name">{{ w.membership.user.get_full_name }}</div>
+    <div class="mw-balance">KES {{ w.balance|floatformat:2|intcomma }}</div>
+    {% if w.is_frozen %}<div class="mw-frozen"><i class="fas fa-lock"></i> Frozen</div>{% endif %}
+  </div>
+  {% empty %}
+  <p style="color:var(--muted);font-size:13px;">No member wallets yet.</p>
+  {% endfor %}
+</div>
+
+<!-- Withdrawal history -->
+<div class="section-title">Withdrawal History</div>
+<div class="req-card">
+  <div class="req-header"><h6>All Requests</h6></div>
+  {% for req in page_obj %}
+  <div class="req-row">
+    <div>
+      <div class="req-member">{{ req.wallet.membership.user.get_full_name }}</div>
+      <div class="req-phone">{{ req.phone_number }}</div>
+      <div class="req-date">{{ req.created_at|date:"d M Y, H:i" }}</div>
+    </div>
+    <div class="req-amount">KES {{ req.amount|floatformat:2|intcomma }}</div>
+    <div><span class="status-badge status-{{ req.status }}">{{ req.get_status_display }}</span></div>
+    <div style="font-size:11px;color:var(--muted);">
+      {% if req.approved_by %}By {{ req.approved_by.get_full_name }}<br>{{ req.approved_at|date:"d M Y" }}{% else %}—{% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div style="padding:30px;text-align:center;color:var(--muted);font-size:13px;">No requests yet.</div>
+  {% endfor %}
+
+  {% if page_obj.has_other_pages %}
+  <div style="padding:14px;text-align:center;border-top:1px solid var(--border);display:flex;justify-content:center;gap:16px;align-items:center;">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" style="color:var(--brand);font-size:13px;text-decoration:none;">← Prev</a>{% endif %}
+    <span style="font-size:13px;color:var(--muted);">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" style="color:var(--brand);font-size:13px;text-decoration:none;">Next →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

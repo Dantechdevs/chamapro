@@ -1,678 +1,245 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Profile | ChamaPro</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;
-      --sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;
-      --accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;
-      --text:#111827;--muted:#6b7280;--border:#e5e7eb;
-      --card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
-    }
-    *{box-sizing:border-box;}
-    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
+{% extends 'base.html' %}
+{% load humanize %}
 
-    /* ── SIDEBAR ─────────────────────────────────────────────────── */
-    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
-    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
-    .sidebar-logo .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
-    .sidebar-logo .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
-    .sidebar-logo .logo-text span{color:var(--accent);}
-    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
-    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
-    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
-    .chama-btn .chama-icon{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
-    .chama-btn .chama-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .nav-section{padding:10px 0 4px;}
-    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
-    .nav-item-wrap{padding:1px 10px;}
-    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
-    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
-    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .nav-link-cp.active{background:var(--brand);color:#fff;}
-    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
-    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
-    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
-    .sidebar-user:hover{background:rgba(255,255,255,.07);}
-    .sidebar-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
-    .sidebar-user .user-info{flex:1;min-width:0;}
-    .sidebar-user .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .sidebar-user .user-role{font-size:11px;color:rgba(255,255,255,.4);}
-    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
-    .plan-banner .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
+{% block title %}My Profile | ChamaPro{% endblock %}
 
-    /* ── TOPBAR ──────────────────────────────────────────────────── */
-    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
-    .topbar-group-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
-    .topbar-group-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
-    .topbar-group-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
-    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
-    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
-    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
-    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
-    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+{% block nav_profile %}active{% endblock %}
 
-    /* ── MAIN ────────────────────────────────────────────────────── */
-    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
-    .main-content{padding:24px;}
-    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
-    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+{% block extra_css %}
+.profile-header-card{background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 60%,var(--brand-light) 100%);border-radius:16px;padding:28px 28px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:20px;box-shadow:var(--card-shadow);position:relative;overflow:hidden;}
+.profile-header-card::before{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.04);}
+.profile-header-card::after{content:'';position:absolute;right:60px;bottom:-80px;width:160px;height:160px;border-radius:50%;background:rgba(0,201,122,.07);}
+.profile-avatar-wrap{position:relative;flex-shrink:0;}
+.profile-avatar-img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.4);}
+.profile-avatar-initials{width:76px;height:76px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;border:3px solid rgba(255,255,255,.35);letter-spacing:-.5px;}
+.kyc-badge{position:absolute;bottom:2px;right:2px;width:22px;height:22px;border-radius:50%;background:#fff;color:var(--brand);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--brand);}
+.profile-header-info{flex:1;color:#fff;}
+.profile-header-info h1{font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-.3px;}
+.profile-subline{font-size:13px;opacity:.8;margin:0 0 10px;}
+.profile-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.profile-header-actions{display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;}
+.btn-edit{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .15s;}
+.btn-edit:hover{background:rgba(255,255,255,.25);color:#fff;}
+.btn-kyc{background:var(--accent2);border:none;color:#fff;border-radius:10px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.chip-green{background:rgba(0,201,122,.2);color:#a7f3d0;}
+.chip-amber{background:rgba(245,158,11,.2);color:#fde68a;}
+.chip-blue{background:rgba(59,130,246,.2);color:#bfdbfe;}
+.chip-gray{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);}
+.card-chip-green{background:#d1fae5;color:#065f46;}
+.card-chip-amber{background:#fef3c7;color:#92400e;}
+.card-chip-blue{background:#dbeafe;color:#1e40af;}
+.card-chip-gray{background:#f3f4f6;color:#374151;}
+.profile-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.profile-col{display:flex;flex-direction:column;gap:16px;}
+.card-panel{background:#fff;border-radius:14px;padding:20px;box-shadow:var(--card-shadow);overflow:hidden;}
+.card-panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.card-panel-title a{font-size:12px;text-transform:none;letter-spacing:0;color:var(--brand);font-weight:600;text-decoration:none;}
+.credit-score-row{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
+.score-ring{width:70px;height:70px;border-radius:50%;border:5px solid var(--brand);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.score-ring.green{border-color:var(--brand);}.score-ring.blue{border-color:var(--info);}.score-ring.amber{border-color:var(--accent2);}.score-ring.red{border-color:var(--danger);}
+.score-num{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;color:var(--text);}
+.score-max{font-size:9px;color:var(--muted);}
+.score-detail{flex:1;}
+.score-badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:5px;}
+.score-badge.green{background:#d1fae5;color:#065f46;}.score-badge.blue{background:#dbeafe;color:#1e40af;}.score-badge.amber{background:#fef3c7;color:#92400e;}.score-badge.red{background:#fee2e2;color:#991b1b;}
+.score-desc{font-size:11.5px;color:var(--muted);margin-bottom:8px;}
+.progress-bar-wrap{height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;}
+.progress-fill.green{background:var(--brand);}.progress-fill.blue{background:var(--info);}.progress-fill.amber{background:var(--accent2);}.progress-fill.red{background:var(--danger);}
+.score-breakdown{border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:7px;margin-top:2px;}
+.score-item{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);}
+.score-item strong{font-family:'DM Mono',monospace;}
+.text-green{color:#10b981;font-weight:700;}.text-red{color:var(--danger);font-weight:700;}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-row .dr-label{color:var(--muted);}
+.detail-row .dr-value{font-weight:600;color:var(--text);text-align:right;max-width:60%;}
+.dr-value.muted{color:var(--muted);font-weight:400;}
+.pref-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.pref-row:last-child{border-bottom:none;}
+.pref-label{color:var(--muted);}
+.badge-pref{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
+.badge-on{background:#d1fae5;color:#065f46;}.badge-off{background:#f3f4f6;color:#9ca3af;}.badge-freq{background:#dbeafe;color:#1e40af;}
+.chama-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
+.chama-row:last-child{border-bottom:none;}
+.chama-icon-sq{width:38px;height:38px;border-radius:9px;background:var(--brand-xlight);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.chama-info{flex:1;}
+.chama-name-row{font-size:13.5px;font-weight:700;color:var(--text);}
+.chama-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:90px;padding-top:8px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+.bar-fill{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:4px;}
+.bar-fill.zero{background:#e5e7eb;}
+.bar-label{font-size:10px;color:var(--muted);}
+.activity-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.activity-row:last-child{border-bottom:none;}
+.activity-dot{width:8px;height:8px;border-radius:50%;background:var(--brand);margin-top:5px;flex-shrink:0;}
+.activity-dot.fine{background:var(--accent2);}.activity-dot.loan{background:var(--info);}.activity-dot.repaid{background:var(--brand);}.activity-dot.joined{background:#8b5cf6;}
+.activity-text{font-size:12.5px;color:#374151;}
+.activity-time{font-size:11px;color:var(--muted);margin-top:2px;}
+@media(max-width:768px){.profile-body{grid-template-columns:1fr;}.stat-row{grid-template-columns:1fr 1fr;}}
+{% endblock %}
 
-    /* ── PROFILE HEADER CARD ──────────────────────────────────────── */
-    .profile-header-card{
-      background:linear-gradient(135deg,var(--brand-dark) 0%,var(--brand) 60%,var(--brand-light) 100%);
-      border-radius:16px;padding:28px 28px 24px;
-      display:flex;align-items:center;gap:22px;flex-wrap:wrap;
-      margin-bottom:20px;box-shadow:var(--card-shadow);
-      position:relative;overflow:hidden;
-    }
-    .profile-header-card::before{
-      content:'';position:absolute;right:-60px;top:-60px;
-      width:220px;height:220px;border-radius:50%;
-      background:rgba(255,255,255,.04);
-    }
-    .profile-header-card::after{
-      content:'';position:absolute;right:60px;bottom:-80px;
-      width:160px;height:160px;border-radius:50%;
-      background:rgba(0,201,122,.07);
-    }
-    .profile-avatar-wrap{position:relative;flex-shrink:0;}
-    .profile-avatar-img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.4);}
-    .profile-avatar-initials{
-      width:76px;height:76px;border-radius:50%;
-      background:rgba(255,255,255,.18);
-      display:flex;align-items:center;justify-content:center;
-      font-size:26px;font-weight:800;color:#fff;
-      border:3px solid rgba(255,255,255,.35);
-      letter-spacing:-.5px;
-    }
-    .kyc-badge{
-      position:absolute;bottom:2px;right:2px;
-      width:22px;height:22px;border-radius:50%;
-      background:#fff;color:var(--brand);
-      font-size:11px;font-weight:700;
-      display:flex;align-items:center;justify-content:center;
-      border:2px solid var(--brand);
-    }
-    .profile-header-info{flex:1;color:#fff;}
-    .profile-header-info h1{font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-.3px;}
-    .profile-subline{font-size:13px;opacity:.8;margin:0 0 10px;}
-    .profile-chips{display:flex;flex-wrap:wrap;gap:6px;}
-    .profile-header-actions{display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;}
-    .btn-edit{
-      background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);
-      color:#fff;border-radius:10px;padding:8px 18px;
-      font-size:13px;font-weight:600;cursor:pointer;
-      display:inline-flex;align-items:center;gap:6px;
-      text-decoration:none;transition:background .15s;
-    }
-    .btn-edit:hover{background:rgba(255,255,255,.25);color:#fff;}
-    .btn-kyc{
-      background:var(--accent2);border:none;color:#fff;
-      border-radius:10px;padding:8px 18px;
-      font-size:13px;font-weight:700;cursor:pointer;
-      display:inline-flex;align-items:center;gap:6px;
-    }
-
-    /* ── CHIPS ───────────────────────────────────────────────────── */
-    .chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-    .chip-green{background:rgba(0,201,122,.2);color:#a7f3d0;}
-    .chip-amber{background:rgba(245,158,11,.2);color:#fde68a;}
-    .chip-blue{background:rgba(59,130,246,.2);color:#bfdbfe;}
-    .chip-gray{background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);}
-    /* for cards (non-header context) */
-    .card-chip-green{background:#d1fae5;color:#065f46;}
-    .card-chip-amber{background:#fef3c7;color:#92400e;}
-    .card-chip-blue{background:#dbeafe;color:#1e40af;}
-    .card-chip-gray{background:#f3f4f6;color:#374151;}
-
-    /* ── STAT ROW ─────────────────────────────────────────────────── */
-    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-    .stat-card{background:#fff;border-radius:14px;padding:18px 20px;box-shadow:var(--card-shadow);border-top:3px solid var(--brand);}
-    .stat-card.warning{border-top-color:var(--accent2);}
-    .stat-card.danger{border-top-color:var(--danger);}
-    .stat-card.info{border-top-color:var(--info);}
-    .stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
-    .stat-value{font-size:20px;font-weight:800;font-family:'DM Mono',monospace;letter-spacing:-.5px;}
-    .stat-sub{font-size:11px;color:var(--muted);margin-top:4px;}
-
-    /* ── BODY GRID ───────────────────────────────────────────────── */
-    .profile-body{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-    .profile-col{display:flex;flex-direction:column;gap:16px;}
-
-    /* ── CARDS ───────────────────────────────────────────────────── */
-    .card-panel{background:#fff;border-radius:14px;padding:20px;box-shadow:var(--card-shadow);overflow:hidden;}
-    .card-panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-    .card-panel-title a{font-size:12px;text-transform:none;letter-spacing:0;color:var(--brand);font-weight:600;text-decoration:none;}
-
-    /* ── CREDIT SCORE ────────────────────────────────────────────── */
-    .credit-score-row{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
-    .score-ring{
-      width:70px;height:70px;border-radius:50%;
-      border:5px solid var(--brand);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      flex-shrink:0;
-    }
-    .score-ring.green{border-color:var(--brand);}
-    .score-ring.blue{border-color:var(--info);}
-    .score-ring.amber{border-color:var(--accent2);}
-    .score-ring.red{border-color:var(--danger);}
-    .score-num{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;line-height:1;color:var(--text);}
-    .score-max{font-size:9px;color:var(--muted);}
-    .score-detail{flex:1;}
-    .score-badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:5px;}
-    .score-badge.green{background:#d1fae5;color:#065f46;}
-    .score-badge.blue{background:#dbeafe;color:#1e40af;}
-    .score-badge.amber{background:#fef3c7;color:#92400e;}
-    .score-badge.red{background:#fee2e2;color:#991b1b;}
-    .score-desc{font-size:11.5px;color:var(--muted);margin-bottom:8px;}
-    .progress-bar-wrap{height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden;}
-    .progress-fill{height:100%;border-radius:3px;}
-    .progress-fill.green{background:var(--brand);}
-    .progress-fill.blue{background:var(--info);}
-    .progress-fill.amber{background:var(--accent2);}
-    .progress-fill.red{background:var(--danger);}
-    .score-breakdown{border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:7px;margin-top:2px;}
-    .score-item{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);}
-    .score-item strong{font-family:'DM Mono',monospace;}
-    .text-green{color:#10b981;font-weight:700;}
-    .text-red{color:var(--danger);font-weight:700;}
-
-    /* ── DETAIL ROWS ─────────────────────────────────────────────── */
-    .detail-row{
-      display:flex;justify-content:space-between;align-items:center;
-      padding:8px 0;border-bottom:1px solid var(--border);
-      font-size:13px;
-    }
-    .detail-row:last-child{border-bottom:none;}
-    .detail-row .dr-label{color:var(--muted);}
-    .detail-row .dr-value{font-weight:600;color:var(--text);text-align:right;max-width:60%;}
-    .dr-value.muted{color:var(--muted);font-weight:400;}
-
-    /* ── PREFERENCE ROWS ─────────────────────────────────────────── */
-    .pref-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
-    .pref-row:last-child{border-bottom:none;}
-    .pref-label{color:var(--muted);}
-    .badge-pref{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;}
-    .badge-on{background:#d1fae5;color:#065f46;}
-    .badge-off{background:#f3f4f6;color:#9ca3af;}
-    .badge-freq{background:#dbeafe;color:#1e40af;}
-
-    /* ── CHAMA ROWS ──────────────────────────────────────────────── */
-    .chama-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);}
-    .chama-row:last-child{border-bottom:none;}
-    .chama-icon-sq{
-      width:38px;height:38px;border-radius:9px;
-      background:var(--brand-xlight);color:var(--brand);
-      display:flex;align-items:center;justify-content:center;
-      font-size:13px;font-weight:800;flex-shrink:0;
-    }
-    .chama-info{flex:1;}
-    .chama-name{font-size:13.5px;font-weight:700;color:var(--text);}
-    .chama-meta{font-size:11px;color:var(--muted);margin-top:2px;}
-
-    /* ── BAR CHART ───────────────────────────────────────────────── */
-    .bar-chart{display:flex;align-items:flex-end;gap:10px;height:90px;padding-top:8px;}
-    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
-    .bar-fill{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:4px;transition:height .3s ease;}
-    .bar-fill.zero{background:#e5e7eb;}
-    .bar-label{font-size:10px;color:var(--muted);}
-
-    /* ── ACTIVITY ────────────────────────────────────────────────── */
-    .activity-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
-    .activity-row:last-child{border-bottom:none;}
-    .activity-dot{width:8px;height:8px;border-radius:50%;background:var(--brand);margin-top:5px;flex-shrink:0;}
-    .activity-dot.fine{background:var(--accent2);}
-    .activity-dot.loan{background:var(--info);}
-    .activity-dot.repaid{background:var(--brand);}
-    .activity-dot.joined{background:#8b5cf6;}
-    .activity-text{font-size:12.5px;color:#374151;}
-    .activity-time{font-size:11px;color:var(--muted);margin-top:2px;}
-
-    /* ── RESPONSIVE ──────────────────────────────────────────────── */
-    @media(max-width:768px){
-      .sidebar{width:0;overflow:hidden;}
-      .topbar,.main-wrap{left:0;margin-left:0;}
-      .sidebar.open{width:var(--sidebar-w);}
-      .profile-body{grid-template-columns:1fr;}
-      .stat-row{grid-template-columns:1fr 1fr;}
-    }
-    @media(max-width:500px){
-      .stat-row{grid-template-columns:1fr;}
-    }
-  </style>
-</head>
-<body>
-
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="plan-banner">
-    <span>Free Plan</span>
-    <a href="#" class="upgrade-btn">UPGRADE</a>
-  </div>
-  <div class="sidebar-logo">
-    <div class="logo-icon">CP</div>
-    <div class="logo-text">Chama<span>Pro</span></div>
-  </div>
-  <div class="chama-selector-wrap">
-    <div class="dropdown">
-      <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
-        <div class="chama-icon"><i class="fas fa-users" style="font-size:11px;"></i></div>
-        <span class="chama-name">{{ chama.name }}</span>
-      </div>
-      <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
-        <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
-      </ul>
-    </div>
-  </div>
-  <nav style="flex:1;padding-bottom:8px;">
-    <div class="nav-section">
-      <div class="nav-item-wrap">
-        <a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a>
-      </div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-wallet"></i> E-Wallet</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits <span class="badge-soon">SOON</span></a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals <span class="badge-soon">SOON</span></a>
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Management</div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'chama_members' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-users"></i> Members</a>
-      </div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'contributions' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-hand-holding-dollar"></i> Contributions</a>
-      </div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-mobile-screen-button"></i> M-Pesa</a>
-      </div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'loans' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-money-bill-wave"></i> Loans</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="/chama/1/fines/" class="nav-link-cp"><i class="fas fa-triangle-exclamation"></i> Fines</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span></a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a>
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Reports</div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'reports' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-chart-bar"></i> Reports</a>
-      </div>
-      <div class="nav-item-wrap">
-        {% if chama.id %}<a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-download"></i> Download Data</a>
-      </div>
-      <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a>
-      </div>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-label">Account</div>
-      <div class="nav-item-wrap">
-        <a href="{% url 'profile' %}" class="nav-link-cp active"><i class="fas fa-user-circle"></i> My Profile</a>
-      </div>
-    </div>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="dropdown">
-      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
-        <div class="avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
-        <div class="user-info">
-          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-          <div class="user-role">{{ membership.get_role_display|default:"Member" }}</div>
-        </div>
-      </div>
-      <ul class="dropdown-menu dropdown-menu-dark">
-        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</aside>
-
-<!-- TOPBAR -->
-<header class="topbar">
-  <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
-  <div class="topbar-group-badge">
-    <div class="dot"></div>
-    <span>My Profile</span>
-  </div>
-  <div class="topbar-right">
-    <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
-    <div class="dropdown">
-      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">
-        {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
-      </div>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
-        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-      </ul>
-    </div>
-  </div>
-</header>
-
-<!-- MAIN -->
-<div class="main-wrap">
-  <div class="main-content">
-
-    <!-- Page heading -->
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-      <div>
-        <h1 class="page-title">My Profile</h1>
-        <p class="page-sub">Manage your account, personal details and preferences</p>
-      </div>
-    </div>
-
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:13px;">
-          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-
-    <!-- Profile header card -->
-    <div class="profile-header-card mb-4">
-      <div class="profile-avatar-wrap">
-        {% if user.avatar %}
-          <img src="{{ user.avatar.url }}" alt="Avatar" class="profile-avatar-img">
-        {% else %}
-          <div class="profile-avatar-initials">
-            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-          </div>
-        {% endif %}
-        {% if user.kyc_status == 'verified' %}
-          <span class="kyc-badge" title="KYC Verified"><i class="fas fa-check" style="font-size:9px;"></i></span>
-        {% endif %}
-      </div>
-
-      <div class="profile-header-info">
-        <h1>{{ user.get_full_name|default:user.username }}</h1>
-        <p class="profile-subline">
-          {{ user.email }}{% if user.phone %} &nbsp;·&nbsp; {{ user.phone }}{% endif %}
-        </p>
-        <div class="profile-chips">
-          <span class="chip chip-green"><i class="fas fa-users" style="font-size:10px;margin-right:4px;"></i>{{ chama_count }} Chama{{ chama_count|pluralize }}</span>
-          <span class="chip chip-{% if user.kyc_status == 'verified' %}green{% elif user.kyc_status == 'pending' %}amber{% else %}gray{% endif %}">
-            KYC: {{ user.get_kyc_status_display }}
-          </span>
-          {% for m in memberships|slice:":3" %}
-            <span class="chip chip-blue">{{ m.get_role_display }} @ {{ m.chama.name }}</span>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="profile-header-actions">
-        <a href="{% url 'profile_edit' %}" class="btn-edit"><i class="fas fa-pen"></i> Edit Profile</a>
-        {% if user.kyc_status == 'unverified' %}
-        <form method="post" action="{% url 'profile_kyc' %}">
-          {% csrf_token %}
-          <button type="submit" class="btn-kyc"><i class="fas fa-shield-check"></i> Submit KYC</button>
-        </form>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Stat cards -->
-    <div class="stat-row">
-      <div class="stat-card">
-        <div class="stat-label">Total Contributed</div>
-        <div class="stat-value">KES {{ total_contributed|floatformat:0 }}</div>
-        <div class="stat-sub">across all chamas</div>
-      </div>
-      <div class="stat-card warning">
-        <div class="stat-label">Active Loan Balance</div>
-        <div class="stat-value">KES {{ active_loan_balance|floatformat:0 }}</div>
-        <div class="stat-sub">{% if active_loan_balance > 0 %}outstanding{% else %}no active loans{% endif %}</div>
-      </div>
-      <div class="stat-card {% if outstanding_fines > 0 %}danger{% else %}{% endif %}">
-        <div class="stat-label">Outstanding Fines</div>
-        <div class="stat-value" style="{% if outstanding_fines > 0 %}color:var(--danger);{% endif %}">KES {{ outstanding_fines|floatformat:0 }}</div>
-        <div class="stat-sub">{% if outstanding_fines == 0 %}all clear{% else %}unpaid penalties{% endif %}</div>
-      </div>
-      <div class="stat-card info">
-        <div class="stat-label">Payment Rate</div>
-        <div class="stat-value">{{ payment_rate }}%</div>
-        <div class="stat-sub">{% if payment_rate >= 90 %}excellent standing{% elif payment_rate >= 70 %}good standing{% else %}needs improvement{% endif %}</div>
-      </div>
-    </div>
-
-    <!-- Body grid -->
-    <div class="profile-body">
-
-      <!-- LEFT COLUMN -->
-      <div class="profile-col">
-
-        <!-- Credit Score -->
-        <div class="card-panel">
-          <div class="card-panel-title">Credit Score</div>
-          <div class="credit-score-row">
-            <div class="score-ring {{ credit_color }}">
-              <span class="score-num">{{ credit_score }}</span>
-              <span class="score-max">/ 850</span>
-            </div>
-            <div class="score-detail">
-              <span class="score-badge {{ credit_color }}">{{ credit_label }}</span>
-              <p class="score-desc">Based on contributions, loan history, fines &amp; tenure</p>
-              <div class="progress-bar-wrap">
-                <div class="progress-fill {{ credit_color }}" style="width:{{ credit_pct }}%;"></div>
-              </div>
-            </div>
-          </div>
-          <div class="score-breakdown">
-            <div class="score-item">
-              <span>Contribution consistency</span>
-              <strong class="text-green">{{ payment_rate }}%</strong>
-            </div>
-            <div class="score-item">
-              <span>Outstanding fines</span>
-              <strong class="{% if outstanding_fines == 0 %}text-green{% else %}text-red{% endif %}">
-                {% if outstanding_fines == 0 %}None{% else %}KES {{ outstanding_fines|floatformat:0 }}{% endif %}
-              </strong>
-            </div>
-            <div class="score-item">
-              <span>Active chamas</span>
-              <strong>{{ chama_count }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Personal Details -->
-        <div class="card-panel">
-          <div class="card-panel-title">Personal Details <a href="{% url 'profile_edit' %}">Edit →</a></div>
-          <div class="detail-row">
-            <span class="dr-label">National ID</span>
-            <span class="dr-value {% if not user.national_id %}muted{% endif %}">
-              {% if user.national_id %}{{ user.national_id }}{% else %}Not set{% endif %}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="dr-label">KRA PIN</span>
-            <span class="dr-value {% if not user.kra_pin %}muted{% endif %}">
-              {% if user.kra_pin %}{{ user.kra_pin }}{% else %}Not set{% endif %}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="dr-label">M-Pesa No.</span>
-            <span class="dr-value {% if not user.mpesa_number %}muted{% endif %}">
-              {% if user.mpesa_number %}{{ user.mpesa_number }}{% else %}Not set{% endif %}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="dr-label">Bank</span>
-            <span class="dr-value {% if not user.bank_name %}muted{% endif %}">
-              {% if user.bank_name %}{{ user.bank_name }}{% if user.bank_account %} · {{ user.bank_account }}{% endif %}{% else %}Not set{% endif %}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="dr-label">Occupation</span>
-            <span class="dr-value {% if not user.occupation %}muted{% endif %}">{{ user.occupation|default:"—" }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="dr-label">Location</span>
-            <span class="dr-value {% if not user.location %}muted{% endif %}">{{ user.location|default:"—" }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="dr-label">KYC Status</span>
-            <span class="dr-value">
-              <span class="badge-pref card-chip-{% if user.kyc_status == 'verified' %}green{% elif user.kyc_status == 'pending' %}amber{% else %}gray{% endif %}" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;">
-                {{ user.get_kyc_status_display }}
-              </span>
-            </span>
-          </div>
-          {% if user.bio %}
-          <div class="detail-row">
-            <span class="dr-label">Bio</span>
-            <span class="dr-value" style="font-style:italic;font-size:12px;">{{ user.bio }}</span>
-          </div>
-          {% endif %}
-        </div>
-
-        <!-- Notifications & Preferences -->
-        <div class="card-panel">
-          <div class="card-panel-title">Notifications &amp; Preferences</div>
-          <div class="pref-row">
-            <span class="pref-label">M-Pesa alerts</span>
-            <span class="badge-pref {% if prefs.mpesa_alerts %}badge-on{% else %}badge-off{% endif %}">
-              {% if prefs.mpesa_alerts %}On{% else %}Off{% endif %}
-            </span>
-          </div>
-          <div class="pref-row">
-            <span class="pref-label">SMS reminders</span>
-            <span class="badge-pref {% if prefs.sms_reminders %}badge-on{% else %}badge-off{% endif %}">
-              {% if prefs.sms_reminders %}On{% else %}Off{% endif %}
-            </span>
-          </div>
-          <div class="pref-row">
-            <span class="pref-label">Email reports</span>
-            <span class="badge-pref badge-freq">{{ prefs.get_report_frequency_display }}</span>
-          </div>
-          <div class="pref-row">
-            <span class="pref-label">Two-Factor Auth</span>
-            <span class="badge-pref {% if prefs.two_fa_enabled %}badge-on{% else %}badge-off{% endif %}">
-              {% if prefs.two_fa_enabled %}Enabled{% else %}Disabled{% endif %}
-            </span>
-          </div>
-        </div>
-
-      </div><!-- end left col -->
-
-      <!-- RIGHT COLUMN -->
-      <div class="profile-col">
-
-        <!-- My Chamas -->
-        <div class="card-panel">
-          <div class="card-panel-title">My Chamas <a href="{% url 'dashboard' %}">View all →</a></div>
-          {% for stat in chama_stats %}
-          <div class="chama-row">
-            <div class="chama-icon-sq">{{ stat.chama.name|slice:":2"|upper }}</div>
-            <div class="chama-info">
-              <div class="chama-name">{{ stat.chama.name }}</div>
-              <div class="chama-meta">
-                KES {{ stat.chama.contribution_amount|floatformat:0 }}/mo
-                &nbsp;·&nbsp; <strong>{{ stat.membership.get_role_display }}</strong>
-                &nbsp;·&nbsp; Contributed KES {{ stat.total_paid|floatformat:0 }}
-              </div>
-            </div>
-            <span class="badge-pref {% if stat.membership.active %}badge-on{% else %}badge-off{% endif %}">
-              {% if stat.membership.active %}Active{% else %}Inactive{% endif %}
-            </span>
-          </div>
-          {% empty %}
-          <p style="color:var(--muted);font-size:13px;padding:8px 0;">
-            No chamas yet. <a href="{% url 'chama_create' %}" style="color:var(--brand);font-weight:600;">Create one →</a>
-          </p>
-          {% endfor %}
-        </div>
-
-        <!-- Contribution Trend -->
-        <div class="card-panel">
-          <div class="card-panel-title">Contribution Trend — Last 6 Months</div>
-          <div class="bar-chart">
-            {% for month in monthly_trend %}
-              {% widthratio month.amount max_trend 80 as bar_h %}
-              <div class="bar-col">
-                <div class="bar-fill {% if month.amount == 0 %}zero{% endif %}"
-                     style="height:{{ bar_h|default:4 }}px;"
-                     title="KES {{ month.amount|floatformat:0 }}">
-                </div>
-                <div class="bar-label">{{ month.label }}</div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="card-panel">
-          <div class="card-panel-title">Recent Activity</div>
-          {% for activity in recent_activity %}
-          <div class="activity-row">
-            <div class="activity-dot
-              {% if activity.event_type == 'fine_issued' %}fine
-              {% elif activity.event_type == 'loan_approved' %}loan
-              {% elif activity.event_type == 'loan_repaid' %}repaid
-              {% elif activity.event_type == 'chama_joined' or activity.event_type == 'chama_created' %}joined
-              {% endif %}"></div>
-            <div style="flex:1;">
-              <div class="activity-text">
-                {% if activity.event_type == 'contribution' %}
-                  Paid <strong>KES {{ activity.amount|floatformat:0 }}</strong> contribution
-                  {% if activity.chama %}to {{ activity.chama.name }}{% endif %}
-                {% elif activity.event_type == 'loan_approved' %}
-                  Loan of <strong>KES {{ activity.amount|floatformat:0 }}</strong> approved
-                  {% if activity.chama %} — {{ activity.chama.name }}{% endif %}
-                {% elif activity.event_type == 'loan_repaid' %}
-                  Loan repaid: <strong>KES {{ activity.amount|floatformat:0 }}</strong>
-                {% elif activity.event_type == 'fine_issued' %}
-                  Fine of <strong>KES {{ activity.amount|floatformat:0 }}</strong> issued
-                  {% if activity.chama %} — {{ activity.chama.name }}{% endif %}
-                {% elif activity.event_type == 'chama_joined' %}
-                  Joined <strong>{% if activity.chama %}{{ activity.chama.name }}{% endif %}</strong>
-                {% elif activity.event_type == 'chama_created' %}
-                  Created chama <strong>{% if activity.chama %}{{ activity.chama.name }}{% endif %}</strong>
-                {% else %}
-                  {{ activity.get_event_type_display }}
-                  {% if activity.note %} — {{ activity.note }}{% endif %}
-                {% endif %}
-              </div>
-              <div class="activity-time">{{ activity.created_at|timesince }} ago</div>
-            </div>
-          </div>
-          {% empty %}
-          <p style="color:var(--muted);font-size:13px;padding:8px 0;">No activity yet.</p>
-          {% endfor %}
-        </div>
-
-      </div><!-- end right col -->
-    </div><!-- end body grid -->
-
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-sub">Manage your account, personal details and preferences</p>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  const st = document.getElementById('sidebarToggle');
-  if(st) st.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
-</script>
-</body>
-</html>
+<div class="profile-header-card mb-4">
+  <div class="profile-avatar-wrap">
+    {% if user.avatar %}
+      <img src="{{ user.avatar.url }}" alt="Avatar" class="profile-avatar-img">
+    {% else %}
+      <div class="profile-avatar-initials">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+    {% endif %}
+    {% if user.kyc_status == 'verified' %}
+      <span class="kyc-badge" title="KYC Verified"><i class="fas fa-check" style="font-size:9px;"></i></span>
+    {% endif %}
+  </div>
+  <div class="profile-header-info">
+    <h1>{{ user.get_full_name|default:user.username }}</h1>
+    <p class="profile-subline">{{ user.email }}{% if user.phone %} &nbsp;·&nbsp; {{ user.phone }}{% endif %}</p>
+    <div class="profile-chips">
+      <span class="chip chip-green"><i class="fas fa-users" style="font-size:10px;margin-right:4px;"></i>{{ chama_count }} Chama{{ chama_count|pluralize }}</span>
+      <span class="chip chip-{% if user.kyc_status == 'verified' %}green{% elif user.kyc_status == 'pending' %}amber{% else %}gray{% endif %}">KYC: {{ user.get_kyc_status_display }}</span>
+      {% for m in memberships|slice:":3" %}
+        <span class="chip chip-blue">{{ m.get_role_display }} @ {{ m.chama.name }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="profile-header-actions">
+    <a href="{% url 'profile_edit' %}" class="btn-edit"><i class="fas fa-pen"></i> Edit Profile</a>
+    {% if user.kyc_status == 'unverified' %}
+    <form method="post" action="{% url 'profile_kyc' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-kyc"><i class="fas fa-shield-check"></i> Submit KYC</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="stat-label">Total Contributed</div>
+    <div class="stat-value">KES {{ total_contributed|floatformat:0 }}</div>
+    <div class="stat-sub">across all chamas</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-label">Active Loan Balance</div>
+    <div class="stat-value">KES {{ active_loan_balance|floatformat:0 }}</div>
+    <div class="stat-sub">{% if active_loan_balance > 0 %}outstanding{% else %}no active loans{% endif %}</div>
+  </div>
+  <div class="stat-card {% if outstanding_fines > 0 %}danger{% endif %}">
+    <div class="stat-label">Outstanding Fines</div>
+    <div class="stat-value" style="{% if outstanding_fines > 0 %}color:var(--danger);{% endif %}">KES {{ outstanding_fines|floatformat:0 }}</div>
+    <div class="stat-sub">{% if outstanding_fines == 0 %}all clear{% else %}unpaid penalties{% endif %}</div>
+  </div>
+  <div class="stat-card info">
+    <div class="stat-label">Payment Rate</div>
+    <div class="stat-value">{{ payment_rate }}%</div>
+    <div class="stat-sub">{% if payment_rate >= 90 %}excellent standing{% elif payment_rate >= 70 %}good standing{% else %}needs improvement{% endif %}</div>
+  </div>
+</div>
+
+<div class="profile-body">
+  <div class="profile-col">
+    <div class="card-panel">
+      <div class="card-panel-title">Credit Score</div>
+      <div class="credit-score-row">
+        <div class="score-ring {{ credit_color }}">
+          <span class="score-num">{{ credit_score }}</span>
+          <span class="score-max">/ 850</span>
+        </div>
+        <div class="score-detail">
+          <span class="score-badge {{ credit_color }}">{{ credit_label }}</span>
+          <p class="score-desc">Based on contributions, loan history, fines &amp; tenure</p>
+          <div class="progress-bar-wrap"><div class="progress-fill {{ credit_color }}" style="width:{{ credit_pct }}%;"></div></div>
+        </div>
+      </div>
+      <div class="score-breakdown">
+        <div class="score-item"><span>Contribution consistency</span><strong class="text-green">{{ payment_rate }}%</strong></div>
+        <div class="score-item"><span>Outstanding fines</span><strong class="{% if outstanding_fines == 0 %}text-green{% else %}text-red{% endif %}">{% if outstanding_fines == 0 %}None{% else %}KES {{ outstanding_fines|floatformat:0 }}{% endif %}</strong></div>
+        <div class="score-item"><span>Active chamas</span><strong>{{ chama_count }}</strong></div>
+      </div>
+    </div>
+
+    <div class="card-panel">
+      <div class="card-panel-title">Personal Details <a href="{% url 'profile_edit' %}">Edit →</a></div>
+      <div class="detail-row"><span class="dr-label">National ID</span><span class="dr-value {% if not user.national_id %}muted{% endif %}">{{ user.national_id|default:"Not set" }}</span></div>
+      <div class="detail-row"><span class="dr-label">KRA PIN</span><span class="dr-value {% if not user.kra_pin %}muted{% endif %}">{{ user.kra_pin|default:"Not set" }}</span></div>
+      <div class="detail-row"><span class="dr-label">M-Pesa No.</span><span class="dr-value {% if not user.mpesa_number %}muted{% endif %}">{{ user.mpesa_number|default:"Not set" }}</span></div>
+      <div class="detail-row"><span class="dr-label">Bank</span><span class="dr-value {% if not user.bank_name %}muted{% endif %}">{% if user.bank_name %}{{ user.bank_name }}{% if user.bank_account %} · {{ user.bank_account }}{% endif %}{% else %}Not set{% endif %}</span></div>
+      <div class="detail-row"><span class="dr-label">Occupation</span><span class="dr-value {% if not user.occupation %}muted{% endif %}">{{ user.occupation|default:"—" }}</span></div>
+      <div class="detail-row"><span class="dr-label">Location</span><span class="dr-value {% if not user.location %}muted{% endif %}">{{ user.location|default:"—" }}</span></div>
+      <div class="detail-row"><span class="dr-label">KYC Status</span><span class="dr-value"><span class="badge-pref card-chip-{% if user.kyc_status == 'verified' %}green{% elif user.kyc_status == 'pending' %}amber{% else %}gray{% endif %}" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;">{{ user.get_kyc_status_display }}</span></span></div>
+      {% if user.bio %}<div class="detail-row"><span class="dr-label">Bio</span><span class="dr-value" style="font-style:italic;font-size:12px;">{{ user.bio }}</span></div>{% endif %}
+    </div>
+
+    <div class="card-panel">
+      <div class="card-panel-title">Notifications &amp; Preferences</div>
+      <div class="pref-row"><span class="pref-label">M-Pesa alerts</span><span class="badge-pref {% if prefs.mpesa_alerts %}badge-on{% else %}badge-off{% endif %}">{% if prefs.mpesa_alerts %}On{% else %}Off{% endif %}</span></div>
+      <div class="pref-row"><span class="pref-label">SMS reminders</span><span class="badge-pref {% if prefs.sms_reminders %}badge-on{% else %}badge-off{% endif %}">{% if prefs.sms_reminders %}On{% else %}Off{% endif %}</span></div>
+      <div class="pref-row"><span class="pref-label">Email reports</span><span class="badge-pref badge-freq">{{ prefs.get_report_frequency_display }}</span></div>
+      <div class="pref-row"><span class="pref-label">Two-Factor Auth</span><span class="badge-pref {% if prefs.two_fa_enabled %}badge-on{% else %}badge-off{% endif %}">{% if prefs.two_fa_enabled %}Enabled{% else %}Disabled{% endif %}</span></div>
+    </div>
+  </div>
+
+  <div class="profile-col">
+    <div class="card-panel">
+      <div class="card-panel-title">My Chamas <a href="{% url 'dashboard' %}">View all →</a></div>
+      {% for stat in chama_stats %}
+      <div class="chama-row">
+        <div class="chama-icon-sq">{{ stat.chama.name|slice:":2"|upper }}</div>
+        <div class="chama-info">
+          <div class="chama-name-row">{{ stat.chama.name }}</div>
+          <div class="chama-meta">KES {{ stat.chama.contribution_amount|floatformat:0 }}/mo &nbsp;·&nbsp; <strong>{{ stat.membership.get_role_display }}</strong> &nbsp;·&nbsp; Contributed KES {{ stat.total_paid|floatformat:0 }}</div>
+        </div>
+        <span class="badge-pref {% if stat.membership.active %}badge-on{% else %}badge-off{% endif %}">{% if stat.membership.active %}Active{% else %}Inactive{% endif %}</span>
+      </div>
+      {% empty %}
+      <p style="color:var(--muted);font-size:13px;padding:8px 0;">No chamas yet. <a href="{% url 'chama_create' %}" style="color:var(--brand);font-weight:600;">Create one →</a></p>
+      {% endfor %}
+    </div>
+
+    <div class="card-panel">
+      <div class="card-panel-title">Contribution Trend — Last 6 Months</div>
+      <div class="bar-chart">
+        {% for month in monthly_trend %}
+          {% widthratio month.amount max_trend 80 as bar_h %}
+          <div class="bar-col">
+            <div class="bar-fill {% if month.amount == 0 %}zero{% endif %}" style="height:{{ bar_h|default:4 }}px;" title="KES {{ month.amount|floatformat:0 }}"></div>
+            <div class="bar-label">{{ month.label }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-panel">
+      <div class="card-panel-title">Recent Activity</div>
+      {% for activity in recent_activity %}
+      <div class="activity-row">
+        <div class="activity-dot {% if activity.event_type == 'fine_issued' %}fine{% elif activity.event_type == 'loan_approved' %}loan{% elif activity.event_type == 'loan_repaid' %}repaid{% elif activity.event_type == 'chama_joined' or activity.event_type == 'chama_created' %}joined{% endif %}"></div>
+        <div style="flex:1;">
+          <div class="activity-text">
+            {% if activity.event_type == 'contribution' %}Paid <strong>KES {{ activity.amount|floatformat:0 }}</strong> contribution{% if activity.chama %} to {{ activity.chama.name }}{% endif %}
+            {% elif activity.event_type == 'loan_approved' %}Loan of <strong>KES {{ activity.amount|floatformat:0 }}</strong> approved{% if activity.chama %} — {{ activity.chama.name }}{% endif %}
+            {% elif activity.event_type == 'loan_repaid' %}Loan repaid: <strong>KES {{ activity.amount|floatformat:0 }}</strong>
+            {% elif activity.event_type == 'fine_issued' %}Fine of <strong>KES {{ activity.amount|floatformat:0 }}</strong> issued{% if activity.chama %} — {{ activity.chama.name }}{% endif %}
+            {% elif activity.event_type == 'chama_joined' %}Joined <strong>{% if activity.chama %}{{ activity.chama.name }}{% endif %}</strong>
+            {% elif activity.event_type == 'chama_created' %}Created chama <strong>{% if activity.chama %}{{ activity.chama.name }}{% endif %}</strong>
+            {% else %}{{ activity.get_event_type_display }}{% if activity.note %} — {{ activity.note }}{% endif %}{% endif %}
+          </div>
+          <div class="activity-time">{{ activity.created_at|timesince }} ago</div>
+        </div>
+      </div>
+      {% empty %}
+      <p style="color:var(--muted);font-size:13px;padding:8px 0;">No activity yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
