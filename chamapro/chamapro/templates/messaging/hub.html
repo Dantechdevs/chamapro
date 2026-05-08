@@ -1,0 +1,166 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}Messaging Hub{% endblock %}
+{% block topbar_title %}Messaging{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .hub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px;}
+  .hub-channel-card{
+    background:#fff;border-radius:14px;padding:22px;box-shadow:var(--card-shadow);
+    display:flex;align-items:center;gap:16px;text-decoration:none;color:var(--text);
+    transition:all .2s;border:2px solid transparent;position:relative;overflow:hidden;
+  }
+  .hub-channel-card:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 8px 24px rgba(13,110,79,.12);}
+  .hub-channel-card::before{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;opacity:.06;}
+  .hub-channel-card.email::before{background:var(--info);}
+  .hub-channel-card.sms::before{background:var(--accent);}
+  .hub-channel-card.notif::before{background:var(--accent2);}
+  .hub-channel-card.announce::before{background:var(--purple);}
+  .hub-ch-icon{
+    width:52px;height:52px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  }
+  .hub-ch-icon.email{background:#dbeafe;color:var(--info);}
+  .hub-ch-icon.sms{background:#d1fae5;color:var(--brand);}
+  .hub-ch-icon.notif{background:#fef3c7;color:#d97706;}
+  .hub-ch-icon.announce{background:#ede9fe;color:var(--purple);}
+  .hub-ch-info{flex:1;}
+  .hub-ch-title{font-size:15px;font-weight:700;margin-bottom:2px;}
+  .hub-ch-desc{font-size:12px;color:var(--muted);}
+  .hub-ch-badge{
+    min-width:24px;height:24px;border-radius:12px;
+    background:var(--danger);color:#fff;font-size:11px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;padding:0 6px;
+  }
+  .hub-ch-arrow{color:var(--muted);font-size:14px;transition:transform .2s;}
+  .hub-channel-card:hover .hub-ch-arrow{transform:translateX(4px);color:var(--brand);}
+
+  .pinned-card{
+    background:linear-gradient(135deg,var(--brand-dark),var(--brand));
+    border-radius:14px;padding:20px;color:#fff;box-shadow:var(--card-shadow);
+    margin-bottom:20px;
+  }
+  .pinned-card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .pinned-item{background:rgba(255,255,255,.1);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+  .pinned-item:last-child{margin-bottom:0;}
+  .pinned-item-title{font-size:13.5px;font-weight:700;margin-bottom:3px;}
+  .pinned-item-meta{font-size:11px;opacity:.7;}
+  .priority-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;}
+  .priority-normal{background:#86efac;}
+  .priority-important{background:#fde68a;}
+  .priority-urgent{background:#fca5a5;}
+
+  .recent-notif-item{
+    display:flex;align-items:flex-start;gap:12px;padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .recent-notif-item:last-child{border-bottom:none;}
+  .notif-type-dot{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .notif-type-dot.contribution{background:#d1fae5;color:var(--brand);}
+  .notif-type-dot.announcement{background:#ede9fe;color:var(--purple);}
+  .notif-type-dot.loan{background:#dbeafe;color:var(--info);}
+  .notif-type-dot.fine{background:#fef3c7;color:#d97706;}
+  .notif-type-dot.system{background:#f3f4f6;color:var(--muted);}
+  .notif-body{flex:1;}
+  .notif-title{font-size:13px;font-weight:600;color:var(--text);}
+  .notif-time{font-size:11px;color:var(--muted);margin-top:2px;}
+  .unread-dot{width:7px;height:7px;border-radius:50%;background:var(--brand);margin-top:5px;flex-shrink:0;}
+
+  @media(max-width:600px){.hub-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">Messaging</h1>
+    <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Communicate with your chama members</p>
+  </div>
+</div>
+
+{% if pinned_announcements %}
+<div class="pinned-card mb-4">
+  <div class="pinned-card-title"><i class="fas fa-thumbtack"></i> Pinned Announcements</div>
+  {% for ann in pinned_announcements %}
+  <div class="pinned-item">
+    <div class="pinned-item-title">
+      <span class="priority-dot priority-{{ ann.priority }}"></span>{{ ann.title }}
+    </div>
+    <div class="pinned-item-meta">{{ ann.body|truncatechars:120 }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Channel cards -->
+<div class="hub-grid mb-4">
+  <a href="{% url 'email_inbox' chama.id %}" class="hub-channel-card email">
+    <div class="hub-ch-icon email"><i class="fas fa-envelope"></i></div>
+    <div class="hub-ch-info">
+      <div class="hub-ch-title">Emails</div>
+      <div class="hub-ch-desc">Internal email to members</div>
+    </div>
+    {% if unread_emails > 0 %}<div class="hub-ch-badge">{{ unread_emails }}</div>{% endif %}
+    <i class="fas fa-chevron-right hub-ch-arrow"></i>
+  </a>
+
+  {% if can_manage %}
+  <a href="{% url 'sms_list' chama.id %}" class="hub-channel-card sms">
+    <div class="hub-ch-icon sms"><i class="fas fa-message"></i></div>
+    <div class="hub-ch-info">
+      <div class="hub-ch-title">SMS</div>
+      <div class="hub-ch-desc">Send SMS to member phones</div>
+    </div>
+    <i class="fas fa-chevron-right hub-ch-arrow"></i>
+  </a>
+  {% endif %}
+
+  <a href="{% url 'notifications_list' chama.id %}" class="hub-channel-card notif">
+    <div class="hub-ch-icon notif"><i class="fas fa-bell"></i></div>
+    <div class="hub-ch-info">
+      <div class="hub-ch-title">Notifications</div>
+      <div class="hub-ch-desc">In-app alerts and updates</div>
+    </div>
+    {% if unread_notif_count > 0 %}<div class="hub-ch-badge">{{ unread_notif_count }}</div>{% endif %}
+    <i class="fas fa-chevron-right hub-ch-arrow"></i>
+  </a>
+
+  <a href="{% url 'announcements_list' chama.id %}" class="hub-channel-card announce">
+    <div class="hub-ch-icon announce"><i class="fas fa-bullhorn"></i></div>
+    <div class="hub-ch-info">
+      <div class="hub-ch-title">Announcements</div>
+      <div class="hub-ch-desc">Broadcast to all members</div>
+    </div>
+    <i class="fas fa-chevron-right hub-ch-arrow"></i>
+  </a>
+</div>
+
+<!-- Recent notifications -->
+<div class="card-panel">
+  <div class="card-panel-title">
+    <span>Recent Notifications</span>
+    <a href="{% url 'notifications_list' chama.id %}" style="font-size:12px;text-transform:none;color:var(--brand);font-weight:600;text-decoration:none;">View all →</a>
+  </div>
+  {% for notif in recent_notifications %}
+  <div class="recent-notif-item">
+    <div class="notif-type-dot {{ notif.notification_type }}">
+      {% if notif.notification_type == 'contribution' %}<i class="fas fa-hand-holding-dollar"></i>
+      {% elif notif.notification_type == 'announcement' %}<i class="fas fa-bullhorn"></i>
+      {% elif notif.notification_type == 'loan' %}<i class="fas fa-money-bill-wave"></i>
+      {% elif notif.notification_type == 'fine' %}<i class="fas fa-triangle-exclamation"></i>
+      {% else %}<i class="fas fa-bell"></i>{% endif %}
+    </div>
+    <div class="notif-body">
+      <div class="notif-title">{{ notif.title }}</div>
+      <div class="notif-time">{{ notif.created_at|timesince }} ago</div>
+    </div>
+    {% if not notif.is_read %}<div class="unread-dot"></div>{% endif %}
+  </div>
+  {% empty %}
+  <div style="text-align:center;padding:28px;color:var(--muted);">
+    <i class="fas fa-bell" style="font-size:28px;opacity:.2;display:block;margin-bottom:8px;"></i>
+    No notifications yet.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

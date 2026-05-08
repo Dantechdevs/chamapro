@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'chamapro',
     'wallets',
+     'messaging',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,125 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}Notifications{% endblock %}
+{% block topbar_title %}Notifications{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .notif-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .notif-stats{display:flex;gap:12px;}
+  .notif-stat-chip{background:#fff;border-radius:10px;padding:8px 16px;box-shadow:var(--card-shadow);font-size:12px;font-weight:600;color:var(--muted);}
+  .notif-stat-chip strong{font-size:16px;font-weight:800;color:var(--text);display:block;font-family:'DM Mono',monospace;}
+
+  .notif-list-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+  .notif-list-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700;}
+
+  .notif-item{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);transition:background .1s;}
+  .notif-item:last-child{border-bottom:none;}
+  .notif-item.unread{background:#f0faf6;}
+  .notif-item:hover{background:#fafafa;}
+
+  .notif-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .notif-icon.contribution{background:#d1fae5;color:var(--brand);}
+  .notif-icon.announcement{background:#ede9fe;color:#8b5cf6;}
+  .notif-icon.loan{background:#dbeafe;color:var(--info);}
+  .notif-icon.fine{background:#fef3c7;color:#d97706;}
+  .notif-icon.member{background:#f3f4f6;color:var(--muted);}
+  .notif-icon.system{background:#f3f4f6;color:var(--muted);}
+
+  .notif-body{flex:1;min-width:0;}
+  .notif-title{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:3px;}
+  .notif-item.unread .notif-title{font-weight:800;}
+  .notif-msg{font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:4px;}
+  .notif-time{font-size:11px;color:var(--muted);}
+  .notif-type-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#f3f4f6;color:var(--muted);}
+
+  .notif-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+  .unread-indicator{width:8px;height:8px;border-radius:50%;background:var(--brand);}
+
+  .empty-state{padding:64px;text-align:center;color:var(--muted);}
+  .empty-state i{font-size:44px;opacity:.15;display:block;margin-bottom:12px;}
+
+  .filter-tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+  .filter-tab{padding:7px 16px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:all .15s;white-space:nowrap;}
+  .filter-tab:hover{border-color:var(--brand);color:var(--brand);}
+  .filter-tab.active{background:var(--brand);border-color:var(--brand);color:#fff;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">Notifications</h1>
+    <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Your in-app alerts and updates</p>
+  </div>
+  {% if unread_count > 0 %}
+    <span style="background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;">
+      {{ unread_count }} read on page load
+    </span>
+  {% endif %}
+</div>
+
+<!-- Stats -->
+<div class="notif-stats mb-4">
+  <div class="notif-stat-chip"><strong>{{ notifications|length }}</strong>Total</div>
+  <div class="notif-stat-chip"><strong>{{ unread_count }}</strong>Were Unread</div>
+</div>
+
+<!-- Filter tabs -->
+<div class="filter-tabs" id="filterTabs">
+  <button class="filter-tab active" data-type="all">All</button>
+  <button class="filter-tab" data-type="contribution"><i class="fas fa-hand-holding-dollar me-1"></i>Contributions</button>
+  <button class="filter-tab" data-type="announcement"><i class="fas fa-bullhorn me-1"></i>Announcements</button>
+  <button class="filter-tab" data-type="loan"><i class="fas fa-money-bill-wave me-1"></i>Loans</button>
+  <button class="filter-tab" data-type="fine"><i class="fas fa-triangle-exclamation me-1"></i>Fines</button>
+</div>
+
+<div class="notif-list-card">
+  <div class="notif-list-header">All Notifications</div>
+  {% for notif in notifications %}
+  <div class="notif-item {% if not notif.is_read %}unread{% endif %}" data-type="{{ notif.notification_type }}">
+    <div class="notif-icon {{ notif.notification_type }}">
+      {% if notif.notification_type == 'contribution' %}<i class="fas fa-hand-holding-dollar"></i>
+      {% elif notif.notification_type == 'announcement' %}<i class="fas fa-bullhorn"></i>
+      {% elif notif.notification_type == 'loan' %}<i class="fas fa-money-bill-wave"></i>
+      {% elif notif.notification_type == 'fine' %}<i class="fas fa-triangle-exclamation"></i>
+      {% elif notif.notification_type == 'member' %}<i class="fas fa-user"></i>
+      {% else %}<i class="fas fa-bell"></i>{% endif %}
+    </div>
+    <div class="notif-body">
+      <div class="notif-title">{{ notif.title }}</div>
+      <div class="notif-msg">{{ notif.message|truncatechars:160 }}</div>
+      <div class="notif-time">
+        <i class="fas fa-clock" style="margin-right:3px;"></i>{{ notif.created_at|timesince }} ago
+        {% if notif.sender %}
+          &nbsp;·&nbsp; from {{ notif.sender.get_full_name|default:notif.sender.username }}
+        {% endif %}
+      </div>
+    </div>
+    <div class="notif-right">
+      <span class="notif-type-badge">{{ notif.get_notification_type_display }}</span>
+      {% if not notif.is_read %}<div class="unread-indicator"></div>{% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <i class="fas fa-bell"></i>
+    <p>No notifications yet. They'll appear here when there's activity in your chama.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const type = tab.dataset.type;
+      document.querySelectorAll('.notif-item').forEach(item => {
+        item.style.display = (type === 'all' || item.dataset.type === type) ? 'flex' : 'none';
+      });
+    });
+  });
+</script>
+{% endblock %}

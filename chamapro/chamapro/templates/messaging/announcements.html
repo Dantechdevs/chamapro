@@ -1,0 +1,198 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}Announcements{% endblock %}
+{% block topbar_title %}Announcements{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .ann-layout{display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start;}
+
+  /* Announcement cards */
+  .ann-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:20px;margin-bottom:14px;border-left:4px solid var(--brand);position:relative;}
+  .ann-card.important{border-left-color:var(--accent2);}
+  .ann-card.urgent{border-left-color:var(--danger);}
+  .ann-card.pinned{background:linear-gradient(135deg,#f0faf6,#fff);}
+  .ann-card-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+  .ann-author-avatar{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .ann-card-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;flex:1;}
+  .ann-card-meta{font-size:11px;color:var(--muted);}
+  .ann-body{font-size:13.5px;color:#374151;line-height:1.7;margin-bottom:14px;}
+  .ann-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .priority-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;}
+  .priority-badge.normal{background:#d1fae5;color:#065f46;}
+  .priority-badge.important{background:#fef3c7;color:#92400e;}
+  .priority-badge.urgent{background:#fee2e2;color:#991b1b;}
+  .pinned-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--brand-xlight);color:var(--brand-dark);}
+  .channel-badge{font-size:10px;padding:3px 8px;border-radius:6px;background:#f3f4f6;color:var(--muted);font-weight:600;}
+  .ann-actions{margin-left:auto;display:flex;gap:6px;}
+  .ann-action-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:var(--muted);transition:all .15s;}
+  .ann-action-btn:hover{background:var(--brand);color:#fff;border-color:var(--brand);}
+  .ann-action-btn.danger:hover{background:var(--danger);border-color:var(--danger);}
+  .ann-action-btn.pinned-active{background:var(--brand-xlight);color:var(--brand);border-color:var(--brand);}
+
+  .ann-pin-icon{position:absolute;top:14px;right:14px;color:var(--brand);font-size:14px;opacity:.6;}
+
+  /* Compose panel */
+  .ann-compose{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:20px;position:sticky;top:84px;}
+  .ann-compose-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .ann-compose-title i{color:var(--brand);}
+
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+  .toggle-row:last-of-type{border-bottom:none;}
+  .toggle-switch{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#d1d5db;border-radius:20px;transition:.2s;}
+  .toggle-slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .toggle-switch input:checked + .toggle-slider{background:var(--brand);}
+  .toggle-switch input:checked + .toggle-slider:before{transform:translateX(16px);}
+  .toggle-label-text{font-size:13px;color:var(--text);font-weight:500;}
+
+  .empty-state{padding:56px;text-align:center;color:var(--muted);}
+  .empty-state i{font-size:40px;opacity:.15;display:block;margin-bottom:12px;}
+
+  @media(max-width:900px){.ann-layout{grid-template-columns:1fr;}.ann-compose{position:static;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">Announcements</h1>
+    <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Broadcast important messages to all members</p>
+  </div>
+</div>
+
+<div class="ann-layout">
+  <!-- Announcements list -->
+  <div>
+    {% for ann in announcements %}
+    <div class="ann-card {{ ann.priority }} {% if ann.is_pinned %}pinned{% endif %}">
+      {% if ann.is_pinned %}<i class="fas fa-thumbtack ann-pin-icon"></i>{% endif %}
+
+      <div class="ann-card-header">
+        <div class="ann-author-avatar">{{ ann.author.first_name.0|upper }}{{ ann.author.last_name.0|upper }}</div>
+        <div style="flex:1;">
+          <div class="ann-card-title">{{ ann.title }}</div>
+          <div class="ann-card-meta">
+            By {{ ann.author.get_full_name|default:ann.author.username }}
+            &nbsp;·&nbsp; {{ ann.created_at|date:"M d, Y" }}
+          </div>
+        </div>
+        {% if can_manage %}
+        <div class="ann-actions">
+          <button class="ann-action-btn {% if ann.is_pinned %}pinned-active{% endif %}"
+                  title="{% if ann.is_pinned %}Unpin{% else %}Pin{% endif %}"
+                  onclick="togglePin({{ ann.id }}, this)">
+            <i class="fas fa-thumbtack"></i>
+          </button>
+          <form method="post" action="{% url 'announcement_delete' chama.id ann.id %}"
+                onsubmit="return confirm('Delete this announcement?')" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="ann-action-btn danger" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="ann-body">{{ ann.body }}</div>
+
+      <div class="ann-footer">
+        <span class="priority-badge {{ ann.priority }}">{{ ann.get_priority_display }}</span>
+        {% if ann.is_pinned %}<span class="pinned-badge"><i class="fas fa-thumbtack me-1"></i>Pinned</span>{% endif %}
+        {% if ann.notify_via_sms %}<span class="channel-badge"><i class="fas fa-message me-1"></i>SMS</span>{% endif %}
+        {% if ann.notify_via_email %}<span class="channel-badge"><i class="fas fa-envelope me-1"></i>Email</span>{% endif %}
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state" style="background:#fff;border-radius:14px;box-shadow:var(--card-shadow);">
+      <i class="fas fa-bullhorn"></i>
+      <p>No announcements yet.<br>{% if can_manage %}Create one to notify all members.{% endif %}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Compose panel (admins only) -->
+  {% if can_manage %}
+  <div class="ann-compose">
+    <div class="ann-compose-title"><i class="fas fa-bullhorn"></i> New Announcement</div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div style="margin-bottom:14px;">
+        <label class="form-label-cp">Title</label>
+        <input type="text" name="title" class="form-input" placeholder="Announcement title..." required>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label class="form-label-cp">Message</label>
+        <textarea name="body" class="form-input" rows="5" placeholder="Write your announcement..." required></textarea>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label class="form-label-cp">Priority</label>
+        <select name="priority" class="form-input">
+          {% for val, label in priority_choices %}
+          <option value="{{ val }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label-text">Pin announcement</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" name="is_pinned" value="1">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label-text">Notify via SMS</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" name="notify_via_sms" value="1">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label-text">Notify via Email</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" name="notify_via_email" value="1">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-brand" style="width:100%;justify-content:center;">
+        <i class="fas fa-bullhorn"></i> Publish Announcement
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function togglePin(annId, btn) {
+    fetch('{% url "announcement_pin_toggle" chama.id 0 %}'.replace('/0/', '/' + annId + '/'), {
+      method: 'POST',
+      headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'},
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        btn.classList.toggle('pinned-active', data.is_pinned);
+        btn.title = data.is_pinned ? 'Unpin' : 'Pin';
+        location.reload();
+      }
+    });
+  }
+</script>
+{% endblock %}

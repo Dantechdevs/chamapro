@@ -1,0 +1,83 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}{{ email.subject }}{% endblock %}
+{% block topbar_title %}Email{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .email-detail-wrap{max-width:780px;margin:0 auto;}
+  .email-detail-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+  .email-detail-header{padding:22px 24px;border-bottom:1px solid var(--border);}
+  .email-subject-line{font-size:20px;font-weight:800;margin-bottom:14px;letter-spacing:-.3px;}
+  .email-meta-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .sender-avatar{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+  .sender-info{flex:1;}
+  .sender-name{font-size:13.5px;font-weight:700;}
+  .sender-detail{font-size:12px;color:var(--muted);}
+  .email-timestamp{font-size:12px;color:var(--muted);margin-left:auto;}
+  .email-body-content{padding:28px 24px;font-size:14px;line-height:1.8;color:#374151;white-space:pre-wrap;}
+  .email-detail-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:#fafafa;}
+
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--brand);text-decoration:none;padding:6px 12px;border-radius:8px;border:1px solid var(--brand-xlight);background:var(--brand-xlight);margin-bottom:20px;}
+  .back-link:hover{background:#d0ece4;}
+
+  .recipients-section{padding:16px 24px;border-top:1px solid var(--border);background:#f9fafb;}
+  .recipients-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;}
+  .recipients-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .r-chip{background:#fff;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;}
+  .r-chip-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);}
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'email_inbox' chama.id %}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Inbox</a>
+
+<div class="email-detail-wrap">
+  <div class="email-detail-card">
+    <div class="email-detail-header">
+      <div class="email-subject-line">{{ email.subject }}</div>
+      <div class="email-meta-row">
+        <div class="sender-avatar">{{ email.sender.first_name.0|upper }}{{ email.sender.last_name.0|upper }}</div>
+        <div class="sender-info">
+          <div class="sender-name">{{ email.sender.get_full_name|default:email.sender.username }}</div>
+          <div class="sender-detail">{{ email.sender.email }}</div>
+        </div>
+        <div class="email-timestamp">
+          <i class="fas fa-clock" style="margin-right:4px;"></i>
+          {{ email.sent_at|date:"M d, Y H:i" }}
+        </div>
+      </div>
+    </div>
+
+    <div class="email-body-content">{{ email.body }}</div>
+
+    {% if can_manage %}
+    <div class="recipients-section">
+      <div class="recipients-title">Sent to {{ email.recipients.count }} member{{ email.recipients.count|pluralize }}</div>
+      <div class="recipients-chips">
+        {% for recipient in email.recipients.all %}
+        <div class="r-chip">
+          <div class="r-chip-dot"></div>
+          {{ recipient.get_full_name|default:recipient.username }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="email-detail-footer">
+      <a href="{% url 'email_inbox' chama.id %}" class="btn-outline-brand" style="text-decoration:none;">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+      {% if can_manage and email.sender == user %}
+      <form method="post" action="{% url 'email_delete' chama.id email.id %}"
+            onsubmit="return confirm('Delete this email?')" style="margin-left:auto;">
+        {% csrf_token %}
+        <button type="submit" style="background:none;border:none;color:var(--danger);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

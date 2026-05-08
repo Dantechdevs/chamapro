@@ -1,0 +1,160 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}SMS{% endblock %}
+{% block topbar_title %}SMS Messages{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .sms-layout{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start;}
+  .sms-list-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+  .sms-list-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .sms-list-header h6{font-size:15px;font-weight:700;margin:0;}
+
+  .sms-row{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);}
+  .sms-row:last-child{border-bottom:none;}
+  .sms-icon{width:38px;height:38px;border-radius:10px;background:#d1fae5;color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .sms-icon.failed{background:#fee2e2;color:var(--danger);}
+  .sms-icon.pending{background:#fef3c7;color:#d97706;}
+  .sms-meta{flex:1;}
+  .sms-preview{font-size:13px;color:var(--text);margin-bottom:5px;line-height:1.5;}
+  .sms-info{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .sms-stat{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+  .badge-sms{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;}
+  .badge-sms.sent{background:#d1fae5;color:#065f46;}
+  .badge-sms.failed{background:#fee2e2;color:#991b1b;}
+  .badge-sms.pending{background:#fef3c7;color:#92400e;}
+
+  /* Compose panel */
+  .sms-compose{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:20px;position:sticky;top:84px;}
+  .sms-compose-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .sms-compose-title i{color:var(--brand);}
+
+  .char-bar{height:4px;background:#e5e7eb;border-radius:2px;margin-top:8px;overflow:hidden;}
+  .char-bar-fill{height:100%;background:var(--brand);border-radius:2px;transition:width .1s;}
+  .char-bar-fill.warn{background:var(--accent2);}
+  .char-bar-fill.over{background:var(--danger);}
+  .char-info{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;}
+
+  .recipient-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:180px;overflow-y:auto;padding:8px;background:#f9fafb;border-radius:10px;border:1px solid var(--border);}
+  .recipient-check{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:7px;cursor:pointer;transition:background .1s;}
+  .recipient-check:hover{background:#e6f5f0;}
+  .recipient-check input{accent-color:var(--brand);cursor:pointer;}
+  .recipient-check .r-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .send-all-row{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--brand-xlight);border-radius:9px;margin-bottom:8px;cursor:pointer;}
+  .send-all-row input{accent-color:var(--brand);}
+  .send-all-row label{font-size:12.5px;font-weight:700;color:var(--brand-dark);cursor:pointer;margin:0;}
+
+  .empty-state{padding:48px;text-align:center;color:var(--muted);}
+  .empty-state i{font-size:36px;opacity:.2;display:block;margin-bottom:10px;}
+
+  @media(max-width:900px){.sms-layout{grid-template-columns:1fr;}.sms-compose{position:static;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">SMS</h1>
+    <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Send text messages to member phones</p>
+  </div>
+</div>
+
+<div class="sms-layout">
+  <!-- SMS history -->
+  <div class="sms-list-card">
+    <div class="sms-list-header">
+      <h6>Message History</h6>
+      <span style="font-size:12px;color:var(--muted);">{{ sms_messages|length }} message{{ sms_messages|length|pluralize }}</span>
+    </div>
+
+    {% for sms in sms_messages %}
+    <div class="sms-row">
+      <div class="sms-icon {{ sms.status }}">
+        <i class="fas fa-{% if sms.status == 'sent' %}check{% elif sms.status == 'failed' %}times{% else %}clock{% endif %}"></i>
+      </div>
+      <div class="sms-meta">
+        <div class="sms-preview">{{ sms.message|truncatechars:140 }}</div>
+        <div class="sms-info">
+          <span class="badge-sms {{ sms.status }}">{{ sms.get_status_display }}</span>
+          <span class="sms-stat"><i class="fas fa-users"></i> {{ sms.recipient_count }} recipients</span>
+          <span class="sms-stat"><i class="fas fa-comment-sms"></i> {{ sms.sms_count }} SMS unit{{ sms.sms_count|pluralize }}</span>
+          <span class="sms-stat"><i class="fas fa-clock"></i>
+            {% if sms.sent_at %}{{ sms.sent_at|date:"M d, Y H:i" }}{% else %}{{ sms.created_at|date:"M d, Y" }}{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+      <i class="fas fa-message"></i>
+      <p>No SMS messages sent yet.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Compose panel -->
+  <div class="sms-compose">
+    <div class="sms-compose-title"><i class="fas fa-message"></i> New SMS</div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div style="margin-bottom:14px;">
+        <label class="form-label-cp">Recipients</label>
+        <div class="send-all-row">
+          <input type="checkbox" id="sendToAll" name="send_to_all" value="1" onchange="toggleRecipients(this)">
+          <label for="sendToAll"><i class="fas fa-users me-1"></i> All {{ members|length }} members</label>
+        </div>
+        <div id="recipientGrid" class="recipient-grid">
+          {% for m in members %}
+          <label class="recipient-check">
+            <input type="checkbox" name="recipients" value="{{ m.user.id }}">
+            <span class="r-name">{{ m.user.get_full_name|default:m.user.username }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label class="form-label-cp">Message</label>
+        <textarea name="message" id="smsBody" class="form-input" rows="5"
+                  placeholder="Type your SMS message..." maxlength="1600" required></textarea>
+        <div class="char-bar"><div class="char-bar-fill" id="charFill" style="width:0%;"></div></div>
+        <div class="char-info">
+          <span id="charCount">0 / 160</span>
+          <span id="smsUnits">1 SMS</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-brand" style="width:100%;justify-content:center;">
+        <i class="fas fa-paper-plane"></i> Send SMS
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function toggleRecipients(cb) {
+    const grid = document.getElementById('recipientGrid');
+    grid.querySelectorAll('input[type=checkbox]').forEach(c => c.disabled = cb.checked);
+    grid.style.opacity = cb.checked ? '.4' : '1';
+  }
+
+  const body = document.getElementById('smsBody');
+  const fill = document.getElementById('charFill');
+  const countEl = document.getElementById('charCount');
+  const unitsEl = document.getElementById('smsUnits');
+
+  body.addEventListener('input', () => {
+    const len = body.value.length;
+    const units = Math.max(1, Math.ceil(len / 160));
+    const pct = Math.min(100, (len % 160 || (len > 0 ? 160 : 0)) / 160 * 100);
+    fill.style.width = pct + '%';
+    fill.className = 'char-bar-fill' + (len > 320 ? ' over' : len > 160 ? ' warn' : '');
+    countEl.textContent = len + ' / ' + (units * 160);
+    unitsEl.textContent = units + ' SMS unit' + (units > 1 ? 's' : '');
+  });
+</script>
+{% endblock %}

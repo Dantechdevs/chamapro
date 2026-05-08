@@ -1,0 +1,208 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Messaging{% endblock %} | ChamaPro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#0d6e4f;--brand-light:#1a8f68;--brand-xlight:#e6f5f0;--brand-dark:#064d38;
+      --sidebar-bg:#071f17;--sidebar-w:240px;--topbar-h:60px;
+      --accent:#00c97a;--accent2:#f59e0b;--danger:#ef4444;--info:#3b82f6;--purple:#8b5cf6;
+      --text:#111827;--muted:#6b7280;--border:#e5e7eb;
+      --card-shadow:0 1px 4px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#f3f6f4;color:var(--text);margin:0;}
+
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:100;overflow-y:auto;transition:width .25s;}
+    .sidebar-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px;}
+    .logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--brand));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:800;flex-shrink:0;}
+    .logo-text{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+    .logo-text span{color:var(--accent);}
+    .chama-selector-wrap{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);}
+    .chama-btn{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 12px;color:#fff;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;text-decoration:none;transition:background .15s;}
+    .chama-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
+    .chama-icon-sq{width:28px;height:28px;border-radius:7px;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;flex-shrink:0;}
+    .nav-section{padding:10px 0 4px;}
+    .nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);padding:0 18px;margin-bottom:4px;font-weight:600;}
+    .nav-item-wrap{padding:1px 10px;}
+    .nav-link-cp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:rgba(255,255,255,.6);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
+    .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-link-cp.active{background:var(--brand);color:#fff;}
+    .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
+    .nav-badge{margin-left:auto;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+    .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
+    .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
+    .sidebar-user:hover{background:rgba(255,255,255,.07);}
+    .s-avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+    .user-info{flex:1;min-width:0;}
+    .user-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .user-role{font-size:11px;color:rgba(255,255,255,.4);}
+    .plan-banner{background:#1c2e26;color:rgba(255,255,255,.8);font-size:12px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;}
+    .upgrade-btn{background:var(--accent);color:#000;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-decoration:none;}
+
+    /* TOPBAR */
+    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;z-index:90;box-shadow:0 1px 0 rgba(0,0,0,.04);}
+    .topbar-badge{display:flex;align-items:center;gap:8px;background:var(--brand-xlight);border-radius:20px;padding:5px 14px 5px 8px;}
+    .topbar-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
+    .topbar-badge span{font-size:13px;font-weight:600;color:var(--brand-dark);}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px;}
+    .topbar-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;position:relative;transition:background .15s;}
+    .topbar-icon-btn:hover{background:var(--brand-xlight);color:var(--brand);}
+    .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
+    .topbar-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;}
+
+    /* MAIN */
+    .main-wrap{margin-left:var(--sidebar-w);padding-top:var(--topbar-h);min-height:100vh;}
+    .main-content{padding:24px;}
+    .page-title{font-size:20px;font-weight:800;color:var(--text);margin:0;}
+    .page-sub{font-size:13px;color:var(--muted);margin-top:2px;}
+
+    /* MESSAGING SUB-NAV */
+    .msg-subnav{display:flex;gap:4px;background:#fff;border-radius:14px;padding:6px;box-shadow:var(--card-shadow);margin-bottom:20px;overflow-x:auto;}
+    .msg-subnav-item{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;transition:all .15s;position:relative;}
+    .msg-subnav-item:hover{background:var(--brand-xlight);color:var(--brand);}
+    .msg-subnav-item.active{background:var(--brand);color:#fff;}
+    .msg-subnav-item .sub-badge{min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;}
+    .msg-subnav-item.active .sub-badge{background:rgba(255,255,255,.3);}
+
+    /* CARDS */
+    .card-panel{background:#fff;border-radius:14px;padding:20px;box-shadow:var(--card-shadow);}
+    .card-panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+
+    /* BUTTONS */
+    .btn-brand{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;transition:background .15s;}
+    .btn-brand:hover{background:var(--brand-light);}
+    .btn-outline-brand{background:#fff;color:var(--brand);border:1px solid var(--brand);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-family:inherit;text-decoration:none;transition:all .15s;}
+    .btn-outline-brand:hover{background:var(--brand);color:#fff;}
+
+    /* FORM */
+    .form-label-cp{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;}
+    .form-input{width:100%;padding:9px 13px;font-size:13.5px;border:1px solid var(--border);border-radius:10px;background:#fafafa;color:var(--text);font-family:inherit;outline:none;transition:border .2s,box-shadow .2s;}
+    .form-input:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(13,110,79,.1);}
+    textarea.form-input{resize:vertical;}
+
+    @media(max-width:768px){
+      .sidebar{width:0;overflow:hidden;}
+      .topbar,.main-wrap{left:0;margin-left:0;}
+      .sidebar.open{width:var(--sidebar-w);}
+    }
+  </style>
+  {% block extra_styles %}{% endblock %}
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="plan-banner">
+    <span>Free Plan</span><a href="#" class="upgrade-btn">UPGRADE</a>
+  </div>
+  <div class="sidebar-logo">
+    <div class="logo-icon">CP</div>
+    <div class="logo-text">Chama<span>Pro</span></div>
+  </div>
+  <div class="chama-selector-wrap">
+    <div class="dropdown">
+      <div class="chama-btn dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="chama-icon-sq"><i class="fas fa-users" style="font-size:11px;"></i></div>
+        <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ chama.name }}</span>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-dark" style="width:200px;border-radius:12px;">
+        <li><a class="dropdown-item" href="{% url 'chama_create' %}"><i class="fas fa-plus me-2"></i>New Chama</a></li>
+      </ul>
+    </div>
+  </div>
+  <nav style="flex:1;padding-bottom:8px;">
+    <div class="nav-section">
+      <div class="nav-item-wrap"><a href="{% url 'dashboard' %}" class="nav-link-cp"><i class="fas fa-th-large"></i> Dashboard</a></div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'wallet_dashboard' chama.id %}" class="nav-link-cp">{% else %}<a href="{% url 'dashboard' %}" class="nav-link-cp">{% endif %}<i class="fas fa-wallet"></i> E-Wallet</a></div>
+      <div class="nav-item-wrap"><a href="#" class="nav-link-cp"><i class="fas fa-arrow-down-to-bracket"></i> Deposits <span class="badge-soon">SOON</span></a></div>
+      <div class="nav-item-wrap"><a href="#" class="nav-link-cp"><i class="fas fa-arrow-up-from-bracket"></i> Withdrawals <span class="badge-soon">SOON</span></a></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Management</div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'chama_members' chama.id %}" class="nav-link-cp">{% else %}<a href="#" class="nav-link-cp">{% endif %}<i class="fas fa-users"></i> Members</a></div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'contributions' chama.id %}" class="nav-link-cp">{% else %}<a href="#" class="nav-link-cp">{% endif %}<i class="fas fa-hand-holding-dollar"></i> Contributions</a></div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'mpesa_transactions' chama.id %}" class="nav-link-cp">{% else %}<a href="#" class="nav-link-cp">{% endif %}<i class="fas fa-mobile-screen-button"></i> M-Pesa</a></div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'loans' chama.id %}" class="nav-link-cp">{% else %}<a href="#" class="nav-link-cp">{% endif %}<i class="fas fa-money-bill-wave"></i> Loans</a></div>
+      <div class="nav-item-wrap"><a href="#" class="nav-link-cp"><i class="fas fa-triangle-exclamation"></i> Fines <span class="badge-soon">SOON</span></a></div>
+      <div class="nav-item-wrap"><a href="{% url 'messaging_hub' chama.id %}" class="nav-link-cp {% block nav_messaging_active %}active{% endblock %}"><i class="fas fa-comment-dots"></i> Messaging</a></div>
+      <div class="nav-item-wrap"><a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Reports</div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'reports' chama.id %}" class="nav-link-cp">{% else %}<a href="#" class="nav-link-cp">{% endif %}<i class="fas fa-chart-bar"></i> Reports</a></div>
+      <div class="nav-item-wrap">{% if chama.id %}<a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp">{% else %}<a href="#" class="nav-link-cp">{% endif %}<i class="fas fa-download"></i> Download Data</a></div>
+      <div class="nav-item-wrap"><a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Account</div>
+      <div class="nav-item-wrap"><a href="{% url 'profile' %}" class="nav-link-cp"><i class="fas fa-user-circle"></i> My Profile</a></div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="dropdown">
+      <div class="sidebar-user dropdown-toggle" data-bs-toggle="dropdown">
+        <div class="s-avatar">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+          <div class="user-role">{{ membership.get_role_display|default:"Member" }}</div>
+        </div>
+      </div>
+      <ul class="dropdown-menu dropdown-menu-dark">
+        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <button class="topbar-icon-btn d-md-none" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+  <div class="topbar-badge">
+    <div class="dot"></div>
+    <span>{% block topbar_title %}Messaging{% endblock %}</span>
+  </div>
+  <div class="topbar-right">
+    <button class="topbar-icon-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+    <div class="dropdown">
+      <div class="topbar-avatar dropdown-toggle" data-bs-toggle="dropdown">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><h6 class="dropdown-header">{{ user.get_full_name }}</h6></li>
+        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<div class="main-wrap">
+  <div class="main-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show mb-3" style="border-radius:10px;font-size:13px;">
+          {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const st = document.getElementById('sidebarToggle');
+  if(st) st.addEventListener('click', () => document.querySelector('.sidebar').classList.toggle('open'));
+</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

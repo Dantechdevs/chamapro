@@ -1,0 +1,129 @@
+{% extends 'messaging/base_messaging.html' %}
+{% block title %}Emails{% endblock %}
+{% block topbar_title %}Emails{% endblock %}
+{% block nav_messaging_active %}active{% endblock %}
+
+{% block extra_styles %}
+<style>
+  .email-layout{display:grid;grid-template-columns:220px 1fr;gap:16px;min-height:calc(100vh - 160px);}
+  .email-sidebar{background:#fff;border-radius:14px;padding:14px 10px;box-shadow:var(--card-shadow);height:fit-content;position:sticky;top:84px;}
+  .email-nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:500;transition:all .15s;margin-bottom:2px;}
+  .email-nav-item:hover{background:var(--brand-xlight);color:var(--brand);}
+  .email-nav-item.active{background:var(--brand);color:#fff;}
+  .email-nav-item i{width:16px;text-align:center;}
+  .email-nav-badge{margin-left:auto;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;}
+  .email-nav-item.active .email-nav-badge{background:rgba(255,255,255,.3);}
+  .email-compose-btn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;margin-bottom:10px;transition:background .15s;}
+  .email-compose-btn:hover{background:var(--brand-light);}
+
+  .email-main{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;}
+  .email-main-header{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .email-main-header h6{font-size:15px;font-weight:700;margin:0;}
+
+  .email-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;text-decoration:none;color:var(--text);}
+  .email-row:last-child{border-bottom:none;}
+  .email-row:hover{background:#fafafa;}
+  .email-row.unread{background:#f0faf6;}
+  .email-avatar{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .email-avatar.info{background:#dbeafe;color:var(--info);}
+  .email-meta{flex:1;min-width:0;}
+  .email-from{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .email-row.unread .email-from{font-weight:800;}
+  .email-subject{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .email-row.unread .email-subject{color:var(--text);font-weight:600;}
+  .email-time{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+  .email-unread-dot{width:8px;height:8px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+
+  .empty-state{padding:56px;text-align:center;color:var(--muted);}
+  .empty-state i{font-size:40px;margin-bottom:12px;opacity:.2;display:block;}
+  .empty-state p{font-size:13px;margin-bottom:16px;}
+
+  @media(max-width:700px){.email-layout{grid-template-columns:1fr;}.email-sidebar{position:static;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h1 class="page-title">Emails</h1>
+    <p class="page-sub">{{ chama.name }} &nbsp;·&nbsp; Internal member emails</p>
+  </div>
+</div>
+
+<div class="email-layout">
+  <!-- Email sidebar nav -->
+  <div class="email-sidebar">
+    {% if can_manage %}
+    <a href="{% url 'email_compose' chama.id %}" class="email-compose-btn">
+      <i class="fas fa-pen"></i> Compose
+    </a>
+    {% endif %}
+
+    <a href="{% url 'email_inbox' chama.id %}" class="email-nav-item {% if active_tab == 'inbox' %}active{% endif %}">
+      <i class="fas fa-inbox"></i> Inbox
+      {% if active_tab == 'inbox' and unread_count > 0 %}
+        <span class="email-nav-badge">{{ unread_count }}</span>
+      {% endif %}
+    </a>
+    {% if can_manage %}
+    <a href="{% url 'email_sent' chama.id %}" class="email-nav-item {% if active_tab == 'sent' %}active{% endif %}">
+      <i class="fas fa-paper-plane"></i> Sent
+    </a>
+    <a href="{% url 'email_drafts' chama.id %}" class="email-nav-item {% if active_tab == 'drafts' %}active{% endif %}">
+      <i class="fas fa-file-lines"></i> Drafts
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Email list -->
+  <div class="email-main">
+    <div class="email-main-header">
+      <h6>
+        {% if active_tab == 'inbox' %}Inbox{% elif active_tab == 'sent' %}Sent{% else %}Drafts{% endif %}
+        {% if emails %}<span style="font-size:12px;color:var(--muted);font-weight:500;margin-left:6px;">({{ emails|length }})</span>{% endif %}
+      </h6>
+      {% if active_tab == 'inbox' and unread_count > 0 %}
+        <span style="font-size:12px;color:var(--muted);">{{ unread_count }} unread</span>
+      {% endif %}
+    </div>
+
+    {% for email in emails %}
+    <a href="{% url 'email_detail' chama.id email.id %}" class="email-row {% if active_tab == 'inbox' and not email.is_read %}unread{% endif %}">
+      <div class="email-avatar {% if active_tab != 'inbox' %}info{% endif %}">
+        {% if active_tab == 'inbox' %}
+          {{ email.sender.first_name.0|upper }}{{ email.sender.last_name.0|upper }}
+        {% else %}
+          <i class="fas fa-paper-plane" style="font-size:12px;"></i>
+        {% endif %}
+      </div>
+      <div class="email-meta">
+        <div class="email-from">
+          {% if active_tab == 'inbox' %}
+            {{ email.sender.get_full_name|default:email.sender.username }}
+          {% else %}
+            To: {{ email.recipients.count }} member{{ email.recipients.count|pluralize }}
+          {% endif %}
+        </div>
+        <div class="email-subject">{{ email.subject }}</div>
+      </div>
+      <div class="email-time">
+        {% if active_tab == 'sent' %}{{ email.sent_at|date:"M d" }}
+        {% elif active_tab == 'drafts' %}{{ email.updated_at|date:"M d" }}
+        {% else %}{{ email.sent_at|date:"M d" }}{% endif %}
+      </div>
+      {% if active_tab == 'inbox' and not email.is_read %}<div class="email-unread-dot"></div>{% endif %}
+    </a>
+    {% empty %}
+    <div class="empty-state">
+      <i class="fas fa-{% if active_tab == 'inbox' %}inbox{% elif active_tab == 'sent' %}paper-plane{% else %}file-lines{% endif %}"></i>
+      <p>{% if active_tab == 'inbox' %}Your inbox is empty.{% elif active_tab == 'sent' %}No sent emails yet.{% else %}No drafts saved.{% endif %}</p>
+      {% if can_manage %}
+      <a href="{% url 'email_compose' chama.id %}" class="btn-brand" style="text-decoration:none;">
+        <i class="fas fa-pen"></i> Compose Email
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

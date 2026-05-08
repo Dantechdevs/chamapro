@@ -71,6 +71,9 @@ urlpatterns = [
 
     # Wallets app
     path('wallets/', include('wallets.urls')),
+    
+    # Messaging
+    path('chama/<int:chama_id>/messaging/', include('messaging.urls')),
 
     # Upgrade / Subscription
     path('upgrade/', views.upgrade, name='upgrade'),
