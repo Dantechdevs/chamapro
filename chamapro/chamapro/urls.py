@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings                          
+from django.conf.urls.static import static               
 from chamapro import views
 
 urlpatterns = [
@@ -71,7 +73,7 @@ urlpatterns = [
 
     # Wallets app
     path('wallets/', include('wallets.urls')),
-    
+
     # Messaging
     path('chama/<int:chama_id>/messaging/', include('messaging.urls')),
 
@@ -79,4 +81,5 @@ urlpatterns = [
     path('upgrade/', views.upgrade, name='upgrade'),
     path('upgrade/pay/', views.upgrade_pay, name='upgrade_pay'),
     path('upgrade/poll/', views.upgrade_poll, name='upgrade_poll'),
-]
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # ← add

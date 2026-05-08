@@ -6,20 +6,13 @@ from pathlib import Path
 from django.contrib.messages import constants as messages
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-2i5^ib6s%m&5z2m=p@!zm(3jgbz)s6u6%5yn^)mm97z64taq6i'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Allow ngrok and local during development
-
-
-# Application definition
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -31,7 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'chamapro',
     'wallets',
-     'messaging',
+    'messaging',
 ]
 
 MIDDLEWARE = [
@@ -56,17 +49,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'chamapro.context_processors.user_subscription', 
-                'chamapro.context_processors.active_chama', 
+                'chamapro.context_processors.user_subscription',
+                'chamapro.context_processors.active_chama',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'chamapro.wsgi.application'
-
-
-# Database
 
 DATABASES = {
     'default': {
@@ -75,9 +65,6 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -85,30 +72,24 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Africa/Nairobi'
 USE_I18N = True
 USE_TZ = True
 
-
 # Static files
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+# Media files (user uploads — avatars etc.)
+MEDIA_URL  = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model
 AUTH_USER_MODEL = 'chamapro.User'
 
-# Message tags
 MESSAGE_TAGS = {messages.ERROR: 'danger'}
-
 
 # ── M-Pesa Daraja API ─────────────────────────────────────────────────────────
 

@@ -91,7 +91,7 @@
 
 <div class="profile-header-card mb-4">
   <div class="profile-avatar-wrap">
-    {% if user.avatar %}
+    {% if user.avatar and user.avatar.name %}
       <img src="{{ user.avatar.url }}" alt="Avatar" class="profile-avatar-img">
     {% else %}
       <div class="profile-avatar-initials">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
