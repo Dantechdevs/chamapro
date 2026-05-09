@@ -30,6 +30,8 @@
     .nav-link-cp i{width:18px;text-align:center;font-size:14px;}
     .nav-link-cp:hover{background:rgba(255,255,255,.07);color:#fff;}
     .nav-link-cp.active{background:var(--brand);color:#fff;}
+    .nav-link-cp.nav-danger{color:rgba(239,68,68,.7);}
+    .nav-link-cp.nav-danger:hover{background:rgba(239,68,68,.15);color:#ef4444;}
     .badge-soon{margin-left:auto;font-size:9px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:2px 6px;border-radius:20px;font-weight:600;}
     .sidebar-footer{margin-top:auto;padding:14px 10px;border-top:1px solid rgba(255,255,255,.07);}
     .sidebar-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .15s;}
@@ -169,9 +171,21 @@
       <div class="nav-item-wrap">
         <a href="{% url 'export_report_excel' chama.id %}" class="nav-link-cp"><i class="fas fa-download"></i> Download Data</a>
       </div>
+      <!-- Settings — visible to all members -->
       <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-cog"></i> Settings <span class="badge-soon">SOON</span></a>
+        <a href="{% url 'chama_settings' chama.id %}" class="nav-link-cp {% block nav_settings %}{% endblock %}">
+          <i class="fas fa-cog"></i> Settings
+        </a>
       </div>
+      <!-- Delete Chama — admin only, shown at the bottom as a danger action -->
+      {% if my_membership.role == 'admin' %}
+      <div class="nav-item-wrap">
+        <a href="{% url 'chama_delete' chama.id %}" class="nav-link-cp nav-danger"
+           onclick="return confirm('Delete {{ chama.name }}? This action cannot be undone.')">
+          <i class="fas fa-trash-can"></i> Delete Chama
+        </a>
+      </div>
+      {% endif %}
     </div>
   </nav>
   <div class="sidebar-footer">

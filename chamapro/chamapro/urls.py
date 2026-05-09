@@ -35,6 +35,10 @@ urlpatterns = [
     path('chama/<int:chama_id>/members/<int:membership_id>/role/', views.member_role_update, name='member_role_update'),
     path('chama/<int:chama_id>/members/<int:membership_id>/remove/', views.member_remove, name='member_remove'),
 
+    # ── Settings (NEW) ──────────────────────────────────────────────────────
+    path('chama/<int:chama_id>/settings/', views.chama_settings, name='chama_settings'),
+    path('chama/<int:chama_id>/delete/',   views.chama_delete,   name='chama_delete'),
+
     # Contributions
     path('chama/<int:chama_id>/contributions/', views.contributions, name='contributions'),
     path('chama/<int:chama_id>/contributions/add/', views.contribution_add, name='contribution_add'),

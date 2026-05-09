@@ -1,0 +1,1030 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Settings – ChamaPro{% endblock %}
+{% block nav_settings %}active{% endblock %}
+
+{% block extra_css %}
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap');
+
+/* ── Shell ── */
+.st-shell { max-width: 960px; margin: 0 auto; padding: 28px 16px 60px; }
+
+/* ── Page header ── */
+.st-page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px; font-weight: 800; color: var(--text);
+  margin: 0 0 2px; letter-spacing: -.4px;
+}
+.st-page-sub { font-size: 13px; color: var(--muted); margin: 0 0 24px; }
+
+/* ── Tab nav ── */
+.st-tabs {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  background: #fff; border-radius: 14px; padding: 6px;
+  box-shadow: var(--card-shadow); border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.st-tab {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 18px; border-radius: 10px; border: none;
+  background: transparent; color: var(--muted); font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: all .15s;
+  font-family: 'Plus Jakarta Sans', sans-serif; text-decoration: none;
+  white-space: nowrap;
+}
+.st-tab i { font-size: 13px; }
+.st-tab:hover { background: var(--brand-xlight); color: var(--brand); }
+.st-tab.active { background: var(--brand); color: #fff; }
+.st-tab .tab-badge {
+  font-size: 9px; background: var(--accent2); color: #fff;
+  padding: 2px 6px; border-radius: 20px; font-weight: 700;
+}
+.st-tab.active .tab-badge { background: rgba(255,255,255,.3); }
+
+/* ── Panel ── */
+.st-panel { display: none; animation: stFadeUp .25s ease; }
+.st-panel.active { display: block; }
+@keyframes stFadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Section card ── */
+.st-card {
+  background: #fff; border-radius: 16px;
+  box-shadow: var(--card-shadow); border: 1px solid var(--border);
+  margin-bottom: 20px; overflow: hidden;
+}
+.st-card-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(110deg, var(--brand-xlight) 0%, #fff 60%);
+}
+.st-card-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: var(--brand); display: flex; align-items: center;
+  justify-content: center; color: #fff; font-size: 16px; flex-shrink: 0;
+}
+.st-card-icon.danger { background: var(--danger); }
+.st-card-icon.warning { background: var(--accent2); }
+.st-card-icon.info { background: var(--info); }
+.st-card-header h6 {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+  margin: 0 0 2px; color: var(--text);
+}
+.st-card-header p { font-size: 12px; color: var(--muted); margin: 0; }
+.st-card-body { padding: 24px; }
+
+/* ── Form fields ── */
+.st-field { margin-bottom: 20px; }
+.st-label {
+  display: block; font-size: 11.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  color: #374151; margin-bottom: 6px;
+}
+.st-label span { color: var(--danger); }
+.st-input, .st-select, .st-textarea {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 11px;
+  padding: 10px 14px; font-size: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text); background: #fafafa;
+  transition: border-color .15s, box-shadow .15s, background .15s; outline: none;
+}
+.st-input:focus, .st-select:focus, .st-textarea:focus {
+  border-color: var(--brand); background: #fff;
+  box-shadow: 0 0 0 3px rgba(13,110,79,.1);
+}
+.st-textarea { resize: vertical; min-height: 80px; }
+.st-hint { font-size: 11.5px; color: var(--muted); margin-top: 5px; }
+
+/* ── Grid ── */
+.st-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.st-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+@media(max-width:640px) { .st-grid-2, .st-grid-3 { grid-template-columns: 1fr; } }
+
+/* ── Currency tiles ── */
+.currency-tiles { display: flex; gap: 10px; flex-wrap: wrap; }
+.currency-tile {
+  flex: 1; min-width: 90px; border: 1.5px solid var(--border);
+  border-radius: 11px; padding: 12px 8px; text-align: center;
+  cursor: pointer; transition: all .15s; background: #fafafa;
+}
+.currency-tile:hover { border-color: var(--brand); background: var(--brand-xlight); }
+.currency-tile.selected { border-color: var(--brand); background: var(--brand-xlight); box-shadow: 0 0 0 3px rgba(13,110,79,.1); }
+.currency-tile .ct-code { font-size: 14px; font-weight: 800; color: var(--brand); font-family: 'DM Mono', monospace; }
+.currency-tile .ct-name { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.currency-tile input { display: none; }
+
+/* ── Day pills ── */
+.day-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.day-pill {
+  padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: #fafafa; font-size: 12.5px; font-weight: 700; color: var(--muted);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.day-pill:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-xlight); }
+.day-pill.selected { background: var(--brand); color: #fff; border-color: var(--brand); }
+.day-pill input { display: none; }
+
+/* ── Stepper ── */
+.st-stepper {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--border); border-radius: 11px;
+  overflow: hidden; background: #fafafa; transition: border-color .15s;
+}
+.st-stepper:focus-within { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px rgba(13,110,79,.1); }
+.st-stepper input {
+  flex: 1; border: none; outline: none; text-align: center;
+  font-size: 15px; font-weight: 700; background: transparent;
+  font-family: 'DM Mono', monospace; padding: 10px 0; color: var(--text);
+}
+.st-stepper button {
+  width: 40px; border: none; background: transparent;
+  font-size: 13px; color: var(--muted); cursor: pointer;
+  padding: 10px; transition: background .1s, color .1s;
+}
+.st-stepper button:hover { background: var(--brand-xlight); color: var(--brand); }
+
+/* ── Save bar ── */
+.st-save-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  background: #fafafa; flex-wrap: wrap; gap: 12px;
+}
+.st-save-info { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.btn-save {
+  background: var(--brand); color: #fff; border: none; border-radius: 11px;
+  padding: 10px 28px; font-size: 14px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: background .15s, transform .1s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-save:hover { background: var(--brand-light); transform: translateY(-1px); }
+.btn-cancel-edit {
+  background: transparent; border: 1.5px solid var(--border); color: var(--muted);
+  border-radius: 11px; padding: 10px 20px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .15s;
+}
+.btn-cancel-edit:hover { border-color: var(--text); color: var(--text); }
+
+/* ── Danger zone ── */
+.danger-zone { border: 1.5px solid #fecaca; border-radius: 14px; overflow: hidden; background: #fff; }
+.danger-zone-header {
+  padding: 14px 20px; background: #fef2f2; border-bottom: 1px solid #fecaca;
+  display: flex; align-items: center; gap: 10px;
+}
+.danger-zone-header h6 { font-size: 14px; font-weight: 700; color: var(--danger); margin: 0; }
+.danger-action {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid #fef2f2; flex-wrap: wrap; gap: 12px;
+}
+.danger-action:last-child { border-bottom: none; }
+.danger-action-info .da-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.danger-action-info .da-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.btn-danger {
+  background: transparent; border: 1.5px solid var(--danger); color: var(--danger);
+  border-radius: 10px; padding: 8px 18px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .15s; white-space: nowrap;
+}
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+/* ── Info chip ── */
+.info-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--brand-xlight); color: var(--brand);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 700;
+}
+
+/* ── Toggle ── */
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; background: var(--border);
+  border-radius: 24px; cursor: pointer; transition: background .2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--brand); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* ── Confirm modal ── */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 999;
+  align-items: center; justify-content: center;
+}
+.confirm-overlay.show { display: flex; }
+.confirm-box {
+  background: #fff; border-radius: 16px; padding: 32px 28px;
+  max-width: 440px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  animation: stFadeUp .2s ease;
+}
+.confirm-box .cb-icon {
+  width: 52px; height: 52px; border-radius: 14px; background: #fef2f2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: var(--danger); margin-bottom: 16px;
+}
+.confirm-box h5 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin: 0 0 8px; }
+.confirm-box p { font-size: 13.5px; color: var(--muted); margin: 0 0 16px; line-height: 1.6; }
+.cb-input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; font-size: 14px; margin-bottom: 20px; outline: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.cb-input:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+.confirm-actions { display: flex; gap: 10px; }
+.btn-confirm-danger {
+  flex: 1; background: var(--danger); color: #fff; border: none;
+  border-radius: 10px; padding: 11px; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: opacity .15s;
+}
+.btn-confirm-danger:disabled { opacity: .4; cursor: not-allowed; }
+.btn-confirm-cancel {
+  flex: 1; background: transparent; border: 1.5px solid var(--border);
+  color: var(--muted); border-radius: 10px; padding: 11px; font-size: 14px;
+  font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ════════════════════════════════════
+   ROLES TAB STYLES
+════════════════════════════════════ */
+
+/* ── Role legend cards ── */
+.role-legend { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+@media(max-width:700px) { .role-legend { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:420px) { .role-legend { grid-template-columns: 1fr; } }
+.role-card {
+  border-radius: 13px; padding: 16px 14px; border: 1.5px solid var(--border);
+  background: #fafafa; transition: border-color .15s;
+}
+.role-card.admin   { border-top: 3px solid var(--brand); }
+.role-card.treasurer { border-top: 3px solid var(--accent2); }
+.role-card.secretary { border-top: 3px solid var(--info); }
+.role-card.member  { border-top: 3px solid var(--border); }
+.role-card-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+.role-card.admin   .role-card-title { color: var(--brand); }
+.role-card.treasurer .role-card-title { color: var(--accent2); }
+.role-card.secretary .role-card-title { color: var(--info); }
+.role-card.member  .role-card-title { color: var(--muted); }
+.role-card ul { margin: 0; padding: 0 0 0 14px; }
+.role-card ul li { font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
+
+/* ── Member role table ── */
+.role-member-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.role-member-row:last-child { border-bottom: none; padding-bottom: 0; }
+.rm-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), #10b981);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex-shrink: 0;
+}
+.rm-info { flex: 1; min-width: 120px; }
+.rm-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.rm-email { font-size: 11.5px; color: var(--muted); }
+.rm-joined { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+}
+.role-badge.admin     { background: #e6f5f0; color: var(--brand); }
+.role-badge.treasurer { background: #fffbeb; color: var(--accent2); }
+.role-badge.secretary { background: #eff6ff; color: var(--info); }
+.role-badge.member    { background: #f3f4f6; color: var(--muted); }
+.role-select {
+  border: 1.5px solid var(--border); border-radius: 9px; padding: 7px 10px;
+  font-size: 12.5px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text); background: #fafafa; cursor: pointer; outline: none;
+  transition: border-color .15s;
+}
+.role-select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(13,110,79,.1); }
+.btn-rm-save {
+  background: var(--brand); color: #fff; border: none; border-radius: 9px;
+  padding: 8px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif; transition: background .15s;
+  white-space: nowrap;
+}
+.btn-rm-save:hover { background: var(--brand-light); }
+.btn-rm-remove {
+  background: transparent; border: 1.5px solid #fecaca; color: var(--danger);
+  border-radius: 9px; padding: 7px 12px; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .15s;
+  white-space: nowrap;
+}
+.btn-rm-remove:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+/* ── Permissions matrix ── */
+.perm-table { width: 100%; border-collapse: collapse; }
+.perm-table thead th {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--muted); padding: 10px 14px; background: #f9fafb;
+  border-bottom: 1px solid var(--border); text-align: center;
+}
+.perm-table thead th:first-child { text-align: left; }
+.perm-table tbody td {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  font-size: 13px; vertical-align: middle; text-align: center;
+}
+.perm-table tbody td:first-child { text-align: left; font-weight: 600; color: var(--text); }
+.perm-table tbody tr:last-child td { border-bottom: none; }
+.perm-table tbody tr:hover { background: #fafafa; }
+.perm-check { color: var(--brand); font-size: 15px; }
+.perm-cross { color: #d1d5db; font-size: 15px; }
+.perm-partial { color: var(--accent2); font-size: 13px; font-weight: 700; }
+.perm-section-row td {
+  background: var(--brand-xlight); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--brand);
+  padding: 8px 14px !important; text-align: left !important;
+}
+
+/* ── Invite section ── */
+.invite-link-box {
+  display: flex; align-items: center; gap: 10px;
+  background: #f3f6f4; border: 1.5px solid var(--border);
+  border-radius: 11px; padding: 12px 16px;
+}
+.invite-link-box input {
+  flex: 1; border: none; background: transparent; outline: none;
+  font-size: 13px; color: var(--text); font-family: 'DM Mono', monospace;
+}
+.btn-copy-link {
+  background: var(--brand); color: #fff; border: none; border-radius: 9px;
+  padding: 8px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif; transition: background .15s;
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+.btn-copy-link:hover { background: var(--brand-light); }
+{% endblock %}
+
+{% block content %}
+<div class="st-shell">
+
+  <!-- Header -->
+  <h1 class="st-page-title"><i class="fas fa-cog me-2" style="color:var(--brand);font-size:20px;"></i>Settings</h1>
+  <p class="st-page-sub">Manage your chama preferences, roles, notifications, and account.</p>
+
+  <!-- Tab nav -->
+  <div class="st-tabs" role="tablist">
+    <button class="st-tab" onclick="switchTab('chama')" id="tab-chama">
+      <i class="fas fa-users"></i> Chama
+    </button>
+    <button class="st-tab active" onclick="switchTab('roles')" id="tab-roles">
+      <i class="fas fa-shield-halved"></i> Roles & Permissions
+    </button>
+    <button class="st-tab" onclick="switchTab('notifications')" id="tab-notifications">
+      <i class="fas fa-bell"></i> Notifications
+      <span class="tab-badge">NEXT</span>
+    </button>
+    <button class="st-tab" onclick="switchTab('profile')" id="tab-profile">
+      <i class="fas fa-user"></i> Profile
+      <span class="tab-badge">NEXT</span>
+    </button>
+    <button class="st-tab" onclick="switchTab('billing')" id="tab-billing">
+      <i class="fas fa-credit-card"></i> Billing
+      <span class="tab-badge">NEXT</span>
+    </button>
+  </div>
+
+  <!-- ════════════════════════════════════
+       TAB 1 — CHAMA SETTINGS
+  ════════════════════════════════════ -->
+  <div class="st-panel" id="panel-chama">
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="chama">
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon"><i class="fas fa-id-badge"></i></div>
+          <div><h6>Group Identity</h6><p>Update your chama's name, description and public details.</p></div>
+        </div>
+        <div class="st-card-body">
+          <div class="st-field">
+            <label class="st-label">Chama Name <span>*</span></label>
+            <input type="text" name="name" class="st-input" value="{{ chama.name }}" required>
+          </div>
+          <div class="st-field">
+            <label class="st-label">Description</label>
+            <textarea name="description" class="st-textarea st-input" placeholder="What is this chama about?">{{ chama.description }}</textarea>
+            <div class="st-hint">Shown to new members on the invite page.</div>
+          </div>
+          <div class="st-grid-2">
+            <div class="st-field mb-0">
+              <label class="st-label">Chama ID</label>
+              <div class="d-flex align-items-center gap-2">
+                <input type="text" class="st-input" value="{{ chama.id }}" readonly
+                  style="font-family:'DM Mono',monospace;font-size:13px;background:#f3f4f6;color:var(--muted);">
+                <button type="button" class="btn-cancel-edit" style="white-space:nowrap;padding:10px 14px;"
+                  onclick="copyText('{{ chama.id }}',event)"><i class="fas fa-copy"></i></button>
+              </div>
+            </div>
+            <div class="st-field mb-0">
+              <label class="st-label">Status</label>
+              <span class="info-chip mt-1 d-inline-flex"><i class="fas fa-circle" style="font-size:8px;"></i> Active</span>
+              <div class="st-hint">Since {{ chama.created_at|date:"M d, Y" }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="st-save-bar">
+          <span class="st-save-info"><i class="fas fa-clock"></i> Last updated {{ chama.updated_at|date:"M d, Y" }}</span>
+          <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Identity</button>
+        </div>
+      </div>
+    </form>
+
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="schedule">
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon"><i class="fas fa-calendar-days"></i></div>
+          <div><h6>Schedule & Contributions</h6><p>Set meeting days, contribution amounts and due dates.</p></div>
+        </div>
+        <div class="st-card-body">
+          <div class="st-field">
+            <label class="st-label">Regular Meeting Day</label>
+            <div class="day-pills">
+              {% for day,short in "Monday:Mon,Tuesday:Tue,Wednesday:Wed,Thursday:Thu,Friday:Fri,Saturday:Sat,Sunday:Sun"|split:"," %}{% endfor %}
+              <label class="day-pill {% if chama.meeting_day == 'Monday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Monday" {% if chama.meeting_day == 'Monday' %}checked{% endif %}>Mon</label>
+              <label class="day-pill {% if chama.meeting_day == 'Tuesday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Tuesday" {% if chama.meeting_day == 'Tuesday' %}checked{% endif %}>Tue</label>
+              <label class="day-pill {% if chama.meeting_day == 'Wednesday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Wednesday" {% if chama.meeting_day == 'Wednesday' %}checked{% endif %}>Wed</label>
+              <label class="day-pill {% if chama.meeting_day == 'Thursday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Thursday" {% if chama.meeting_day == 'Thursday' %}checked{% endif %}>Thu</label>
+              <label class="day-pill {% if chama.meeting_day == 'Friday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Friday" {% if chama.meeting_day == 'Friday' %}checked{% endif %}>Fri</label>
+              <label class="day-pill {% if chama.meeting_day == 'Saturday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Saturday" {% if chama.meeting_day == 'Saturday' %}checked{% endif %}>Sat</label>
+              <label class="day-pill {% if chama.meeting_day == 'Sunday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Sunday" {% if chama.meeting_day == 'Sunday' %}checked{% endif %}>Sun</label>
+            </div>
+          </div>
+          <div class="st-grid-3">
+            <div class="st-field">
+              <label class="st-label">Contribution Amount</label>
+              <input type="number" name="contribution_amount" class="st-input" value="{{ chama.contribution_amount }}" placeholder="e.g. 5000" min="0">
+            </div>
+            <div class="st-field">
+              <label class="st-label">Due Day of Month</label>
+              <select name="contribution_day" class="st-select st-input">
+                {% for day in contribution_days %}
+                  <option value="{{ day }}" {% if chama.contribution_day == day %}selected{% endif %}>{{ day }}{% if day == 1 %}st{% elif day == 2 %}nd{% elif day == 3 %}rd{% else %}th{% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="st-field">
+              <label class="st-label">Max Members</label>
+              <div class="st-stepper">
+                <button type="button" onclick="stepVal('s_maxmembers',-1)"><i class="fas fa-minus"></i></button>
+                <input type="number" name="max_members" id="s_maxmembers" value="{{ chama.max_members|default:10 }}" min="2" max="500">
+                <button type="button" onclick="stepVal('s_maxmembers',1)"><i class="fas fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+          <div class="st-grid-2">
+            <div class="st-field mb-0">
+              <label class="st-label">Late Penalty (%)</label>
+              <div class="st-stepper">
+                <button type="button" onclick="stepVal('s_penalty',-0.5)"><i class="fas fa-minus"></i></button>
+                <input type="number" name="late_penalty" id="s_penalty" value="{{ chama.late_penalty|default:5 }}" min="0" max="100" step="0.5">
+                <button type="button" onclick="stepVal('s_penalty',0.5)"><i class="fas fa-plus"></i></button>
+              </div>
+            </div>
+            <div class="st-field mb-0">
+              <label class="st-label">Loan Interest Rate (%)</label>
+              <div class="st-stepper">
+                <button type="button" onclick="stepVal('s_interest',-0.5)"><i class="fas fa-minus"></i></button>
+                <input type="number" name="loan_interest" id="s_interest" value="{{ chama.loan_interest|default:10 }}" min="0" max="100" step="0.5">
+                <button type="button" onclick="stepVal('s_interest',0.5)"><i class="fas fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="st-save-bar">
+          <span class="st-save-info"><i class="fas fa-info-circle"></i> Changes apply from next billing cycle.</span>
+          <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Schedule</button>
+        </div>
+      </div>
+    </form>
+
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="currency">
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon warning"><i class="fas fa-coins"></i></div>
+          <div><h6>Currency</h6><p>Change the operating currency for this group.</p></div>
+        </div>
+        <div class="st-card-body">
+          <div class="currency-tiles">
+            <label class="currency-tile {% if chama.currency == 'KES' or not chama.currency %}selected{% endif %}" onclick="selectCurrency(this,'KES')">
+              <input type="radio" name="currency" value="KES" {% if chama.currency == 'KES' or not chama.currency %}checked{% endif %}>
+              <div class="ct-code">KES</div><div class="ct-name">Kenyan Shilling</div>
+            </label>
+            <label class="currency-tile {% if chama.currency == 'UGX' %}selected{% endif %}" onclick="selectCurrency(this,'UGX')">
+              <input type="radio" name="currency" value="UGX" {% if chama.currency == 'UGX' %}checked{% endif %}>
+              <div class="ct-code">UGX</div><div class="ct-name">Ugandan Shilling</div>
+            </label>
+            <label class="currency-tile {% if chama.currency == 'TZS' %}selected{% endif %}" onclick="selectCurrency(this,'TZS')">
+              <input type="radio" name="currency" value="TZS" {% if chama.currency == 'TZS' %}checked{% endif %}>
+              <div class="ct-code">TZS</div><div class="ct-name">Tanzanian Shilling</div>
+            </label>
+            <label class="currency-tile {% if chama.currency == 'USD' %}selected{% endif %}" onclick="selectCurrency(this,'USD')">
+              <input type="radio" name="currency" value="USD" {% if chama.currency == 'USD' %}checked{% endif %}>
+              <div class="ct-code">USD</div><div class="ct-name">US Dollar</div>
+            </label>
+          </div>
+          <div class="st-hint mt-3"><i class="fas fa-triangle-exclamation" style="color:var(--accent2);"></i> Changing currency does not convert existing balances.</div>
+        </div>
+        <div class="st-save-bar">
+          <span class="st-save-info"><i class="fas fa-globe"></i> Current: <strong>{{ chama.currency|default:"KES" }}</strong></span>
+          <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Currency</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Danger Zone -->
+    <div class="danger-zone">
+      <div class="danger-zone-header">
+        <i class="fas fa-triangle-exclamation" style="color:var(--danger);"></i>
+        <h6>Danger Zone</h6>
+      </div>
+      <div class="danger-action">
+        <div class="danger-action-info">
+          <div class="da-title">Transfer Admin</div>
+          <div class="da-sub">Hand over admin privileges to another member.</div>
+        </div>
+        <button type="button" class="btn-danger" onclick="openModal('modal-transfer')"><i class="fas fa-right-left me-1"></i> Transfer</button>
+      </div>
+      <div class="danger-action">
+        <div class="danger-action-info">
+          <div class="da-title">Archive Chama</div>
+          <div class="da-sub">Freeze all activity. Data is preserved but members can't transact.</div>
+        </div>
+        <button type="button" class="btn-danger" onclick="openModal('modal-archive')"><i class="fas fa-box-archive me-1"></i> Archive</button>
+      </div>
+      <div class="danger-action">
+        <div class="danger-action-info">
+          <div class="da-title">Delete Chama</div>
+          <div class="da-sub">Permanently delete this chama and all data. Cannot be undone.</div>
+        </div>
+        <button type="button" class="btn-danger" onclick="openModal('modal-delete')"><i class="fas fa-trash me-1"></i> Delete</button>
+      </div>
+    </div>
+  </div><!-- /panel-chama -->
+
+
+  <!-- ════════════════════════════════════
+       TAB 2 — ROLES & PERMISSIONS
+  ════════════════════════════════════ -->
+  <div class="st-panel active" id="panel-roles">
+
+    <!-- Role legend -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon info"><i class="fas fa-shield-halved"></i></div>
+        <div>
+          <h6>Role Definitions</h6>
+          <p>Four built-in roles — each with different levels of access.</p>
+        </div>
+      </div>
+      <div class="st-card-body">
+        <div class="role-legend">
+          <div class="role-card admin">
+            <div class="role-card-title"><i class="fas fa-crown me-1"></i> Admin</div>
+            <ul>
+              <li>Full access to all features</li>
+              <li>Manage members & roles</li>
+              <li>Approve loans & withdrawals</li>
+              <li>Edit chama settings</li>
+              <li>Delete / archive chama</li>
+            </ul>
+          </div>
+          <div class="role-card treasurer">
+            <div class="role-card-title"><i class="fas fa-coins me-1"></i> Treasurer</div>
+            <ul>
+              <li>Record contributions</li>
+              <li>Approve / reject loans</li>
+              <li>Manage fines</li>
+              <li>View financial reports</li>
+              <li>Cannot edit settings</li>
+            </ul>
+          </div>
+          <div class="role-card secretary">
+            <div class="role-card-title"><i class="fas fa-pen-clip me-1"></i> Secretary</div>
+            <ul>
+              <li>Invite & remove members</li>
+              <li>Send group messages</li>
+              <li>Record meeting minutes</li>
+              <li>View all reports</li>
+              <li>Cannot manage finances</li>
+            </ul>
+          </div>
+          <div class="role-card member">
+            <div class="role-card-title"><i class="fas fa-user me-1"></i> Member</div>
+            <ul>
+              <li>View own contributions</li>
+              <li>Request loans</li>
+              <li>View group balance</li>
+              <li>Receive messages</li>
+              <li>No management access</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member roles table -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon"><i class="fas fa-users-gear"></i></div>
+        <div>
+          <h6>Member Roles</h6>
+          <p>Assign or change roles for each member of this chama.</p>
+        </div>
+        <div class="ms-auto">
+          <button type="button" class="btn-save" style="padding:8px 16px;font-size:13px;" onclick="openModal('modal-invite')">
+            <i class="fas fa-user-plus"></i> Invite Member
+          </button>
+        </div>
+      </div>
+      <div class="st-card-body" style="padding:0;">
+        <div style="padding:0 24px;">
+
+          {% for membership in members %}
+          <form method="post" action="{% url 'chama_settings' chama.id %}" class="role-member-row">
+            {% csrf_token %}
+            <input type="hidden" name="section" value="role">
+            <input type="hidden" name="member_id" value="{{ membership.user.id }}">
+
+            <div class="rm-avatar">
+              {{ membership.user.first_name.0|upper }}{{ membership.user.last_name.0|upper }}
+            </div>
+            <div class="rm-info">
+              <div class="rm-name">
+                {{ membership.user.get_full_name|default:membership.user.username }}
+                {% if membership.user == request.user %}
+                  <span style="font-size:10px;background:var(--brand-xlight);color:var(--brand);padding:2px 7px;border-radius:10px;font-weight:700;margin-left:4px;">You</span>
+                {% endif %}
+              </div>
+              <div class="rm-email">{{ membership.user.email }}</div>
+            </div>
+
+            <span class="rm-joined d-none d-md-block">
+              Joined {{ membership.joined_at|date:"M Y" }}
+            </span>
+
+            <span class="role-badge {{ membership.get_role_display|lower }}">
+              {% if membership.role == 'admin' %}<i class="fas fa-crown"></i>
+              {% elif membership.role == 'treasurer' %}<i class="fas fa-coins"></i>
+              {% elif membership.role == 'secretary' %}<i class="fas fa-pen-clip"></i>
+              {% else %}<i class="fas fa-user"></i>{% endif %}
+              {{ membership.get_role_display }}
+            </span>
+
+            {% if membership.user != request.user %}
+            <select name="role" class="role-select" onchange="markChanged(this)">
+              <option value="admin"     {% if membership.role == 'admin' %}selected{% endif %}>Admin</option>
+              <option value="treasurer" {% if membership.role == 'treasurer' %}selected{% endif %}>Treasurer</option>
+              <option value="secretary" {% if membership.role == 'secretary' %}selected{% endif %}>Secretary</option>
+              <option value="member"    {% if membership.role == 'member' %}selected{% endif %}>Member</option>
+            </select>
+            <button type="submit" class="btn-rm-save"><i class="fas fa-check"></i> Save</button>
+            <button type="button" class="btn-rm-remove" onclick="confirmRemove('{{ membership.user.get_full_name|default:membership.user.username }}', '{{ membership.user.id }}')">
+              <i class="fas fa-user-minus"></i>
+            </button>
+            {% else %}
+            <span style="font-size:12px;color:var(--muted);font-style:italic;">Cannot edit own role</span>
+            {% endif %}
+
+          </form>
+          {% empty %}
+          <div class="text-center py-5" style="color:var(--muted);">
+            <i class="fas fa-users" style="font-size:36px;opacity:.2;display:block;margin-bottom:12px;"></i>
+            <div style="font-weight:700;">No members yet</div>
+            <div style="font-size:13px;">Invite members using the button above.</div>
+          </div>
+          {% endfor %}
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Permissions matrix -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon" style="background:#7c3aed;"><i class="fas fa-table-cells"></i></div>
+        <div>
+          <h6>Permissions Matrix</h6>
+          <p>What each role can do across ChamaPro features.</p>
+        </div>
+      </div>
+      <div class="st-card-body" style="padding:0;overflow-x:auto;">
+        <table class="perm-table">
+          <thead>
+            <tr>
+              <th style="min-width:200px;">Permission</th>
+              <th><span style="color:var(--brand);">Admin</span></th>
+              <th><span style="color:var(--accent2);">Treasurer</span></th>
+              <th><span style="color:var(--info);">Secretary</span></th>
+              <th>Member</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="perm-section-row"><td colspan="5">Contributions</td></tr>
+            <tr><td>View all contributions</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><span class="perm-partial">Own</span></td></tr>
+            <tr><td>Record contributions</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Edit / delete contributions</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+
+            <tr class="perm-section-row"><td colspan="5">Loans</td></tr>
+            <tr><td>Request a loan</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td></tr>
+            <tr><td>Approve / reject loans</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>View all loans</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><span class="perm-partial">Own</span></td></tr>
+
+            <tr class="perm-section-row"><td colspan="5">Fines</td></tr>
+            <tr><td>Issue fines</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Waive fines</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+
+            <tr class="perm-section-row"><td colspan="5">Members</td></tr>
+            <tr><td>Invite members</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Remove members</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Change member roles</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+
+            <tr class="perm-section-row"><td colspan="5">Reports & Settings</td></tr>
+            <tr><td>View reports</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Export data</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Edit chama settings</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+            <tr><td>Send messages</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Invite link -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon"><i class="fas fa-link"></i></div>
+        <div>
+          <h6>Invite Link</h6>
+          <p>Share this link to let people request to join your chama.</p>
+        </div>
+      </div>
+      <div class="st-card-body">
+        <div class="invite-link-box">
+          <i class="fas fa-link" style="color:var(--muted);font-size:13px;flex-shrink:0;"></i>
+          <input type="text" id="inviteLink" value="https://chamapro.app/join/{{ chama.invite_code|default:chama.id }}" readonly>
+          <button type="button" class="btn-copy-link" onclick="copyInviteLink()">
+            <i class="fas fa-copy" id="copyIcon"></i> <span id="copyText">Copy</span>
+          </button>
+        </div>
+        <div class="st-hint mt-2">
+          <i class="fas fa-shield-halved" style="color:var(--brand);"></i>
+          New members need Admin approval before they can access group data.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-roles -->
+
+
+  <!-- ════ Placeholder tabs ════ -->
+  <div class="st-panel" id="panel-notifications">
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon"><i class="fas fa-bell"></i></div>
+        <div><h6>Notification Settings</h6><p>Coming in the next step.</p></div>
+      </div>
+      <div class="st-card-body text-center py-5" style="color:var(--muted);">
+        <i class="fas fa-bell" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Notifications</div>
+        <div style="font-size:13px;">This tab is being built next.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="st-panel" id="panel-profile">
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon"><i class="fas fa-user"></i></div>
+        <div><h6>Profile Settings</h6><p>Coming soon.</p></div>
+      </div>
+      <div class="st-card-body text-center py-5" style="color:var(--muted);">
+        <i class="fas fa-user" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Profile</div>
+        <div style="font-size:13px;">Coming soon.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="st-panel" id="panel-billing">
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon warning"><i class="fas fa-credit-card"></i></div>
+        <div><h6>Billing & Plan</h6><p>Coming soon.</p></div>
+      </div>
+      <div class="st-card-body text-center py-5" style="color:var(--muted);">
+        <i class="fas fa-credit-card" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Billing</div>
+        <div style="font-size:13px;">Coming soon.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /st-shell -->
+
+
+<!-- ════ MODAL: Invite Member ════ -->
+<div class="confirm-overlay" id="modal-invite">
+  <div class="confirm-box">
+    <div class="cb-icon" style="background:var(--brand-xlight);color:var(--brand);"><i class="fas fa-user-plus"></i></div>
+    <h5>Invite a Member</h5>
+    <p>Enter their email address. They'll receive an invite link to join <strong>{{ chama.name }}</strong>.</p>
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="invite">
+      <input type="email" name="invite_email" class="cb-input" placeholder="member@email.com" required>
+      <div class="confirm-actions">
+        <button type="button" class="btn-confirm-cancel" onclick="closeModal('modal-invite')">Cancel</button>
+        <button type="submit" class="btn-confirm-danger" style="background:var(--brand);">
+          <i class="fas fa-paper-plane me-1"></i> Send Invite
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════ MODAL: Remove Member ════ -->
+<div class="confirm-overlay" id="modal-remove">
+  <div class="confirm-box">
+    <div class="cb-icon"><i class="fas fa-user-minus"></i></div>
+    <h5>Remove Member</h5>
+    <p>Are you sure you want to remove <strong id="removeName"></strong> from this chama? Their data will be retained but they'll lose access.</p>
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="remove_member">
+      <input type="hidden" name="member_id" id="removeId">
+      <div class="confirm-actions">
+        <button type="button" class="btn-confirm-cancel" onclick="closeModal('modal-remove')">Cancel</button>
+        <button type="submit" class="btn-confirm-danger"><i class="fas fa-user-minus me-1"></i> Remove</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════ MODAL: Transfer Admin ════ -->
+<div class="confirm-overlay" id="modal-transfer">
+  <div class="confirm-box">
+    <div class="cb-icon" style="background:#eff6ff;color:var(--info);"><i class="fas fa-right-left"></i></div>
+    <h5>Transfer Admin</h5>
+    <p>Select the member to hand admin privileges to. You will become a regular Member.</p>
+    <select class="cb-input">
+      <option value="">-- Select a member --</option>
+      {% for m in members %}
+        {% if m.user != request.user %}
+          <option value="{{ m.user.id }}">{{ m.user.get_full_name|default:m.user.username }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" onclick="closeModal('modal-transfer')">Cancel</button>
+      <button class="btn-confirm-danger" style="background:var(--info);border:none;"><i class="fas fa-right-left me-1"></i> Transfer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL: Archive ════ -->
+<div class="confirm-overlay" id="modal-archive">
+  <div class="confirm-box">
+    <div class="cb-icon" style="background:#fffbeb;color:var(--accent2);"><i class="fas fa-box-archive"></i></div>
+    <h5>Archive Chama</h5>
+    <p>This will freeze all activity. No new transactions or contributions. Members can still view data.</p>
+    <p style="font-size:13px;color:var(--muted);">Type <strong>ARCHIVE</strong> to confirm:</p>
+    <input type="text" class="cb-input" id="archiveInput" placeholder="Type ARCHIVE"
+      oninput="checkConfirm(this,'ARCHIVE','btn-archive-confirm')">
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" onclick="closeModal('modal-archive')">Cancel</button>
+      <button class="btn-confirm-danger" id="btn-archive-confirm" disabled style="background:var(--accent2);">
+        <i class="fas fa-box-archive me-1"></i> Archive
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL: Delete ════ -->
+<div class="confirm-overlay" id="modal-delete">
+  <div class="confirm-box">
+    <div class="cb-icon"><i class="fas fa-trash"></i></div>
+    <h5>Delete Chama</h5>
+    <p>This is <strong>permanent and irreversible</strong>. All members, transactions, loans, and data will be deleted forever.</p>
+    <p style="font-size:13px;color:var(--muted);">Type <strong>{{ chama.name|upper }}</strong> to confirm:</p>
+    <input type="text" class="cb-input" id="deleteInput" placeholder="Type chama name"
+      oninput="checkConfirm(this,'{{ chama.name|upper }}','btn-delete-confirm')">
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" onclick="closeModal('modal-delete')">Cancel</button>
+      <form method="post" action="{% url 'chama_delete' chama.id %}" style="flex:1;">
+        {% csrf_token %}
+        <button type="submit" class="btn-confirm-danger w-100" id="btn-delete-confirm" disabled>
+          <i class="fas fa-trash me-1"></i> Delete Forever
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ── Tab switching ── */
+function switchTab(name) {
+  document.querySelectorAll('.st-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.st-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+/* ── Day pill ── */
+function selectDay(el) {
+  el.closest('.day-pills').querySelectorAll('.day-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+/* ── Currency tile ── */
+function selectCurrency(el) {
+  el.closest('.currency-tiles').querySelectorAll('.currency-tile').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+/* ── Stepper ── */
+function stepVal(id, delta) {
+  const inp = document.getElementById(id);
+  let val = parseFloat(inp.value) || 0;
+  val = Math.max(parseFloat(inp.min||0), Math.min(parseFloat(inp.max||9999), val + delta));
+  inp.value = Number.isInteger(delta) ? Math.round(val) : parseFloat(val.toFixed(1));
+}
+
+/* ── Copy text ── */
+function copyText(text, e) {
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = e.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i>';
+    btn.style.color = 'var(--brand)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 1500);
+  });
+}
+
+/* ── Copy invite link ── */
+function copyInviteLink() {
+  const val = document.getElementById('inviteLink').value;
+  navigator.clipboard.writeText(val).then(() => {
+    document.getElementById('copyIcon').className = 'fas fa-check';
+    document.getElementById('copyText').textContent = 'Copied!';
+    setTimeout(() => {
+      document.getElementById('copyIcon').className = 'fas fa-copy';
+      document.getElementById('copyText').textContent = 'Copy';
+    }, 2000);
+  });
+}
+
+/* ── Remove member confirm ── */
+function confirmRemove(name, id) {
+  document.getElementById('removeName').textContent = name;
+  document.getElementById('removeId').value = id;
+  openModal('modal-remove');
+}
+
+/* ── Modals ── */
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+  const inp = document.querySelector('#' + id + ' input[type="text"]');
+  if (inp) { inp.value = ''; inp.dispatchEvent(new Event('input')); }
+}
+document.querySelectorAll('.confirm-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+/* ── Confirm input ── */
+function checkConfirm(input, expected, btnId) {
+  document.getElementById(btnId).disabled =
+    input.value.trim().toUpperCase() !== expected.toUpperCase();
+}
+
+/* ── Role badge colour update on select change ── */
+function markChanged(sel) {
+  const row = sel.closest('.role-member-row');
+  const badge = row.querySelector('.role-badge');
+  const roleMap = {
+    admin:     ['admin',     'fas fa-crown'],
+    treasurer: ['treasurer', 'fas fa-coins'],
+    secretary: ['secretary', 'fas fa-pen-clip'],
+    member:    ['member',    'fas fa-user'],
+  };
+  const [cls, icon] = roleMap[sel.value] || ['member','fas fa-user'];
+  badge.className = 'role-badge ' + cls;
+  badge.innerHTML = `<i class="${icon}"></i> ${sel.options[sel.selectedIndex].text}`;
+}
+</script>
+{% endblock %}

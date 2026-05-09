@@ -257,17 +257,6 @@ def profile_kyc(request):
 # ─── Activity Logger ──────────────────────────────────────────────────────────
 
 def log_activity(user, event_type, chama=None, amount=None, note=None):
-    """
-    Record a timeline event for the user's activity feed.
-
-    Usage examples:
-        log_activity(request.user, 'contribution', chama=chama, amount=amount)
-        log_activity(loan.member, 'loan_approved', chama=chama, amount=loan.amount)
-        log_activity(loan.member, 'loan_repaid', chama=chama, amount=amount_val)
-        log_activity(member, 'fine_issued', chama=chama, amount=float(amount))
-        log_activity(request.user, 'chama_created', chama=chama)
-        log_activity(invitee, 'chama_joined', chama=chama)
-    """
     MemberActivity.objects.create(
         user=user,
         chama=chama,
@@ -300,6 +289,7 @@ def chama_create(request):
         )
         Membership.objects.create(chama=chama, user=request.user, role='admin')
         request.session['active_chama_id'] = chama.id
+        log_activity(request.user, 'chama_created', chama=chama)
         messages.success(request, f'"{chama.name}" created! You are the Admin.')
         return redirect('chama_members', chama_id=chama.id)
     return render(request, 'chama_create.html', {
@@ -338,6 +328,7 @@ def member_invite(request, chama_id):
             messages.warning(request, f'{invitee.get_full_name()} is already a member.')
             return redirect('chama_members', chama_id=chama_id)
         Membership.objects.create(chama=chama, user=invitee, role=role)
+        log_activity(invitee, 'chama_joined', chama=chama)
         messages.success(request, f'{invitee.get_full_name()} added as {role}.')
     return redirect('chama_members', chama_id=chama_id)
 
@@ -372,6 +363,132 @@ def member_remove(request, chama_id, membership_id):
     target.save()
     messages.success(request, f'{target.user.get_full_name()} removed.')
     return redirect('chama_members', chama_id=chama_id)
+
+
+# ─── Chama Settings (NEW) ─────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def chama_settings(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    # Only admin can access settings
+    if my.role != 'admin':
+        messages.error(request, 'Only admins can access chama settings.')
+        return redirect('dashboard')
+
+    members           = Membership.objects.filter(chama=chama, active=True).select_related('user')
+    contribution_days = [1, 5, 10, 15, 20, 25, 28]
+
+    if request.method == 'POST':
+        section = request.POST.get('section', '')
+
+        # ── Group Identity ──
+        if section == 'chama':
+            name = request.POST.get('name', '').strip()
+            if not name:
+                messages.error(request, 'Chama name cannot be empty.')
+                return redirect('chama_settings', chama_id=chama_id)
+            chama.name        = name
+            chama.description = request.POST.get('description', '').strip()
+            chama.save()
+            messages.success(request, 'Group identity updated successfully.')
+
+        # ── Schedule & Contributions ──
+        elif section == 'schedule':
+            chama.meeting_day      = request.POST.get('meeting_day', chama.meeting_day)
+            contrib_amount         = request.POST.get('contribution_amount', '').strip()
+            chama.contribution_amount = Decimal(contrib_amount) if contrib_amount else chama.contribution_amount
+            chama.contribution_day = int(request.POST.get('contribution_day', chama.contribution_day))
+            max_members            = request.POST.get('max_members', '').strip()
+            if max_members:
+                chama.max_members = int(max_members)
+            late_penalty = request.POST.get('late_penalty', '').strip()
+            if late_penalty:
+                chama.late_penalty = Decimal(late_penalty)
+            loan_interest = request.POST.get('loan_interest', '').strip()
+            if loan_interest:
+                chama.loan_interest = Decimal(loan_interest)
+            chama.save()
+            messages.success(request, 'Schedule & contributions updated.')
+
+        # ── Currency ──
+        elif section == 'currency':
+            currency = request.POST.get('currency', 'KES')
+            if currency in ('KES', 'UGX', 'TZS', 'USD'):
+                chama.currency = currency
+                chama.save()
+                messages.success(request, f'Currency updated to {currency}.')
+            else:
+                messages.error(request, 'Invalid currency selected.')
+
+        # ── Member Role ──
+        elif section == 'role':
+            membership_id = request.POST.get('membership_id')
+            new_role      = request.POST.get('role', 'member')
+            if new_role not in ('admin', 'treasurer', 'secretary', 'member'):
+                messages.error(request, 'Invalid role.')
+                return redirect('chama_settings', chama_id=chama_id)
+            target = get_object_or_404(Membership, id=membership_id, chama=chama, active=True)
+            # Prevent demoting self if only admin
+            if target.user == request.user and new_role != 'admin':
+                admin_count = Membership.objects.filter(chama=chama, role='admin', active=True).count()
+                if admin_count <= 1:
+                    messages.error(request, "You're the only admin. Promote another member first.")
+                    return redirect('chama_settings', chama_id=chama_id)
+            target.role = new_role
+            target.save()
+            messages.success(request, f'{target.user.get_full_name()} is now {target.get_role_display()}.')
+
+        # ── Invite Member ──
+        elif section == 'invite':
+            email = request.POST.get('invite_email', '').strip()
+            if not email:
+                messages.error(request, 'Email address is required.')
+                return redirect('chama_settings', chama_id=chama_id)
+            try:
+                invitee = User.objects.get(email=email)
+                if Membership.objects.filter(chama=chama, user=invitee, active=True).exists():
+                    messages.warning(request, f'{invitee.get_full_name()} is already a member.')
+                else:
+                    Membership.objects.create(chama=chama, user=invitee, role='member')
+                    log_activity(invitee, 'chama_joined', chama=chama)
+                    messages.success(request, f'{invitee.get_full_name()} added successfully.')
+            except User.DoesNotExist:
+                messages.error(request, f'No ChamaPro account found for {email}.')
+
+        return redirect('chama_settings', chama_id=chama_id)
+
+    return render(request, 'settings.html', {
+        'chama':             chama,
+        'my_membership':     my,
+        'members':           members,
+        'contribution_days': contribution_days,
+    })
+
+
+@login_required(login_url='login')
+def chama_delete(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    if my.role != 'admin':
+        messages.error(request, 'Only admins can delete a chama.')
+        return redirect('chama_settings', chama_id=chama_id)
+
+    if request.method == 'POST':
+        name = chama.name
+        # Clear session if deleted chama was active
+        if request.session.get('active_chama_id') == chama_id:
+            try:
+                del request.session['active_chama_id']
+            except KeyError:
+                pass
+        chama.delete()
+        messages.success(request, f'"{name}" has been permanently deleted.')
+        return redirect('dashboard')
+
+    return redirect('chama_settings', chama_id=chama_id)
 
 
 # ─── Contributions ────────────────────────────────────────────────────────────
@@ -458,6 +575,7 @@ def contribution_add(request, chama_id):
             notes=notes or None, status=status,
             date=date or datetime.date.today(), recorded_by=request.user,
         )
+        log_activity(member, 'contribution', chama=chama, amount=amount)
         messages.success(request, f'Contribution of KES {amount:,.2f} recorded for {member.get_full_name()}.')
         return redirect('contributions', chama_id=chama_id)
 
@@ -713,13 +831,11 @@ def fine_report(request, chama_id):
     report_data.sort(key=lambda x: x['unpaid'], reverse=True)
 
     return render(request, 'chamapro/fine_report.html', {
-        'chama':        chama,
+        'chama':         chama,
         'my_membership': my,
-        'can_manage':   my.role in ('admin', 'treasurer'),
-        'report_data':  report_data,
+        'can_manage':    my.role in ('admin', 'treasurer'),
+        'report_data':   report_data,
     })
-
-
 
 
 # ─── Loans ────────────────────────────────────────────────────────────────────
@@ -830,6 +946,7 @@ def loan_approve(request, chama_id, loan_id):
             loan.approved_at = datetime.date.today()
             loan.due_date    = datetime.date.today() + relativedelta(months=loan.term_months)
             loan.save()
+            log_activity(loan.member, 'loan_approved', chama=chama, amount=float(loan.amount))
             messages.success(request, f'Loan of KES {loan.amount:,.2f} approved for {loan.member.get_full_name()}.')
         elif action == 'reject' and loan.status == 'pending':
             loan.status = 'rejected'
@@ -872,6 +989,7 @@ def loan_repayment_add(request, chama_id, loan_id):
         if loan.balance() <= 0:
             loan.status = 'repaid'
             loan.save()
+            log_activity(loan.member, 'loan_repaid', chama=chama, amount=float(loan.amount))
             messages.success(request, f'Loan fully repaid by {loan.member.get_full_name()}! 🎉')
         else:
             messages.success(request, f'Repayment of KES {amount_val:,.2f} recorded. Balance: KES {loan.balance():,.2f}')
