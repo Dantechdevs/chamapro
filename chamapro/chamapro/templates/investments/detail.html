@@ -38,7 +38,7 @@
 {% block content %}
 <!-- Breadcrumb -->
 <div class="mb-3" style="font-size:13px;color:var(--muted);">
-  <a href="{% url 'investments_portfolio' chama.id %}" style="color:var(--muted);text-decoration:none;">Portfolio</a>
+  <a href="{% url 'investments:portfolio' chama.id %}" style="color:var(--muted);text-decoration:none;">Portfolio</a>
   <span class="mx-2">›</span>
   <span style="color:var(--text);font-weight:600;">{{ investment.name }}</span>
 </div>
@@ -98,7 +98,7 @@
   <button class="btn-add" style="background:#f3f4f6;color:var(--text);" data-bs-toggle="modal" data-bs-target="#unitsModal">
     <i class="fas fa-plus"></i> Issue Units
   </button>
-  <a href="{% url 'investment_edit' chama.id investment.pk %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
+  <a href="{% url 'investments:investment_edit' chama.id investment.pk %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
     <i class="fas fa-edit"></i> Edit
   </a>
 </div>
@@ -140,13 +140,8 @@
     <table>
       <thead>
         <tr>
-          <th>Member</th>
-          <th>Units Held</th>
-          <th>Ownership</th>
-          <th>Invested</th>
-          <th>Current Value</th>
-          <th>Unrealised Gain</th>
-          <th>Entry NAV</th>
+          <th>Member</th><th>Units Held</th><th>Ownership</th>
+          <th>Invested</th><th>Current Value</th><th>Unrealised Gain</th><th>Entry NAV</th>
         </tr>
       </thead>
       <tbody>
@@ -272,7 +267,7 @@
         <h5 class="modal-title"><i class="fas fa-arrow-down me-2" style="color:var(--brand);"></i>Log Investment Return</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" action="{% url 'investment_log_return' chama.id investment.pk %}">
+      <form method="post" action="{% url 'investments:investment_log_return' chama.id investment.pk %}">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">
@@ -315,7 +310,7 @@
         <h5 class="modal-title"><i class="fas fa-sync me-2" style="color:var(--brand);"></i>Update NAV</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" action="{% url 'investment_update_nav' chama.id investment.pk %}">
+      <form method="post" action="{% url 'investments:investment_update_nav' chama.id investment.pk %}">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">
@@ -348,7 +343,7 @@
         <h5 class="modal-title"><i class="fas fa-plus me-2" style="color:var(--brand);"></i>Issue Units to Member</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" action="{% url 'investment_issue_units' chama.id investment.pk %}">
+      <form method="post" action="{% url 'investments:investment_issue_units' chama.id investment.pk %}">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">

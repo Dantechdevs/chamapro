@@ -20,7 +20,7 @@
 
 {% block content %}
 <div class="mb-4">
-  <a href="{% url 'investments_portfolio' chama.id %}" style="font-size:13px;color:var(--muted);text-decoration:none;">
+  <a href="{% url 'investments:portfolio' chama.id %}" style="font-size:13px;color:var(--muted);text-decoration:none;">
     <i class="fas fa-arrow-left me-1"></i> Back to Portfolio
   </a>
 </div>
@@ -111,7 +111,7 @@
       <button type="submit" class="btn-submit">
         <i class="fas fa-save me-1"></i> {% if investment %}Save Changes{% else %}Add Investment{% endif %}
       </button>
-      <a href="{% url 'investments_portfolio' chama.id %}" class="btn-submit" style="background:#f3f4f6;color:var(--text);text-decoration:none;">Cancel</a>
+      <a href="{% url 'investments:portfolio' chama.id %}" class="btn-submit" style="background:#f3f4f6;color:var(--text);text-decoration:none;">Cancel</a>
     </div>
   </div>
 </form>
