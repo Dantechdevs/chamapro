@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Investments – {{ chama.name }}{% endblock %}
+{% block nav_investments %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .inv-hero{background:linear-gradient(135deg,var(--sidebar-bg) 0%,var(--brand-dark) 100%);border-radius:18px;padding:28px 28px 24px;margin-bottom:22px;position:relative;overflow:hidden;}
+  .inv-hero::before{content:'';position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:rgba(0,201,122,.07);}
+  .inv-hero::after{content:'';position:absolute;right:60px;bottom:-60px;width:160px;height:160px;border-radius:50%;background:rgba(0,201,122,.04);}
+  .inv-hero-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.45);margin-bottom:6px;}
+  .inv-hero-value{font-size:34px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;letter-spacing:-1px;margin-bottom:4px;}
+  .inv-hero-sub{font-size:13px;color:rgba(255,255,255,.5);}
+  .roi-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(0,201,122,.15);border:1px solid rgba(0,201,122,.3);color:#00c97a;font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px;margin-top:10px;}
+  .inv-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+  .inv-stat{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:var(--card-shadow);}
+  .inv-stat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;}
+  .inv-stat-val{font-size:20px;font-weight:800;font-family:'DM Mono',monospace;}
+  .inv-stat-val.green{color:#10b981;}
+  .inv-stat-val.amber{color:var(--accent2);}
+  .type-breakdown{background:#fff;border-radius:14px;padding:18px;box-shadow:var(--card-shadow);margin-bottom:22px;}
+  .type-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);}
+  .type-row:last-child{border-bottom:none;}
+  .type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .type-name{font-size:13.5px;font-weight:600;flex:1;}
+  .type-bar-wrap{width:120px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .type-bar{height:100%;border-radius:3px;}
+  .type-amount{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;min-width:110px;text-align:right;}
+  .inv-card{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:18px 20px;display:flex;align-items:flex-start;gap:14px;transition:box-shadow .2s,transform .15s;text-decoration:none;color:inherit;margin-bottom:10px;}
+  .inv-card:hover{box-shadow:0 4px 24px rgba(0,0,0,.1);transform:translateY(-1px);color:inherit;}
+  .inv-type-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;}
+  .inv-card-body{flex:1;min-width:0;}
+  .inv-card-name{font-size:15px;font-weight:700;margin-bottom:2px;}
+  .inv-card-inst{font-size:12px;color:var(--muted);}
+  .inv-card-right{text-align:right;flex-shrink:0;}
+  .inv-card-value{font-family:'DM Mono',monospace;font-size:16px;font-weight:800;}
+  .inv-card-roi{font-size:12px;font-weight:700;margin-top:2px;}
+  .inv-card-roi.pos{color:#10b981;}
+  .inv-card-roi.neg{color:var(--danger);}
+  .status-chip{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:20px;margin-top:4px;display:inline-block;}
+  .status-chip.active{background:#dcfce7;color:#16a34a;}
+  .status-chip.matured{background:#dbeafe;color:#1d4ed8;}
+  .status-chip.sold,.status-chip.exited{background:#f3f4f6;color:#6b7280;}
+  @media(max-width:768px){.inv-stat-grid{grid-template-columns:1fr 1fr;}}
+  @media(max-width:500px){.inv-stat-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <div class="page-title">Investment Portfolio</div>
+    <div class="page-sub">{{ chama.name }} · {{ summary.count }} investment{{ summary.count|pluralize }}</div>
+  </div>
+  <a href="{% url 'investment_add' chama.id %}" class="btn-add"><i class="fas fa-plus"></i> Add Investment</a>
+</div>
+
+<!-- HERO -->
+<div class="inv-hero mb-4">
+  <div class="inv-hero-title">Portfolio Current Value</div>
+  <div class="inv-hero-value">KES {{ summary.total_value|intcomma }}</div>
+  <div class="inv-hero-sub">Capital invested: KES {{ summary.total_invested|intcomma }}</div>
+  <div class="roi-pill">
+    <i class="fas fa-arrow-trend-up"></i>
+    {% if summary.roi_percent >= 0 %}+{% endif %}{{ summary.roi_percent|floatformat:1 }}% overall ROI
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="inv-stat-grid">
+  <div class="inv-stat">
+    <div class="inv-stat-label">Total Returns Received</div>
+    <div class="inv-stat-val green">KES {{ summary.total_returns|intcomma }}</div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-label">Active Investments</div>
+    <div class="inv-stat-val">{{ summary.active_count }}</div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-label">Unrealised Gain</div>
+    {% with gain=summary.total_value|add:"-0"|default:0 %}
+    <div class="inv-stat-val {% if summary.total_value >= summary.total_invested %}green{% else %}{% endif %}">
+      KES {{ summary.total_value|floatformat:0|intcomma }}
+    </div>
+    {% endwith %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- LEFT: Investment list -->
+  <div class="col-lg-8">
+    <div class="table-card-header px-0 mb-3" style="background:none;border:none;">
+      <h6 style="font-size:15px;font-weight:700;margin:0;">All Investments</h6>
+      <a href="{% url 'investment_stakes' chama.id %}" class="btn-add" style="font-size:12px;padding:6px 14px;">
+        <i class="fas fa-users"></i> Member Stakes
+      </a>
+    </div>
+
+    {% for inv in summary.investments %}
+    <a href="{% url 'investment_detail' chama.id inv.pk %}" class="inv-card">
+      <div class="inv-type-icon" style="background:{{ inv.type_color }};">
+        <i class="fas {{ inv.type_icon }}"></i>
+      </div>
+      <div class="inv-card-body">
+        <div class="inv-card-name">{{ inv.name }}</div>
+        <div class="inv-card-inst">{{ inv.institution|default:inv.get_investment_type_display }}</div>
+        <span class="status-chip {{ inv.status }}">{{ inv.get_status_display }}</span>
+      </div>
+      <div class="inv-card-right">
+        <div class="inv-card-value">KES {{ inv.current_value|intcomma }}</div>
+        <div class="inv-card-roi {% if inv.roi_percent >= 0 %}pos{% else %}neg{% endif %}">
+          {% if inv.roi_percent >= 0 %}+{% endif %}{{ inv.roi_percent|floatformat:1 }}% ROI
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">{{ inv.date_invested }}</div>
+      </div>
+    </a>
+    {% empty %}
+    <div class="table-card">
+      <div class="empty-state">
+        <i class="fas fa-chart-pie"></i>
+        <div style="font-weight:600;margin-bottom:6px;">No investments yet</div>
+        <div style="font-size:13px;">Add your first investment to start tracking the portfolio.</div>
+        <a href="{% url 'investment_add' chama.id %}" class="btn-add mt-3"><i class="fas fa-plus"></i> Add Investment</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- RIGHT: Breakdown by type -->
+  <div class="col-lg-4">
+    <div class="type-breakdown">
+      <h6 style="font-size:14px;font-weight:700;margin-bottom:14px;">By Asset Class</h6>
+      {% for type_name, data in summary.by_type.items %}
+      <div class="type-row">
+        <div class="type-dot" style="background:{{ data.color }};"></div>
+        <div class="type-name">{{ type_name }}</div>
+        <div class="type-bar-wrap">
+          <div class="type-bar" style="width:{% widthratio data.value summary.total_value 100 %}%;background:{{ data.color }};"></div>
+        </div>
+        <div class="type-amount">KES {{ data.value|intcomma }}</div>
+      </div>
+      {% empty %}
+      <div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0;">No data yet</div>
+      {% endfor %}
+    </div>
+
+    <!-- Quick links -->
+    <div class="table-card p-3">
+      <h6 style="font-size:13px;font-weight:700;margin-bottom:12px;">Quick Actions</h6>
+      <div class="d-grid gap-2">
+        <a href="{% url 'investment_add' chama.id %}" class="btn-add" style="justify-content:center;">
+          <i class="fas fa-plus"></i> New Investment
+        </a>
+        <a href="{% url 'investment_stakes' chama.id %}" class="btn-add" style="justify-content:center;background:#f3f4f6;color:var(--text);">
+          <i class="fas fa-users"></i> View Member Stakes
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

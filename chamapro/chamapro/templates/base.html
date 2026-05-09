@@ -155,10 +155,10 @@
         <a href="{% url 'fines' chama.id %}" class="nav-link-cp {% block nav_fines %}{% endblock %}"><i class="fas fa-triangle-exclamation"></i> Fines</a>
       </div>
       <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-comment-dots"></i> Messaging <span class="badge-soon">SOON</span></a>
+        <a href="{% url 'messaging_hub' chama.id %}" class="nav-link-cp {% block nav_messaging %}{% endblock %}"><i class="fas fa-comment-dots"></i> Messaging</a>
       </div>
       <div class="nav-item-wrap">
-        <a href="#" class="nav-link-cp"><i class="fas fa-chart-pie"></i> Investments <span class="badge-soon">SOON</span></a>
+        <a href="{% url 'investments:portfolio' chama.id %}" class="nav-link-cp {% block nav_investments %}{% endblock %}"><i class="fas fa-chart-pie"></i> Investments</a>
       </div>
     </div>
     <div class="nav-section">

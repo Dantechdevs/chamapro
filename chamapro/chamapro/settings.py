@@ -4,6 +4,7 @@ Django settings for chamapro project.
 
 from pathlib import Path
 from django.contrib.messages import constants as messages
+from decimal import Decimal
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +26,7 @@ INSTALLED_APPS = [
     'chamapro',
     'wallets',
     'messaging',
+    'investments',
 ]
 
 MIDDLEWARE = [
@@ -99,3 +101,20 @@ MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET', '')
 MPESA_SHORTCODE       = os.getenv('MPESA_SHORTCODE', '174379')
 MPESA_PASSKEY         = os.getenv('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919')
 MPESA_CALLBACK_URL    = os.getenv('MPESA_CALLBACK_URL', 'https://yourcallback.ngrok.io/mpesa/callback/')
+
+# ── Investments ───────────────────────────────────────────────────────────────
+
+# Starting NAV per unit when no NAVHistory record exists yet (par value)
+INVESTMENT_DEFAULT_NAV = Decimal('100.00')
+
+# Default return mode: 'distribute' pays out cash, 'reinvest' buys more units
+INVESTMENT_DEFAULT_RETURN_MODE = 'distribute'
+
+# Currency symbol rendered in investment templates
+INVESTMENT_CURRENCY = 'KES'
+
+# Decimal places for unit quantities  (e.g. 4 → 1.2345 units)
+INVESTMENT_UNIT_DECIMAL_PLACES = 4
+
+# Decimal places for NAV and all monetary amounts
+INVESTMENT_NAV_DECIMAL_PLACES = 2

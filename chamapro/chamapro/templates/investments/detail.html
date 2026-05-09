@@ -1,0 +1,431 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}{{ investment.name }} – Investments{% endblock %}
+{% block nav_investments %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+  .detail-hero{background:linear-gradient(135deg,var(--sidebar-bg),var(--brand-dark));border-radius:18px;padding:24px 28px;margin-bottom:22px;position:relative;overflow:hidden;}
+  .detail-hero::after{content:'';position:absolute;right:-20px;top:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.03);}
+  .detail-type-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.5);margin-bottom:8px;}
+  .detail-type-badge .icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .detail-name{font-size:24px;font-weight:800;color:#fff;margin-bottom:4px;}
+  .detail-inst{font-size:13px;color:rgba(255,255,255,.45);}
+  .detail-meta-row{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;}
+  .detail-meta{text-align:center;}
+  .detail-meta-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.35);font-weight:700;margin-bottom:2px;}
+  .detail-meta-val{font-size:16px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;}
+  .detail-meta-val.green{color:#00c97a;}
+  .tab-nav{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:20px;}
+  .tab-btn{padding:9px 16px;font-size:13px;font-weight:600;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;}
+  .tab-btn.active{color:var(--brand);border-bottom-color:var(--brand);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .unit-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .unit-row:last-child{border-bottom:none;}
+  .unit-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+  .unit-bar{height:100%;background:var(--brand);border-radius:3px;}
+  .unit-pct{font-size:12px;font-weight:700;color:var(--brand);min-width:44px;text-align:right;}
+  .chart-wrap{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);padding:18px;margin-bottom:16px;}
+  .chart-wrap canvas{max-height:200px;}
+  .return-row td{vertical-align:middle;}
+  .flow-pill{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;}
+  .flow-pill.reinvest{background:#dbeafe;color:#1d4ed8;}
+  .flow-pill.distribute{background:#dcfce7;color:#16a34a;}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="mb-3" style="font-size:13px;color:var(--muted);">
+  <a href="{% url 'investments_portfolio' chama.id %}" style="color:var(--muted);text-decoration:none;">Portfolio</a>
+  <span class="mx-2">›</span>
+  <span style="color:var(--text);font-weight:600;">{{ investment.name }}</span>
+</div>
+
+<!-- HERO -->
+<div class="detail-hero mb-4">
+  <div class="detail-type-badge">
+    <div class="icon" style="background:{{ investment.type_color }};">
+      <i class="fas {{ investment.type_icon }}"></i>
+    </div>
+    {{ investment.get_investment_type_display }}
+    {% if investment.institution %} · {{ investment.institution }}{% endif %}
+  </div>
+  <div class="detail-name">{{ investment.name }}</div>
+  <div class="detail-inst">
+    Invested {{ investment.date_invested }}
+    {% if investment.maturity_date %} · Matures {{ investment.maturity_date }}{% endif %}
+  </div>
+  <div class="detail-meta-row">
+    <div class="detail-meta">
+      <div class="detail-meta-label">Capital Invested</div>
+      <div class="detail-meta-val">KES {{ investment.capital_invested|intcomma }}</div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-label">Current Value</div>
+      <div class="detail-meta-val green">KES {{ investment.current_value|intcomma }}</div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-label">ROI</div>
+      <div class="detail-meta-val {% if investment.roi_percent >= 0 %}green{% endif %}">
+        {% if investment.roi_percent >= 0 %}+{% endif %}{{ investment.roi_percent|floatformat:2 }}%
+      </div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-label">NAV / Unit</div>
+      <div class="detail-meta-val">{{ investment.current_nav|floatformat:4 }}</div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-label">Total Units</div>
+      <div class="detail-meta-val">{{ investment.total_units|floatformat:4 }}</div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-label">Status</div>
+      <div class="detail-meta-val">{{ investment.get_status_display }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="d-flex gap-2 flex-wrap mb-4">
+  <button class="btn-add" data-bs-toggle="modal" data-bs-target="#returnModal">
+    <i class="fas fa-arrow-down"></i> Log Return
+  </button>
+  <button class="btn-add" style="background:#f3f4f6;color:var(--text);" data-bs-toggle="modal" data-bs-target="#navModal">
+    <i class="fas fa-sync"></i> Update NAV
+  </button>
+  <button class="btn-add" style="background:#f3f4f6;color:var(--text);" data-bs-toggle="modal" data-bs-target="#unitsModal">
+    <i class="fas fa-plus"></i> Issue Units
+  </button>
+  <a href="{% url 'investment_edit' chama.id investment.pk %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
+    <i class="fas fa-edit"></i> Edit
+  </a>
+</div>
+
+<!-- TABS -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('nav-tab', this)"><i class="fas fa-chart-line me-1"></i> NAV Chart</button>
+  <button class="tab-btn" onclick="showTab('units-tab', this)"><i class="fas fa-users me-1"></i> Unit Holders ({{ units|length }})</button>
+  <button class="tab-btn" onclick="showTab('returns-tab', this)"><i class="fas fa-coins me-1"></i> Returns ({{ returns|length }})</button>
+  <button class="tab-btn" onclick="showTab('dist-tab', this)"><i class="fas fa-share-nodes me-1"></i> Distributions</button>
+</div>
+
+<!-- TAB: NAV CHART -->
+<div class="tab-panel active" id="nav-tab">
+  <div class="chart-wrap">
+    <h6 style="font-size:13px;font-weight:700;margin-bottom:14px;">NAV History</h6>
+    {% if nav_chart_data %}
+    <canvas id="navChart"></canvas>
+    {% else %}
+    <div class="empty-state py-4">
+      <i class="fas fa-chart-line"></i>
+      <div style="font-weight:600;">No NAV history yet</div>
+      <div style="font-size:13px;">Update the NAV to start tracking growth.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- TAB: UNIT HOLDERS -->
+<div class="tab-panel" id="units-tab">
+  <div class="table-card">
+    <div class="table-card-header">
+      <h6>Unit Holders</h6>
+      <button class="btn-add" style="font-size:12px;padding:6px 14px;" data-bs-toggle="modal" data-bs-target="#unitsModal">
+        <i class="fas fa-plus"></i> Issue Units
+      </button>
+    </div>
+    {% if units %}
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Units Held</th>
+          <th>Ownership</th>
+          <th>Invested</th>
+          <th>Current Value</th>
+          <th>Unrealised Gain</th>
+          <th>Entry NAV</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in units %}
+        <tr>
+          <td>
+            <div class="member-cell">
+              <div class="avatar-sm">{{ u.member.user.first_name.0 }}{{ u.member.user.last_name.0 }}</div>
+              <div>
+                <div class="member-name">{{ u.member.user.get_full_name }}</div>
+                <div class="member-email">{{ u.member.user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="amount-cell">{{ u.units_held|floatformat:4 }}</td>
+          <td>
+            <div class="unit-row" style="padding:0;border:none;">
+              <div class="unit-bar-wrap">
+                <div class="unit-bar" style="width:{{ u.ownership_percent|floatformat:0 }}%;"></div>
+              </div>
+              <div class="unit-pct">{{ u.ownership_percent|floatformat:1 }}%</div>
+            </div>
+          </td>
+          <td class="amount-cell">KES {{ u.invested_amount|intcomma }}</td>
+          <td class="amount-cell" style="color:#10b981;">KES {{ u.current_value|floatformat:0|intcomma }}</td>
+          <td class="amount-cell {% if u.unrealised_gain >= 0 %}text-success{% else %}text-danger{% endif %}">
+            {% if u.unrealised_gain >= 0 %}+{% endif %}KES {{ u.unrealised_gain|floatformat:0|intcomma }}
+          </td>
+          <td class="amount-cell">{{ u.nav_at_entry|floatformat:4 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-users"></i>No unit holders yet. Issue units to members to track their stake.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- TAB: RETURNS -->
+<div class="tab-panel" id="returns-tab">
+  <div class="table-card">
+    <div class="table-card-header">
+      <h6>Returns Log</h6>
+      <button class="btn-add" style="font-size:12px;padding:6px 14px;" data-bs-toggle="modal" data-bs-target="#returnModal">
+        <i class="fas fa-plus"></i> Log Return
+      </button>
+    </div>
+    {% if returns %}
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Amount</th><th>Flow</th><th>Processed</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        {% for r in returns %}
+        <tr class="return-row">
+          <td>{{ r.date_received }}</td>
+          <td><span class="badge-status" style="background:#f3f4f6;color:var(--text);">{{ r.get_return_type_display }}</span></td>
+          <td class="amount-cell">KES {{ r.gross_amount|intcomma }}</td>
+          <td><span class="flow-pill {{ r.flow }}">{{ r.get_flow_display }}</span></td>
+          <td>
+            {% if r.processed %}
+              <span class="badge-status" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check"></i> Yes</span>
+            {% else %}
+              <span class="badge-status" style="background:#fef9c3;color:#a16207;">Pending</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--muted);">{{ r.notes|default:"–" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-coins"></i>No returns logged yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- TAB: DISTRIBUTIONS -->
+<div class="tab-panel" id="dist-tab">
+  <div class="table-card">
+    <div class="table-card-header"><h6>Return Distributions to Members</h6></div>
+    {% if distributions %}
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Member</th><th>Units at Time</th><th>Share</th><th>Amount</th><th>Credited</th></tr>
+      </thead>
+      <tbody>
+        {% for d in distributions %}
+        <tr>
+          <td>{{ d.investment_return.date_received }}</td>
+          <td>
+            <div class="member-cell">
+              <div class="avatar-sm" style="width:28px;height:28px;font-size:10px;">{{ d.member.user.first_name.0 }}{{ d.member.user.last_name.0 }}</div>
+              <span class="member-name" style="font-size:13px;">{{ d.member.user.get_full_name }}</span>
+            </div>
+          </td>
+          <td class="amount-cell">{{ d.units_at_time|floatformat:4 }}</td>
+          <td>{{ d.share_percent|floatformat:2 }}%</td>
+          <td class="amount-cell" style="color:#10b981;">KES {{ d.amount|floatformat:0|intcomma }}</td>
+          <td>
+            {% if d.credited_to_wallet %}
+              <span class="badge-status" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check"></i> Yes</span>
+            {% else %}
+              <span class="badge-status" style="background:#fee2e2;color:#dc2626;">No</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><i class="fas fa-share-nodes"></i>No distributions yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- MODAL: Log Return -->
+<div class="modal fade" id="returnModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-arrow-down me-2" style="color:var(--brand);"></i>Log Investment Return</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'investment_log_return' chama.id investment.pk %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Return Type</label>
+            {{ return_form.return_type }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Gross Amount (KES)</label>
+            {{ return_form.gross_amount }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date Received</label>
+            {{ return_form.date_received }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">How should this flow?</label>
+            {{ return_form.flow }}
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              <strong>Reinvest</strong>: adds to portfolio value · <strong>Distribute</strong>: splits to member wallets
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes (optional)</label>
+            {{ return_form.notes }}
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="submit" class="btn-submit w-100">Process Return</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Update NAV -->
+<div class="modal fade" id="navModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-sync me-2" style="color:var(--brand);"></i>Update NAV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'investment_update_nav' chama.id investment.pk %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Valuation Date</label>
+            {{ nav_form.date }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Total Value (KES)</label>
+            {{ nav_form.total_value }}
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">Current total value of this investment today.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Note (optional)</label>
+            {{ nav_form.note }}
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="submit" class="btn-submit w-100">Save NAV Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Issue Units -->
+<div class="modal fade" id="unitsModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-plus me-2" style="color:var(--brand);"></i>Issue Units to Member</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'investment_issue_units' chama.id investment.pk %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Member</label>
+            <select name="member_id" class="form-select" required>
+              <option value="">— Select member —</option>
+              {% for u in units %}
+              <option value="{{ u.member.pk }}">{{ u.member.user.get_full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Amount to Invest (KES)</label>
+            {{ issue_form.amount }}
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+              Current NAV: <strong>{{ investment.current_nav|floatformat:4 }}</strong> per unit
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="submit" class="btn-submit w-100">Issue Units</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+{% if nav_chart_data %}
+const navData = {{ nav_chart_data|safe }};
+const ctx = document.getElementById('navChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: navData.map(d => d.date),
+    datasets: [{
+      label: 'NAV per Unit',
+      data: navData.map(d => d.nav),
+      borderColor: '#0d6e4f',
+      backgroundColor: 'rgba(13,110,79,.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#0d6e4f',
+      pointRadius: 4,
+      fill: true,
+      tension: 0.35,
+    }, {
+      label: 'Total Value (KES)',
+      data: navData.map(d => d.value),
+      borderColor: '#00c97a',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 3,
+      borderDash: [5,3],
+      tension: 0.35,
+      yAxisID: 'y2',
+    }]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } },
+    scales: {
+      y:  { beginAtZero: false, ticks: { callback: v => v.toFixed(4) } },
+      y2: { position: 'right', beginAtZero: false, ticks: { callback: v => 'KES ' + v.toLocaleString() }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}
