@@ -5,13 +5,13 @@ from django.utils import timezone
 from django.db.models import Sum
 from decimal import Decimal
 
+from chamapro.models import Chama, Membership  # ← fixed, imported at top level
 from .models import Investment, InvestmentUnit, InvestmentReturn, ReturnDistribution, NAVHistory
 from .forms import InvestmentForm, InvestmentReturnForm, NAVUpdateForm, IssueUnitsForm
 from .services import portfolio_summary, process_return, update_nav, issue_units, member_portfolio
 
-# Helper — replace with your actual chama/membership resolution
+
 def get_chama_and_membership(request, chama_id):
-    from chama.models import Chama, Membership
     chama = get_object_or_404(Chama, pk=chama_id)
     membership = get_object_or_404(Membership, chama=chama, user=request.user)
     return chama, membership
@@ -24,7 +24,6 @@ def portfolio(request, chama_id):
     chama, my_membership = get_chama_and_membership(request, chama_id)
     summary = portfolio_summary(chama)
 
-    # NAV chart data for all active investments
     nav_chart = {}
     for inv in summary['investments'].filter(status='active'):
         history = inv.nav_history.order_by('date').values('date', 'nav_per_unit')
@@ -50,16 +49,16 @@ def investment_detail(request, chama_id, pk):
     chama, my_membership = get_chama_and_membership(request, chama_id)
     investment = get_object_or_404(Investment, pk=pk, chama=chama)
 
-    units        = InvestmentUnit.objects.filter(investment=investment).select_related('member__user')
-    returns      = InvestmentReturn.objects.filter(investment=investment)
-    nav_history  = investment.nav_history.order_by('date')
+    units         = InvestmentUnit.objects.filter(investment=investment).select_related('member__user')
+    returns       = InvestmentReturn.objects.filter(investment=investment)
+    nav_history   = investment.nav_history.order_by('date')
     distributions = ReturnDistribution.objects.filter(
         investment_return__investment=investment
     ).select_related('member__user', 'investment_return').order_by('-investment_return__date_received')
 
-    return_form  = InvestmentReturnForm()
-    nav_form     = NAVUpdateForm(initial={'date': timezone.now().date(), 'total_value': investment.current_value})
-    issue_form   = IssueUnitsForm()
+    return_form = InvestmentReturnForm()
+    nav_form    = NAVUpdateForm(initial={'date': timezone.now().date(), 'total_value': investment.current_value})
+    issue_form  = IssueUnitsForm()
 
     nav_chart_data = [
         {'date': str(h.date), 'nav': float(h.nav_per_unit), 'value': float(h.total_value)}
@@ -96,17 +95,16 @@ def investment_add(request, chama_id):
             inv.created_by = request.user
             inv.save()
 
-            # Record initial NAV snapshot
             NAVHistory.objects.create(
                 investment=inv,
                 date=inv.date_invested,
                 nav_per_unit=Decimal('1'),
                 total_value=inv.capital_invested,
-                total_units=inv.capital_invested,  # 1 unit = KES 1 at inception
+                total_units=inv.capital_invested,
                 note='Initial investment',
             )
             messages.success(request, f'Investment "{inv.name}" added successfully.')
-            return redirect('investment_detail', chama_id=chama_id, pk=inv.pk)
+            return redirect('investments:investment_detail', chama_id=chama_id, pk=inv.pk)  # ← fixed
     else:
         form = InvestmentForm()
 
@@ -131,7 +129,7 @@ def investment_edit(request, chama_id, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Investment updated.')
-            return redirect('investment_detail', chama_id=chama_id, pk=pk)
+            return redirect('investments:investment_detail', chama_id=chama_id, pk=pk)  # ← fixed
     else:
         form = InvestmentForm(instance=investment)
 
@@ -166,7 +164,7 @@ def log_return(request, chama_id, pk):
             except Exception as e:
                 messages.error(request, f'Return saved but processing failed: {e}')
 
-    return redirect('investment_detail', chama_id=chama_id, pk=pk)
+    return redirect('investments:investment_detail', chama_id=chama_id, pk=pk)  # ← fixed
 
 
 # ── Update NAV ────────────────────────────────────────────────────────────────
@@ -187,7 +185,7 @@ def update_nav_view(request, chama_id, pk):
             )
             messages.success(request, 'NAV updated successfully.')
 
-    return redirect('investment_detail', chama_id=chama_id, pk=pk)
+    return redirect('investments:investment_detail', chama_id=chama_id, pk=pk)  # ← fixed
 
 
 # ── Issue units to member ──────────────────────────────────────────────────────
@@ -200,15 +198,14 @@ def issue_units_view(request, chama_id, pk):
     if request.method == 'POST':
         form = IssueUnitsForm(request.POST)
         if form.is_valid():
-            from chama.models import Membership
-            member = get_object_or_404(Membership, pk=form.cleaned_data['member_id'], chama=chama)
+            member = get_object_or_404(Membership, pk=form.cleaned_data['member_id'], chama=chama)  # ← fixed
             unit_record = issue_units(investment, member, form.cleaned_data['amount'])
             messages.success(
                 request,
                 f'{unit_record.units_held:.4f} units issued to {member.user.get_full_name()}.'
             )
 
-    return redirect('investment_detail', chama_id=chama_id, pk=pk)
+    return redirect('investments:investment_detail', chama_id=chama_id, pk=pk)  # ← fixed
 
 
 # ── Member stakes view ────────────────────────────────────────────────────────
@@ -216,8 +213,7 @@ def issue_units_view(request, chama_id, pk):
 @login_required
 def member_stakes(request, chama_id):
     chama, my_membership = get_chama_and_membership(request, chama_id)
-    from chama.models import Membership
-    memberships = Membership.objects.filter(chama=chama).select_related('user')
+    memberships = Membership.objects.filter(chama=chama).select_related('user')  # ← fixed
 
     stakes = []
     for m in memberships:
