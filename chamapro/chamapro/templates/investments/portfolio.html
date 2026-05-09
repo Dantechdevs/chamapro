@@ -52,7 +52,7 @@
     <div class="page-title">Investment Portfolio</div>
     <div class="page-sub">{{ chama.name }} · {{ summary.count }} investment{{ summary.count|pluralize }}</div>
   </div>
-  <a href="{% url 'investment_add' chama.id %}" class="btn-add"><i class="fas fa-plus"></i> Add Investment</a>
+  <a href="{% url 'investments:investment_add' chama.id %}" class="btn-add"><i class="fas fa-plus"></i> Add Investment</a>
 </div>
 
 <!-- HERO -->
@@ -78,11 +78,9 @@
   </div>
   <div class="inv-stat">
     <div class="inv-stat-label">Unrealised Gain</div>
-    {% with gain=summary.total_value|add:"-0"|default:0 %}
-    <div class="inv-stat-val {% if summary.total_value >= summary.total_invested %}green{% else %}{% endif %}">
+    <div class="inv-stat-val {% if summary.total_value >= summary.total_invested %}green{% endif %}">
       KES {{ summary.total_value|floatformat:0|intcomma }}
     </div>
-    {% endwith %}
   </div>
 </div>
 
@@ -91,13 +89,13 @@
   <div class="col-lg-8">
     <div class="table-card-header px-0 mb-3" style="background:none;border:none;">
       <h6 style="font-size:15px;font-weight:700;margin:0;">All Investments</h6>
-      <a href="{% url 'investment_stakes' chama.id %}" class="btn-add" style="font-size:12px;padding:6px 14px;">
+      <a href="{% url 'investments:investment_stakes' chama.id %}" class="btn-add" style="font-size:12px;padding:6px 14px;">
         <i class="fas fa-users"></i> Member Stakes
       </a>
     </div>
 
     {% for inv in summary.investments %}
-    <a href="{% url 'investment_detail' chama.id inv.pk %}" class="inv-card">
+    <a href="{% url 'investments:investment_detail' chama.id inv.pk %}" class="inv-card">
       <div class="inv-type-icon" style="background:{{ inv.type_color }};">
         <i class="fas {{ inv.type_icon }}"></i>
       </div>
@@ -120,7 +118,7 @@
         <i class="fas fa-chart-pie"></i>
         <div style="font-weight:600;margin-bottom:6px;">No investments yet</div>
         <div style="font-size:13px;">Add your first investment to start tracking the portfolio.</div>
-        <a href="{% url 'investment_add' chama.id %}" class="btn-add mt-3"><i class="fas fa-plus"></i> Add Investment</a>
+        <a href="{% url 'investments:investment_add' chama.id %}" class="btn-add mt-3"><i class="fas fa-plus"></i> Add Investment</a>
       </div>
     </div>
     {% endfor %}
@@ -148,10 +146,10 @@
     <div class="table-card p-3">
       <h6 style="font-size:13px;font-weight:700;margin-bottom:12px;">Quick Actions</h6>
       <div class="d-grid gap-2">
-        <a href="{% url 'investment_add' chama.id %}" class="btn-add" style="justify-content:center;">
+        <a href="{% url 'investments:investment_add' chama.id %}" class="btn-add" style="justify-content:center;">
           <i class="fas fa-plus"></i> New Investment
         </a>
-        <a href="{% url 'investment_stakes' chama.id %}" class="btn-add" style="justify-content:center;background:#f3f4f6;color:var(--text);">
+        <a href="{% url 'investments:investment_stakes' chama.id %}" class="btn-add" style="justify-content:center;background:#f3f4f6;color:var(--text);">
           <i class="fas fa-users"></i> View Member Stakes
         </a>
       </div>
