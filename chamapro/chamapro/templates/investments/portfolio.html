@@ -124,7 +124,7 @@
     {% endfor %}
   </div>
 
-  <!-- RIGHT: Breakdown by type -->
+  <!-- RIGHT: Breakdown by type + Quick Actions -->
   <div class="col-lg-4">
     <div class="type-breakdown">
       <h6 style="font-size:14px;font-weight:700;margin-bottom:14px;">By Asset Class</h6>
@@ -151,6 +151,12 @@
         </a>
         <a href="{% url 'investments:investment_stakes' chama.id %}" class="btn-add" style="justify-content:center;background:#f3f4f6;color:var(--text);">
           <i class="fas fa-users"></i> View Member Stakes
+        </a>
+        <a href="{% url 'group_wallet' chama.id %}" class="btn-add" style="justify-content:center;background:#f3f4f6;color:var(--text);">
+          <i class="fas fa-wallet"></i> Group Wallet
+        </a>
+        <a href="{% url 'wallet_dashboard' chama.id %}" class="btn-add" style="justify-content:center;background:#f3f4f6;color:var(--text);">
+          <i class="fas fa-user-circle"></i> My Wallet
         </a>
       </div>
     </div>

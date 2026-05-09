@@ -12,6 +12,7 @@
   .stake-meta{margin-left:auto;text-align:right;}
   .stake-total{font-family:'DM Mono',monospace;font-size:16px;font-weight:800;color:var(--brand);}
   .stake-sub{font-size:11px;color:var(--muted);}
+  .stake-wallet-link{font-size:11px;color:var(--brand);text-decoration:none;margin-top:4px;display:block;}
   .stake-body{padding:10px 18px 14px;}
   .pos-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
   .pos-row:last-child{border-bottom:none;}
@@ -35,6 +36,14 @@
     <div class="page-title">Member Stakes</div>
     <div class="page-sub">Individual unit positions across all investments</div>
   </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'wallet_dashboard' chama.id %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
+      <i class="fas fa-user-circle"></i> My Wallet
+    </a>
+    <a href="{% url 'group_wallet' chama.id %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
+      <i class="fas fa-wallet"></i> Group Wallet
+    </a>
+  </div>
 </div>
 
 {% for stake in stakes %}
@@ -48,6 +57,9 @@
     <div class="stake-meta">
       <div class="stake-total">KES {{ stake.total_value|floatformat:0|intcomma }}</div>
       <div class="stake-sub">Invested: KES {{ stake.total_invested|intcomma }}</div>
+      <a href="{% url 'wallet_dashboard' chama.id %}" class="stake-wallet-link">
+        <i class="fas fa-wallet me-1"></i>View Wallet
+      </a>
     </div>
   </div>
   <div class="stake-body">
@@ -67,6 +79,9 @@
     {% if stake.total_distributions %}
     <div style="font-size:12px;color:var(--muted);margin-top:8px;">
       <i class="fas fa-coins me-1"></i>Total distributions received: <strong>KES {{ stake.total_distributions|intcomma }}</strong>
+      <a href="{% url 'wallet_dashboard' chama.id %}" style="color:var(--brand);text-decoration:none;margin-left:8px;">
+        <i class="fas fa-wallet me-1"></i>Check Wallet
+      </a>
     </div>
     {% endif %}
   </div>

@@ -101,6 +101,12 @@
   <a href="{% url 'investments:investment_edit' chama.id investment.pk %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
     <i class="fas fa-edit"></i> Edit
   </a>
+  <a href="{% url 'group_wallet' chama.id %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
+    <i class="fas fa-wallet"></i> Group Wallet
+  </a>
+  <a href="{% url 'wallet_dashboard' chama.id %}" class="btn-add" style="background:#f3f4f6;color:var(--text);">
+    <i class="fas fa-user-circle"></i> My Wallet
+  </a>
 </div>
 
 <!-- TABS -->
@@ -141,7 +147,7 @@
       <thead>
         <tr>
           <th>Member</th><th>Units Held</th><th>Ownership</th>
-          <th>Invested</th><th>Current Value</th><th>Unrealised Gain</th><th>Entry NAV</th>
+          <th>Invested</th><th>Current Value</th><th>Unrealised Gain</th><th>Entry NAV</th><th>Wallet</th>
         </tr>
       </thead>
       <tbody>
@@ -171,6 +177,11 @@
             {% if u.unrealised_gain >= 0 %}+{% endif %}KES {{ u.unrealised_gain|floatformat:0|intcomma }}
           </td>
           <td class="amount-cell">{{ u.nav_at_entry|floatformat:4 }}</td>
+          <td>
+            <a href="{% url 'wallet_dashboard' chama.id %}" style="font-size:11px;color:var(--brand);text-decoration:none;">
+              <i class="fas fa-wallet me-1"></i>Wallet
+            </a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -223,7 +234,12 @@
 <!-- TAB: DISTRIBUTIONS -->
 <div class="tab-panel" id="dist-tab">
   <div class="table-card">
-    <div class="table-card-header"><h6>Return Distributions to Members</h6></div>
+    <div class="table-card-header">
+      <h6>Return Distributions to Members</h6>
+      <a href="{% url 'group_wallet' chama.id %}" class="btn-add" style="font-size:12px;padding:6px 14px;background:#f3f4f6;color:var(--text);">
+        <i class="fas fa-wallet"></i> Group Wallet
+      </a>
+    </div>
     {% if distributions %}
     <table>
       <thead>
@@ -245,6 +261,9 @@
           <td>
             {% if d.credited_to_wallet %}
               <span class="badge-status" style="background:#dcfce7;color:#16a34a;"><i class="fas fa-check"></i> Yes</span>
+              <a href="{% url 'wallet_dashboard' chama.id %}" style="font-size:11px;color:var(--brand);margin-left:6px;text-decoration:none;">
+                <i class="fas fa-wallet"></i> View
+              </a>
             {% else %}
               <span class="badge-status" style="background:#fee2e2;color:#dc2626;">No</span>
             {% endif %}
