@@ -77,7 +77,12 @@ urlpatterns = [
     # Messaging
     path('chama/<int:chama_id>/messaging/', include('messaging.urls')),
 
-    # Investments  ← fixed: prefix is just 'chama/' so investments/urls.py handles the chama_id
+    # Investments
     path('chama/', include('investments.urls')),
+
+    # Upgrade / Subscription
+    path('upgrade/', views.upgrade, name='upgrade'),
+    path('upgrade/pay/', views.upgrade_pay, name='upgrade_pay'),
+    path('upgrade/poll/', views.upgrade_poll, name='upgrade_poll'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
