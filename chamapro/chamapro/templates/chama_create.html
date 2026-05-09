@@ -1,206 +1,664 @@
+{% extends "base.html" %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Chama – ChamaPro</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-    />
-    <style>
-      :root {
-        --primary: #2d6a4f;
-        --primary-light: #40916c;
-      }
-      body {
-        background: #f5f5f5;
-        font-family: "Segoe UI", sans-serif;
-      }
-      .create-shell {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem 1rem;
-      }
-      .create-card {
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        width: 100%;
-        max-width: 580px;
-        padding: 2.5rem;
-      }
-      .create-card h2 {
-        font-weight: 700;
-        color: var(--primary);
-      }
-      .btn-primary {
-        background: var(--primary);
-        border-color: var(--primary);
-        border-radius: 10px;
-        padding: 0.75rem 2rem;
-      }
-      .btn-primary:hover {
-        background: var(--primary-light);
-        border-color: var(--primary-light);
-      }
-      .form-control,
-      .form-select {
-        border-radius: 10px;
-        border: 1px solid #e5e7eb;
-        padding: 0.75rem 1rem;
-      }
-      .form-control:focus,
-      .form-select:focus {
-        border-color: var(--primary-light);
-        box-shadow: 0 0 0 0.2rem rgba(64, 145, 108, 0.15);
-      }
-      .form-label {
-        font-weight: 500;
-        font-size: 14px;
-        color: #374151;
-      }
-      .section-divider {
-        border-top: 1px solid #f0f0f0;
-        margin: 1.5rem 0;
-      }
-      .currency-badge {
-        background: #eaf3de;
-        color: var(--primary);
-        border-radius: 8px;
-        padding: 4px 10px;
-        font-size: 13px;
-        font-weight: 500;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="create-shell">
-      <div class="create-card">
-        <div class="mb-4">
-          <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none" style="font-size: 14px">
-            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-          </a>
+
+{% block title %}Create Chama – ChamaPro{% endblock %}
+
+{% block extra_css %}
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&display=swap');
+
+/* ── Layout ── */
+.cc-shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 16px 60px;
+}
+
+/* ── Page header ── */
+.cc-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  transition: color .15s;
+}
+.cc-back-btn:hover { color: var(--brand); }
+.cc-page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 4px;
+  letter-spacing: -.5px;
+}
+.cc-page-sub { font-size: 13.5px; color: var(--muted); margin: 0 0 28px; }
+
+/* ── Step progress ── */
+.cc-steps {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 24px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
+  gap: 0;
+}
+.cc-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  position: relative;
+  cursor: pointer;
+}
+.cc-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 112px;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 2px;
+  background: var(--border);
+  transition: background .3s;
+  z-index: 0;
+}
+.cc-step.done:not(:last-child)::after { background: var(--brand); }
+.cc-step-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+  transition: all .25s;
+  position: relative; z-index: 1;
+}
+.cc-step.active .cc-step-num { background: var(--brand); color: #fff; box-shadow: 0 0 0 4px rgba(13,110,79,.15); }
+.cc-step.done .cc-step-num { background: var(--brand); color: #fff; }
+.cc-step-info { display: flex; flex-direction: column; }
+.cc-step-label { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.cc-step.active .cc-step-label { color: var(--brand); }
+.cc-step.done .cc-step-label { color: var(--text); }
+.cc-step-sub { font-size: 11px; color: var(--muted); opacity: .7; }
+
+/* ── Card ── */
+.cc-card { background: #fff; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid var(--border); overflow: hidden; }
+.cc-card-header {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(110deg, var(--brand-xlight) 0%, #fff 55%);
+  display: flex; align-items: center; gap: 14px;
+}
+.cc-card-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: var(--brand); display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 17px; flex-shrink: 0;
+}
+.cc-card-header h5 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; margin: 0 0 2px; color: var(--text); }
+.cc-card-header p { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+/* ── Panel ── */
+.cc-panel { display: none; padding: 28px; animation: fadeUp .3s ease; }
+.cc-panel.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Fields ── */
+.cc-field-group { margin-bottom: 22px; }
+.cc-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 700; color: #374151;
+  margin-bottom: 6px; letter-spacing: .05em; text-transform: uppercase;
+}
+.cc-label .req { color: var(--danger); }
+.cc-input, .cc-select, .cc-textarea {
+  width: 100%; border: 1.5px solid var(--border); border-radius: 11px;
+  padding: 11px 14px; font-size: 14px; font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text); background: #fafafa; transition: border-color .15s, box-shadow .15s, background .15s; outline: none;
+}
+.cc-input:focus, .cc-select:focus, .cc-textarea:focus {
+  border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px rgba(13,110,79,.1);
+}
+.cc-input.has-prefix { padding-left: 58px; }
+.cc-input-wrap { position: relative; }
+.cc-input-prefix {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 11px; font-weight: 700; color: var(--brand);
+  background: var(--brand-xlight); padding: 3px 8px; border-radius: 6px; pointer-events: none;
+}
+.cc-textarea { resize: vertical; min-height: 80px; }
+.cc-hint { font-size: 11.5px; color: var(--muted); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+
+/* ── Grid ── */
+.cc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.cc-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+@media(max-width:600px) { .cc-grid-2, .cc-grid-3 { grid-template-columns: 1fr; } }
+
+/* ── Currency tiles ── */
+.currency-tiles { display: flex; gap: 10px; flex-wrap: wrap; }
+.currency-tile {
+  flex: 1; min-width: 90px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 14px 10px; text-align: center; cursor: pointer;
+  transition: all .15s; background: #fafafa;
+}
+.currency-tile:hover { border-color: var(--brand); background: var(--brand-xlight); }
+.currency-tile.selected { border-color: var(--brand); background: var(--brand-xlight); box-shadow: 0 0 0 3px rgba(13,110,79,.1); }
+.currency-tile .ct-code { font-size: 15px; font-weight: 800; color: var(--brand); font-family: 'DM Mono', monospace; }
+.currency-tile .ct-name { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.currency-tile input { display: none; }
+
+/* ── Day pills ── */
+.day-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.day-pill {
+  padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: #fafafa; font-size: 12.5px; font-weight: 700; color: var(--muted);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.day-pill:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-xlight); }
+.day-pill.selected { background: var(--brand); color: #fff; border-color: var(--brand); }
+.day-pill input { display: none; }
+
+/* ── Stepper ── */
+.cc-stepper {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--border); border-radius: 11px;
+  overflow: hidden; background: #fafafa; transition: border-color .15s;
+}
+.cc-stepper:focus-within { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px rgba(13,110,79,.1); }
+.cc-stepper input {
+  flex: 1; border: none; outline: none; text-align: center;
+  font-size: 15px; font-weight: 700; background: transparent;
+  font-family: 'DM Mono', monospace; padding: 11px 0; color: var(--text);
+}
+.cc-stepper button {
+  width: 40px; border: none; background: transparent;
+  font-size: 14px; color: var(--muted); cursor: pointer;
+  padding: 11px; transition: background .1s, color .1s;
+}
+.cc-stepper button:hover { background: var(--brand-xlight); color: var(--brand); }
+
+/* ── Toggle rows ── */
+.cc-toggle-list { display: flex; flex-direction: column; gap: 10px; }
+.cc-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border: 1.5px solid var(--border);
+  border-radius: 12px; background: #fafafa; transition: all .15s;
+}
+.cc-toggle-row.is-on { border-color: var(--brand); background: var(--brand-xlight); }
+.cc-toggle-info { display: flex; align-items: center; gap: 12px; }
+.cc-toggle-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--brand-xlight); color: var(--brand);
+  display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+}
+.tt-title { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.tt-sub { font-size: 11.5px; color: var(--muted); }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border); border-radius: 24px; cursor: pointer; transition: background .2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  width: 18px; height: 18px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%;
+  transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--brand); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* ── Summary ── */
+.cc-summary {
+  background: linear-gradient(135deg, var(--brand-xlight), #f0faf5);
+  border: 1.5px solid rgba(13,110,79,.18); border-radius: 14px; padding: 22px; margin-bottom: 0;
+}
+.cc-summary-title {
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800;
+  color: var(--brand-dark); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cc-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.si-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.si-value { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+/* ── Footer ── */
+.cc-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px; border-top: 1px solid var(--border); background: #fafafa; gap: 12px;
+  flex-wrap: wrap;
+}
+.btn-cc-primary {
+  background: var(--brand); color: #fff; border: none; border-radius: 11px;
+  padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: background .15s, transform .1s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-cc-primary:hover { background: var(--brand-light); transform: translateY(-1px); }
+.btn-cc-primary:active { transform: translateY(0); }
+.btn-cc-secondary {
+  background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+  border-radius: 11px; padding: 11px 22px; font-size: 14px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px; transition: all .15s; text-decoration: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-cc-secondary:hover { border-color: var(--text); color: var(--text); }
+.cc-step-counter { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+/* ── Alert ── */
+.cc-alert {
+  border-radius: 11px; font-size: 13px; background: #fef2f2; color: #b91c1c;
+  padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border: none;
+}
+
+/* ── Divider ── */
+.cc-divider { border: none; border-top: 1px solid var(--border); margin: 22px 0; }
+
+/* ── Error state ── */
+.cc-input.error { border-color: var(--danger) !important; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+{% endblock %}
+
+{% block content %}
+<div class="cc-shell">
+
+  <!-- Header -->
+  <a href="{% url 'dashboard' %}" class="cc-back-btn"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+  <h1 class="cc-page-title">Create a Chama</h1>
+  <p class="cc-page-sub">Set up your savings group in 3 steps — you'll be assigned as <strong>Admin</strong>.</p>
+
+  <!-- Step bar -->
+  <div class="cc-steps">
+    <div class="cc-step active" id="step-indicator-1" onclick="goToStep(1)" title="Go to Basic Info">
+      <div class="cc-step-num" id="snum1">1</div>
+      <div class="cc-step-info">
+        <div class="cc-step-label">Basic Info</div>
+        <div class="cc-step-sub">Name & schedule</div>
+      </div>
+    </div>
+    <div class="cc-step" id="step-indicator-2" onclick="goToStep(2)" title="Go to Financials">
+      <div class="cc-step-num" id="snum2">2</div>
+      <div class="cc-step-info">
+        <div class="cc-step-label">Financials</div>
+        <div class="cc-step-sub">Contributions & rates</div>
+      </div>
+    </div>
+    <div class="cc-step" id="step-indicator-3" onclick="goToStep(3)" title="Go to Review">
+      <div class="cc-step-num" id="snum3">3</div>
+      <div class="cc-step-info">
+        <div class="cc-step-label">Features & Review</div>
+        <div class="cc-step-sub">Confirm & launch</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="post" id="chamaForm">
+    {% csrf_token %}
+    <div class="cc-card">
+
+      <!-- ═══ STEP 1: Basic Info ═══ -->
+      <div id="panel1" class="cc-panel active">
+        <div class="cc-card-header">
+          <div class="cc-card-icon"><i class="fas fa-id-card"></i></div>
+          <div>
+            <h5>Basic Information</h5>
+            <p>Give your chama a name, purpose, and schedule.</p>
+          </div>
         </div>
+        <div style="padding:28px;">
 
-        <h2 class="mb-1"><i class="fas fa-users me-2"></i>Create a Chama</h2>
-        <p class="text-muted mb-4" style="font-size: 14px">
-          Set up your savings group. You'll be assigned as Admin.
-        </p>
+          {% if messages %}
+            {% for message in messages %}
+              <div class="cc-alert"><i class="fas fa-circle-exclamation"></i>{{ message }}</div>
+            {% endfor %}
+          {% endif %}
 
-        {% if messages %}
-          {% for message in messages %}
-          <div
-            class="alert alert-danger alert-dismissible fade show"
-            style="border-radius: 10px; font-size: 14px"
-          >
-            {{ message }}
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="alert"
-            ></button>
-          </div>
-          {% endfor %}
-        {% endif %}
-
-        <form method="post">
-          {% csrf_token %}
-
-          <div class="mb-3">
-            <label class="form-label">
-              Chama Name <span class="text-danger">*</span>
-            </label>
-            <input
-              type="text"
-              name="name"
-              class="form-control"
-              placeholder="e.g. Familia Investment Club"
-              required
-            />
+          <div class="cc-field-group">
+            <label class="cc-label">Chama Name <span class="req">*</span></label>
+            <input type="text" name="name" id="f_name" class="cc-input"
+              placeholder="e.g. Familia Investment Club" required autocomplete="off" />
+            <div class="cc-hint"><i class="fas fa-lightbulb" style="color:var(--accent2);font-size:11px;"></i> Choose something unique and easy for members to recognise.</div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea
-              name="description"
-              class="form-control"
-              rows="2"
-              placeholder="What is this chama about?"
-            ></textarea>
+          <div class="cc-field-group">
+            <label class="cc-label">Description</label>
+            <textarea name="description" id="f_desc" class="cc-textarea cc-input"
+              placeholder="What are this chama's goals? Who is it for?"></textarea>
           </div>
 
-          <div class="section-divider"></div>
-
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <label class="form-label">Monthly Contribution (KES)</label>
-              <input
-                type="number"
-                name="contribution_amount"
-                class="form-control"
-                placeholder="e.g. 5000"
-                min="0"
-              />
+          <div class="cc-grid-2">
+            <div class="cc-field-group">
+              <label class="cc-label">Meeting Day</label>
+              <div class="day-pills" id="dayPills">
+                <label class="day-pill" onclick="selectDay(this,'Monday')"><input type="radio" name="meeting_day" value="Monday">Mon</label>
+                <label class="day-pill" onclick="selectDay(this,'Tuesday')"><input type="radio" name="meeting_day" value="Tuesday">Tue</label>
+                <label class="day-pill" onclick="selectDay(this,'Wednesday')"><input type="radio" name="meeting_day" value="Wednesday">Wed</label>
+                <label class="day-pill" onclick="selectDay(this,'Thursday')"><input type="radio" name="meeting_day" value="Thursday">Thu</label>
+                <label class="day-pill" onclick="selectDay(this,'Friday')"><input type="radio" name="meeting_day" value="Friday">Fri</label>
+                <label class="day-pill" onclick="selectDay(this,'Saturday')"><input type="radio" name="meeting_day" value="Saturday">Sat</label>
+                <label class="day-pill" onclick="selectDay(this,'Sunday')"><input type="radio" name="meeting_day" value="Sunday">Sun</label>
+              </div>
             </div>
-            <div class="col-6">
-              <label class="form-label">Contribution Due Day</label>
-              <select name="contribution_day" class="form-select">
+            <div class="cc-field-group">
+              <label class="cc-label">Max Members</label>
+              <div class="cc-stepper">
+                <button type="button" onclick="stepVal('f_size',-1)"><i class="fas fa-minus"></i></button>
+                <input type="number" name="max_members" id="f_size" value="10" min="2" max="500">
+                <button type="button" onclick="stepVal('f_size',1)"><i class="fas fa-plus"></i></button>
+              </div>
+              <div class="cc-hint">Maximum members allowed in this group.</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="cc-footer">
+          <a href="{% url 'dashboard' %}" class="btn-cc-secondary"><i class="fas fa-xmark"></i> Cancel</a>
+          <div class="d-flex align-items-center gap-3">
+            <span class="cc-step-counter">Step 1 of 3</span>
+            <button type="button" class="btn-cc-primary" onclick="goToStep(2)">Financials <i class="fas fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ STEP 2: Financials ═══ -->
+      <div id="panel2" class="cc-panel">
+        <div class="cc-card-header">
+          <div class="cc-card-icon"><i class="fas fa-coins"></i></div>
+          <div>
+            <h5>Financial Settings</h5>
+            <p>Set contributions, due dates, currency, and interest rates.</p>
+          </div>
+        </div>
+        <div style="padding:28px;">
+
+          <div class="cc-field-group">
+            <label class="cc-label">Currency <span class="req">*</span></label>
+            <div class="currency-tiles">
+              <label class="currency-tile selected" onclick="selectCurrency(this,'KES')">
+                <input type="radio" name="currency" value="KES" checked>
+                <div class="ct-code">KES</div><div class="ct-name">Kenyan Shilling</div>
+              </label>
+              <label class="currency-tile" onclick="selectCurrency(this,'UGX')">
+                <input type="radio" name="currency" value="UGX">
+                <div class="ct-code">UGX</div><div class="ct-name">Ugandan Shilling</div>
+              </label>
+              <label class="currency-tile" onclick="selectCurrency(this,'TZS')">
+                <input type="radio" name="currency" value="TZS">
+                <div class="ct-code">TZS</div><div class="ct-name">Tanzanian Shilling</div>
+              </label>
+              <label class="currency-tile" onclick="selectCurrency(this,'USD')">
+                <input type="radio" name="currency" value="USD">
+                <div class="ct-code">USD</div><div class="ct-name">US Dollar</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="cc-grid-2">
+            <div class="cc-field-group">
+              <label class="cc-label">Monthly Contribution</label>
+              <div class="cc-input-wrap">
+                <span class="cc-input-prefix" id="currPrefix">KES</span>
+                <input type="number" name="contribution_amount" id="f_contrib" class="cc-input has-prefix" placeholder="e.g. 5,000" min="0">
+              </div>
+              <div class="cc-hint">Leave blank if variable per member.</div>
+            </div>
+            <div class="cc-field-group">
+              <label class="cc-label">Contribution Due Day</label>
+              <select name="contribution_day" id="f_dueday" class="cc-select cc-input">
                 {% for day in contribution_days %}
-                <option value="{{ day }}" {% if day == 5 %}selected{% endif %}>
-                  {{ day }}th of month
-                </option>
+                  <option value="{{ day }}" {% if day == 5 %}selected{% endif %}>{{ day }}{% if day == 1 %}st{% elif day == 2 %}nd{% elif day == 3 %}rd{% else %}th{% endif %} of month</option>
                 {% endfor %}
               </select>
             </div>
           </div>
 
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <label class="form-label">Regular Meeting Day</label>
-              <select name="meeting_day" class="form-select">
-                <option value="">-- Select --</option>
-                <option>Monday</option>
-                <option>Tuesday</option>
-                <option>Wednesday</option>
-                <option>Thursday</option>
-                <option>Friday</option>
-                <option>Saturday</option>
-                <option>Sunday</option>
-              </select>
+          <div class="cc-grid-2">
+            <div class="cc-field-group">
+              <label class="cc-label">Late Penalty (%)</label>
+              <div class="cc-stepper">
+                <button type="button" onclick="stepVal('f_penalty',-0.5)"><i class="fas fa-minus"></i></button>
+                <input type="number" name="late_penalty" id="f_penalty" value="5" min="0" max="100" step="0.5">
+                <button type="button" onclick="stepVal('f_penalty',0.5)"><i class="fas fa-plus"></i></button>
+              </div>
+              <div class="cc-hint">% charged on overdue contributions.</div>
             </div>
-            <div class="col-6">
-              <label class="form-label">Currency</label>
-              <select name="currency" class="form-select">
-                <option value="KES" selected>KES – Kenyan Shilling</option>
-                <option value="UGX">UGX – Ugandan Shilling</option>
-                <option value="TZS">TZS – Tanzanian Shilling</option>
-                <option value="USD">USD – US Dollar</option>
-              </select>
+            <div class="cc-field-group">
+              <label class="cc-label">Loan Interest Rate (%)</label>
+              <div class="cc-stepper">
+                <button type="button" onclick="stepVal('f_interest',-0.5)"><i class="fas fa-minus"></i></button>
+                <input type="number" name="loan_interest" id="f_interest" value="10" min="0" max="100" step="0.5">
+                <button type="button" onclick="stepVal('f_interest',0.5)"><i class="fas fa-plus"></i></button>
+              </div>
+              <div class="cc-hint">Monthly interest on member loans.</div>
             </div>
           </div>
 
-          <div class="section-divider"></div>
-
-          <div class="d-flex gap-3">
-            <button type="submit" class="btn btn-primary flex-grow-1">
-              <i class="fas fa-plus me-2"></i>Create Chama
-            </button>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary" style="border-radius: 10px; padding: 0.75rem 1.5rem">
-              Cancel
-            </a>
+        </div>
+        <div class="cc-footer">
+          <button type="button" class="btn-cc-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+          <div class="d-flex align-items-center gap-3">
+            <span class="cc-step-counter">Step 2 of 3</span>
+            <button type="button" class="btn-cc-primary" onclick="goToStep(3)">Review <i class="fas fa-arrow-right"></i></button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
+      <!-- ═══ STEP 3: Features & Review ═══ -->
+      <div id="panel3" class="cc-panel">
+        <div class="cc-card-header">
+          <div class="cc-card-icon"><i class="fas fa-rocket"></i></div>
+          <div>
+            <h5>Features & Final Review</h5>
+            <p>Toggle modules and confirm everything looks right.</p>
+          </div>
+        </div>
+        <div style="padding:28px;">
+
+          <div class="cc-field-group">
+            <label class="cc-label">Enable Modules</label>
+            <div class="cc-toggle-list">
+
+              <div class="cc-toggle-row is-on" id="tr_loans">
+                <div class="cc-toggle-info">
+                  <div class="cc-toggle-icon"><i class="fas fa-money-bill-wave"></i></div>
+                  <div>
+                    <div class="tt-title">Loans</div>
+                    <div class="tt-sub">Members can request and receive loans from the group pool.</div>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" name="enable_loans" class="toggle-check" checked onchange="toggleRow(this,'tr_loans')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="cc-toggle-row is-on" id="tr_fines">
+                <div class="cc-toggle-info">
+                  <div class="cc-toggle-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                  <div>
+                    <div class="tt-title">Fines & Penalties</div>
+                    <div class="tt-sub">Auto-issue fines for late contributions or missed meetings.</div>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" name="enable_fines" class="toggle-check" checked onchange="toggleRow(this,'tr_fines')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="cc-toggle-row" id="tr_investments">
+                <div class="cc-toggle-info">
+                  <div class="cc-toggle-icon"><i class="fas fa-chart-pie"></i></div>
+                  <div>
+                    <div class="tt-title">Investments Tracking</div>
+                    <div class="tt-sub">Record and monitor group investment portfolio & returns.</div>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" name="enable_investments" class="toggle-check" onchange="toggleRow(this,'tr_investments')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="cc-toggle-row is-on" id="tr_messaging">
+                <div class="cc-toggle-info">
+                  <div class="cc-toggle-icon"><i class="fas fa-comment-dots"></i></div>
+                  <div>
+                    <div class="tt-title">Member Messaging</div>
+                    <div class="tt-sub">Broadcast SMS or in-app messages to all members.</div>
+                  </div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" name="enable_messaging" class="toggle-check" checked onchange="toggleRow(this,'tr_messaging')">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          <hr class="cc-divider">
+
+          <!-- Summary -->
+          <label class="cc-label" style="margin-bottom:14px;"><i class="fas fa-check-circle" style="color:var(--brand);"></i> Review Your Setup</label>
+          <div class="cc-summary">
+            <div class="cc-summary-grid">
+              <div>
+                <div class="si-label">Chama Name</div>
+                <div class="si-value" id="s_name" style="font-family:'Plus Jakarta Sans',sans-serif;">—</div>
+              </div>
+              <div>
+                <div class="si-label">Meeting Day</div>
+                <div class="si-value" id="s_day" style="font-family:'Plus Jakarta Sans',sans-serif;">—</div>
+              </div>
+              <div>
+                <div class="si-label">Monthly Contribution</div>
+                <div class="si-value" id="s_contrib">—</div>
+              </div>
+              <div>
+                <div class="si-label">Currency</div>
+                <div class="si-value" id="s_currency">KES</div>
+              </div>
+              <div>
+                <div class="si-label">Due Day</div>
+                <div class="si-value" id="s_dueday" style="font-family:'Plus Jakarta Sans',sans-serif;">—</div>
+              </div>
+              <div>
+                <div class="si-label">Max Members</div>
+                <div class="si-value" id="s_size">10</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="cc-footer">
+          <button type="button" class="btn-cc-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+          <div class="d-flex align-items-center gap-3">
+            <span class="cc-step-counter">Step 3 of 3</span>
+            <button type="submit" class="btn-cc-primary" style="padding-left:32px;padding-right:32px;">
+              <i class="fas fa-rocket"></i> Launch Chama
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /cc-card -->
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+
+function goToStep(step) {
+  // Validate name on step 1 before advancing
+  if (step > 1 && currentStep === 1) {
+    const nameEl = document.getElementById('f_name');
+    if (!nameEl.value.trim()) {
+      nameEl.classList.add('error');
+      nameEl.focus();
+      setTimeout(() => nameEl.classList.remove('error'), 2500);
+      return;
+    }
+  }
+
+  // Switch panels
+  document.querySelectorAll('.cc-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + step).classList.add('active');
+
+  // Update step indicators
+  [1, 2, 3].forEach(n => {
+    const indicator = document.getElementById('step-indicator-' + n);
+    const numEl = document.getElementById('snum' + n);
+    indicator.classList.remove('active', 'done');
+    if (n < step) {
+      indicator.classList.add('done');
+      numEl.innerHTML = '<i class="fas fa-check" style="font-size:10px;"></i>';
+    } else if (n === step) {
+      indicator.classList.add('active');
+      numEl.textContent = n;
+    } else {
+      numEl.textContent = n;
+    }
+  });
+
+  if (step === 3) updateSummary();
+  currentStep = step;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectCurrency(el, code) {
+  document.querySelectorAll('.currency-tile').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+  document.getElementById('currPrefix').textContent = code;
+}
+
+function selectDay(el, day) {
+  document.querySelectorAll('.day-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input').checked = true;
+}
+
+function stepVal(id, delta) {
+  const inp = document.getElementById(id);
+  let val = parseFloat(inp.value) || 0;
+  const mn = parseFloat(inp.min ?? 0), mx = parseFloat(inp.max ?? 9999);
+  val = Math.max(mn, Math.min(mx, val + delta));
+  inp.value = Number.isInteger(delta) ? Math.round(val) : parseFloat(val.toFixed(1));
+}
+
+function toggleRow(checkbox, rowId) {
+  const row = document.getElementById(rowId);
+  if (checkbox.checked) row.classList.add('is-on');
+  else row.classList.remove('is-on');
+}
+
+function updateSummary() {
+  const name    = document.getElementById('f_name').value.trim();
+  const contrib = document.getElementById('f_contrib').value;
+  const dueSel  = document.getElementById('f_dueday');
+  const size    = document.getElementById('f_size').value;
+  const currency = document.querySelector('.currency-tile.selected input')?.value || 'KES';
+  const dayEl   = document.querySelector('.day-pill.selected');
+
+  document.getElementById('s_name').textContent    = name || '—';
+  document.getElementById('s_day').textContent     = dayEl ? dayEl.textContent.trim() : '—';
+  document.getElementById('s_contrib').textContent = contrib
+    ? currency + ' ' + Number(contrib).toLocaleString() : '—';
+  document.getElementById('s_currency').textContent = currency;
+  document.getElementById('s_dueday').textContent   = dueSel.options[dueSel.selectedIndex]?.text || '—';
+  document.getElementById('s_size').textContent     = size || '—';
+}
+</script>
+{% endblock %}
