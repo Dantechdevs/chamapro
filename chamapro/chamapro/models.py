@@ -89,18 +89,22 @@ class User(AbstractUser):
 
 
 class Chama(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    created_by = models.ForeignKey(
+    name                = models.CharField(max_length=255)
+    description         = models.TextField(blank=True, null=True)
+    created_by          = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.SET_NULL, related_name='created_chamas'
     )
-    currency = models.CharField(max_length=10, default='KES')
+    currency            = models.CharField(max_length=10, default='KES')
     contribution_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    contribution_day = models.PositiveSmallIntegerField(default=5)
-    meeting_day = models.CharField(max_length=20, blank=True, null=True)
-    settings = models.JSONField(default=dict, blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    contribution_day    = models.PositiveSmallIntegerField(default=5)
+    meeting_day         = models.CharField(max_length=20, blank=True, null=True)
+    max_members         = models.PositiveSmallIntegerField(default=10)
+    late_penalty        = models.DecimalField(max_digits=5, decimal_places=2, default=5)
+    loan_interest       = models.DecimalField(max_digits=5, decimal_places=2, default=10)
+    settings            = models.JSONField(default=dict, blank=True)
+    is_active           = models.BooleanField(default=True)
+    created_at          = models.DateTimeField(auto_now_add=True)
+    updated_at          = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -115,6 +119,11 @@ class Chama(models.Model):
     def total_loans_outstanding(self):
         result = self.loans.filter(status__in=['active', 'overdue']).aggregate(total=Sum('amount'))
         return result['total'] or Decimal('0')
+
+    @property
+    def invite_code(self):
+        import hashlib
+        return hashlib.md5(f'chama-{self.id}-invite'.encode()).hexdigest()[:10].upper()
 
 
 class Membership(models.Model):
@@ -319,7 +328,9 @@ class Transaction(models.Model):
     reference  = models.CharField(max_length=255, null=True, blank=True)
     notes      = models.TextField(blank=True, null=True)
     meta       = models.JSONField(default=dict, blank=True)
-    created_by = models.ForeignKey('User', null=True, blank=True, related_name='created_transactions', on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        'User', null=True, blank=True, related_name='created_transactions', on_delete=models.SET_NULL
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -350,10 +361,14 @@ class MpesaTransaction(models.Model):
     status              = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     result_code         = models.CharField(max_length=10, null=True, blank=True)
     result_desc         = models.TextField(null=True, blank=True)
-    contribution        = models.OneToOneField('Contribution', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
-    loan_repayment      = models.OneToOneField('LoanRepayment', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx')
-    created_at          = models.DateTimeField(auto_now_add=True)
-    updated_at          = models.DateTimeField(auto_now=True)
+    contribution        = models.OneToOneField(
+        'Contribution', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx'
+    )
+    loan_repayment      = models.OneToOneField(
+        'LoanRepayment', null=True, blank=True, on_delete=models.SET_NULL, related_name='mpesa_tx'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -395,7 +410,9 @@ class MemberActivity(models.Model):
         ('role_changed',  'Role Changed'),
     ]
     user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
-    chama      = models.ForeignKey('Chama', on_delete=models.CASCADE, related_name='activities', null=True, blank=True)
+    chama      = models.ForeignKey(
+        'Chama', on_delete=models.CASCADE, related_name='activities', null=True, blank=True
+    )
     event_type = models.CharField(max_length=30, choices=EVENT_CHOICES)
     amount     = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     note       = models.CharField(max_length=255, blank=True, null=True)
@@ -411,8 +428,6 @@ class MemberActivity(models.Model):
 # ── Subscription ──────────────────────────────────────────────────────────────
 
 class SubscriptionPayment(models.Model):
-    """Tracks each M-Pesa STK Push attempt for a plan upgrade."""
-
     PLAN_CHOICES = [
         ('premium', 'Premium'),
         ('pro',     'Pro'),
@@ -427,7 +442,6 @@ class SubscriptionPayment(models.Model):
         ('failed',    'Failed'),
         ('cancelled', 'Cancelled'),
     ]
-
     user                = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscription_payments')
     plan                = models.CharField(max_length=20, choices=PLAN_CHOICES)
     billing_cycle       = models.CharField(max_length=10, choices=BILLING_CHOICES, default='monthly')
@@ -448,8 +462,6 @@ class SubscriptionPayment(models.Model):
 
 
 class UserSubscription(models.Model):
-    """Tracks the active subscription for each user."""
-
     PLAN_CHOICES = [
         ('free',    'Free'),
         ('premium', 'Premium'),
@@ -459,7 +471,6 @@ class UserSubscription(models.Model):
         ('monthly', 'Monthly'),
         ('annual',  'Annual'),
     ]
-
     user          = models.OneToOneField(User, on_delete=models.CASCADE, related_name='subscription')
     plan          = models.CharField(max_length=20, choices=PLAN_CHOICES, default='free')
     billing_cycle = models.CharField(max_length=10, choices=BILLING_CHOICES, default='monthly')
@@ -482,3 +493,97 @@ class UserSubscription(models.Model):
     @property
     def is_pro(self):
         return self.plan == 'pro' and self.is_active
+
+
+# ── Chama Notification Settings ───────────────────────────────────────────────
+
+class ChamaNotificationSettings(models.Model):
+    chama = models.OneToOneField(Chama, on_delete=models.CASCADE, related_name='notification_settings')
+
+    # Contribution alerts
+    notif_contribution_due      = models.BooleanField(default=True)
+    notif_contribution_received = models.BooleanField(default=True)
+    notif_contribution_overdue  = models.BooleanField(default=True)
+    notif_fine_issued           = models.BooleanField(default=False)
+    reminder_days_before        = models.PositiveSmallIntegerField(default=3)
+
+    # Loan & withdrawal alerts
+    notif_loan_requested       = models.BooleanField(default=True)
+    notif_loan_approved        = models.BooleanField(default=True)
+    notif_loan_rejected        = models.BooleanField(default=True)
+    notif_loan_repayment       = models.BooleanField(default=False)
+    notif_withdrawal_requested = models.BooleanField(default=True)
+
+    # Member activity
+    notif_member_joined = models.BooleanField(default=True)
+    notif_member_left   = models.BooleanField(default=True)
+    notif_role_changed  = models.BooleanField(default=False)
+
+    # Delivery channels
+    channel_in_app = models.BooleanField(default=True)
+    channel_email  = models.BooleanField(default=True)
+    channel_sms    = models.BooleanField(default=False)
+    from_email     = models.EmailField(default='noreply@chamapro.app')
+    sms_sender     = models.CharField(max_length=11, default='ChamaPro')
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'NotifSettings({self.chama})'
+
+
+# ── Chama Billing Payment ─────────────────────────────────────────────────────
+
+class ChamaBillingPayment(models.Model):
+    PLAN_CHOICES = [
+        ('starter', 'Starter'),
+        ('growth',  'Growth'),
+        ('pro',     'Pro'),
+    ]
+    STATUS_CHOICES = [
+        ('pending',   'Pending'),
+        ('paid',      'Paid'),
+        ('failed',    'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    chama               = models.ForeignKey(
+        Chama, on_delete=models.CASCADE, related_name='billing_payments'
+    )
+    paid_by             = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='chama_billing_payments'
+    )
+    plan_name           = models.CharField(max_length=20, choices=PLAN_CHOICES)
+    amount              = models.PositiveIntegerField()
+    phone               = models.CharField(max_length=15)
+    checkout_request_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    mpesa_ref           = models.CharField(max_length=50, blank=True)
+    status              = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    failure_reason      = models.TextField(blank=True)
+    created_at          = models.DateTimeField(auto_now_add=True)
+    updated_at          = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.chama} — {self.plan_name} KES {self.amount} ({self.status})'
+
+    @property
+    def next_renewal(self):
+        from datetime import timedelta
+        return self.created_at.date() + timedelta(days=30)
+
+    @property
+    def member_limit(self):
+        limits = {'starter': 20, 'growth': 50, 'pro': 9999}
+        return limits.get(self.plan_name, 10)
+
+    @property
+    def sms_limit(self):
+        limits = {'starter': 100, 'growth': 500, 'pro': 9999}
+        return limits.get(self.plan_name, 0)
+
+    @property
+    def storage_limit_mb(self):
+        limits = {'starter': 200, 'growth': 1000, 'pro': 9999}
+        return limits.get(self.plan_name, 50)

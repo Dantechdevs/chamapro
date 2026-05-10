@@ -15,6 +15,7 @@ from .models import (
     User, Chama, Membership, Contribution, Penalty,
     Loan, LoanRepayment, MpesaTransaction,
     NotificationPreference, MemberActivity,
+    ChamaNotificationSettings, ChamaBillingPayment,
 )
 from .mpesa import mpesa
 
@@ -49,13 +50,13 @@ def login(request):
         user = None
         if '@' in identity:
             try:
-                u = User.objects.get(email=identity)
+                u    = User.objects.get(email=identity)
                 user = authenticate(request, username=u.username, password=password)
             except User.DoesNotExist:
                 pass
         else:
             try:
-                u = User.objects.get(phone=identity)
+                u    = User.objects.get(phone=identity)
                 user = authenticate(request, username=u.username, password=password)
             except User.DoesNotExist:
                 user = authenticate(request, username=identity, password=password)
@@ -74,24 +75,28 @@ def signup(request):
         email     = request.POST.get('email', '').strip()
         phone     = request.POST.get('phone', '').strip()
         password  = request.POST.get('password', '').strip()
-        errors = []
+        errors    = []
         if not full_name: errors.append('Full name is required.')
-        if not email: errors.append('Email is required.')
-        if not password or len(password) < 6: errors.append('Password must be at least 6 characters.')
-        if User.objects.filter(email=email).exists(): errors.append('Email already registered.')
-        if phone and User.objects.filter(phone=phone).exists(): errors.append('Phone already registered.')
+        if not email:     errors.append('Email is required.')
+        if not password or len(password) < 6:
+            errors.append('Password must be at least 6 characters.')
+        if User.objects.filter(email=email).exists():
+            errors.append('Email already registered.')
+        if phone and User.objects.filter(phone=phone).exists():
+            errors.append('Phone already registered.')
         if errors:
             for e in errors: messages.error(request, e)
             return render(request, 'signup.html')
         name_parts = full_name.split(' ', 1)
-        base = email.split('@')[0]
-        username = base
+        base       = email.split('@')[0]
+        username   = base
         i = 1
         while User.objects.filter(username=username).exists():
             username = f'{base}{i}'; i += 1
         user = User.objects.create_user(
             username=username, email=email, password=password,
-            first_name=name_parts[0], last_name=name_parts[1] if len(name_parts) > 1 else '',
+            first_name=name_parts[0],
+            last_name=name_parts[1] if len(name_parts) > 1 else '',
             phone=phone or None,
         )
         auth_login(request, user)
@@ -104,15 +109,17 @@ def logout(request):
     return redirect('login')
 
 
-# ─── Dashboard ────────────────────────────────────────────────────────────────
+# ─── Dashboard ───────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def dashboard(request):
     memberships = request.user.memberships.filter(active=True).select_related('chama')
-    chamas = [m.chama for m in memberships]
-    active_chama_id = request.session.get('active_chama_id')
-    active_chama = None
+    chamas      = [m.chama for m in memberships if m.chama.is_active]
+
+    active_chama_id   = request.session.get('active_chama_id')
+    active_chama      = None
     active_membership = None
+
     if active_chama_id:
         active_chama = next((c for c in chamas if c.id == active_chama_id), None)
     if not active_chama and chamas:
@@ -123,11 +130,19 @@ def dashboard(request):
             active_membership = Membership.objects.get(chama=active_chama, user=request.user)
         except Membership.DoesNotExist:
             pass
+
+    deleted_chamas = Chama.objects.filter(
+        memberships__user=request.user,
+        memberships__role='admin',
+        is_active=False,
+    )
+
     context = {
-        'user': request.user,
-        'chamas': chamas,
-        'active_chama': active_chama,
-        'active_membership': active_membership,
+        'user':               request.user,
+        'chamas':             chamas,
+        'active_chama':       active_chama,
+        'active_membership':  active_membership,
+        'deleted_chamas':     deleted_chamas,
     }
     return render(request, 'dashboard.html', context)
 
@@ -143,7 +158,7 @@ def switch_chama(request, chama_id):
 
 @login_required(login_url='login')
 def profile(request):
-    user = request.user
+    user  = request.user
     prefs, _ = NotificationPreference.objects.get_or_create(user=user)
     memberships = user.memberships.filter(active=True).select_related('chama').order_by('joined_at')
 
@@ -156,15 +171,15 @@ def profile(request):
             member=user, status='confirmed'
         ).order_by('-date').first()
         chama_stats.append({
-            'membership': m,
-            'chama': m.chama,
-            'total_paid': paid,
+            'membership':        m,
+            'chama':             m.chama,
+            'total_paid':        paid,
             'last_contribution': last,
         })
 
     recent_activity = user.activities.select_related('chama').order_by('-created_at')[:10]
 
-    today = datetime.date.today()
+    today         = datetime.date.today()
     monthly_trend = []
     for i in range(5, -1, -1):
         d = (today.replace(day=1) - datetime.timedelta(days=i * 30)).replace(day=1)
@@ -178,29 +193,29 @@ def profile(request):
     max_trend = max((m['amount'] for m in monthly_trend), default=1) or 1
 
     context = {
-        'user': user,
-        'prefs': prefs,
-        'memberships': memberships,
-        'chama_stats': chama_stats,
-        'recent_activity': recent_activity,
-        'monthly_trend': monthly_trend,
-        'max_trend': max_trend,
-        'credit_score': user.credit_score(),
-        'credit_label': user.credit_score_label(),
-        'credit_color': user.credit_score_color(),
-        'credit_pct': int((user.credit_score() / 850) * 100),
-        'payment_rate': user.payment_rate(),
-        'total_contributed': user.total_contributed_all(),
+        'user':                user,
+        'prefs':               prefs,
+        'memberships':         memberships,
+        'chama_stats':         chama_stats,
+        'recent_activity':     recent_activity,
+        'monthly_trend':       monthly_trend,
+        'max_trend':           max_trend,
+        'credit_score':        user.credit_score(),
+        'credit_label':        user.credit_score_label(),
+        'credit_color':        user.credit_score_color(),
+        'credit_pct':          int((user.credit_score() / 850) * 100),
+        'payment_rate':        user.payment_rate(),
+        'total_contributed':   user.total_contributed_all(),
         'active_loan_balance': user.active_loan_balance(),
-        'outstanding_fines': user.outstanding_fines(),
-        'chama_count': memberships.count(),
+        'outstanding_fines':   user.outstanding_fines(),
+        'chama_count':         memberships.count(),
     }
     return render(request, 'profile.html', context)
 
 
 @login_required(login_url='login')
 def profile_edit(request):
-    user = request.user
+    user   = request.user
     prefs, _ = NotificationPreference.objects.get_or_create(user=user)
 
     if request.method == 'POST':
@@ -254,7 +269,7 @@ def profile_kyc(request):
     return redirect('profile')
 
 
-# ─── Activity Logger ──────────────────────────────────────────────────────────
+# ─── Activity Logger ─────────────────────────────────────────────────────────
 
 def log_activity(user, event_type, chama=None, amount=None, note=None):
     MemberActivity.objects.create(
@@ -266,7 +281,7 @@ def log_activity(user, event_type, chama=None, amount=None, note=None):
     )
 
 
-# ─── Chama ────────────────────────────────────────────────────────────────────
+# ─── Chama ───────────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def chama_create(request):
@@ -275,9 +290,7 @@ def chama_create(request):
         name = request.POST.get('name', '').strip()
         if not name:
             messages.error(request, 'Chama name is required.')
-            return render(request, 'chama_create.html', {
-                'contribution_days': contribution_days
-            })
+            return render(request, 'chama_create.html', {'contribution_days': contribution_days})
         chama = Chama.objects.create(
             name=name,
             description=request.POST.get('description', ''),
@@ -292,27 +305,26 @@ def chama_create(request):
         log_activity(request.user, 'chama_created', chama=chama)
         messages.success(request, f'"{chama.name}" created! You are the Admin.')
         return redirect('chama_members', chama_id=chama.id)
-    return render(request, 'chama_create.html', {
-        'contribution_days': contribution_days
-    })
+    return render(request, 'chama_create.html', {'contribution_days': contribution_days})
 
 
 @login_required(login_url='login')
 def chama_members(request, chama_id):
-    chama = get_object_or_404(Chama, id=chama_id)
-    membership = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    chama       = get_object_or_404(Chama, id=chama_id)
+    membership  = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     memberships = chama.memberships.filter(active=True).select_related('user').order_by('joined_at')
     return render(request, 'chama_members.html', {
-        'chama': chama, 'memberships': memberships,
+        'chama':         chama,
+        'memberships':   memberships,
         'my_membership': membership,
-        'can_manage': membership.role in ('admin', 'treasurer'),
+        'can_manage':    membership.role in ('admin', 'treasurer'),
     })
 
 
 @login_required(login_url='login')
 def member_invite(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins can invite members.')
         return redirect('chama_members', chama_id=chama_id)
@@ -336,12 +348,12 @@ def member_invite(request, chama_id):
 @login_required(login_url='login')
 def member_role_update(request, chama_id, membership_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     if my.role != 'admin':
         messages.error(request, 'Only admins can change roles.')
         return redirect('chama_members', chama_id=chama_id)
     if request.method == 'POST':
-        target = get_object_or_404(Membership, id=membership_id, chama=chama)
+        target      = get_object_or_404(Membership, id=membership_id, chama=chama)
         target.role = request.POST.get('role', 'member')
         target.save()
         messages.success(request, f'{target.user.get_full_name()} is now {target.role}.')
@@ -350,8 +362,8 @@ def member_role_update(request, chama_id, membership_id):
 
 @login_required(login_url='login')
 def member_remove(request, chama_id, membership_id):
-    chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    chama  = get_object_or_404(Chama, id=chama_id)
+    my     = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     if my.role != 'admin':
         messages.error(request, 'Only admins can remove members.')
         return redirect('chama_members', chama_id=chama_id)
@@ -365,20 +377,24 @@ def member_remove(request, chama_id, membership_id):
     return redirect('chama_members', chama_id=chama_id)
 
 
-# ─── Chama Settings (NEW) ─────────────────────────────────────────────────────
+# ─── Chama Settings ──────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def chama_settings(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
     my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
-    # Only admin can access settings
     if my.role != 'admin':
         messages.error(request, 'Only admins can access chama settings.')
         return redirect('dashboard')
 
     members           = Membership.objects.filter(chama=chama, active=True).select_related('user')
     contribution_days = [1, 5, 10, 15, 20, 25, 28]
+    notif_settings, _ = ChamaNotificationSettings.objects.get_or_create(chama=chama)
+    billing_history   = ChamaBillingPayment.objects.filter(chama=chama).order_by('-created_at')[:20]
+    latest_paid       = ChamaBillingPayment.objects.filter(
+        chama=chama, status='paid'
+    ).order_by('-created_at').first()
 
     if request.method == 'POST':
         section = request.POST.get('section', '')
@@ -396,11 +412,11 @@ def chama_settings(request, chama_id):
 
         # ── Schedule & Contributions ──
         elif section == 'schedule':
-            chama.meeting_day      = request.POST.get('meeting_day', chama.meeting_day)
-            contrib_amount         = request.POST.get('contribution_amount', '').strip()
+            chama.meeting_day         = request.POST.get('meeting_day', chama.meeting_day)
+            contrib_amount            = request.POST.get('contribution_amount', '').strip()
             chama.contribution_amount = Decimal(contrib_amount) if contrib_amount else chama.contribution_amount
-            chama.contribution_day = int(request.POST.get('contribution_day', chama.contribution_day))
-            max_members            = request.POST.get('max_members', '').strip()
+            chama.contribution_day    = int(request.POST.get('contribution_day', chama.contribution_day))
+            max_members               = request.POST.get('max_members', '').strip()
             if max_members:
                 chama.max_members = int(max_members)
             late_penalty = request.POST.get('late_penalty', '').strip()
@@ -424,13 +440,12 @@ def chama_settings(request, chama_id):
 
         # ── Member Role ──
         elif section == 'role':
-            membership_id = request.POST.get('membership_id')
-            new_role      = request.POST.get('role', 'member')
+            member_id = request.POST.get('member_id')
+            new_role  = request.POST.get('role', 'member')
             if new_role not in ('admin', 'treasurer', 'secretary', 'member'):
                 messages.error(request, 'Invalid role.')
                 return redirect('chama_settings', chama_id=chama_id)
-            target = get_object_or_404(Membership, id=membership_id, chama=chama, active=True)
-            # Prevent demoting self if only admin
+            target = get_object_or_404(Membership, user_id=member_id, chama=chama, active=True)
             if target.user == request.user and new_role != 'admin':
                 admin_count = Membership.objects.filter(chama=chama, role='admin', active=True).count()
                 if admin_count <= 1:
@@ -457,6 +472,103 @@ def chama_settings(request, chama_id):
             except User.DoesNotExist:
                 messages.error(request, f'No ChamaPro account found for {email}.')
 
+        # ── Remove Member ──
+        elif section == 'remove_member':
+            member_id = request.POST.get('member_id')
+            target    = get_object_or_404(Membership, user_id=member_id, chama=chama, active=True)
+            if target.user == request.user:
+                messages.error(request, "You can't remove yourself. Use 'Leave Chama' instead.")
+                return redirect('chama_settings', chama_id=chama_id)
+            target.active = False
+            target.save()
+            messages.success(request, f'{target.user.get_full_name()} has been removed.')
+
+        # ── Notification Settings ──
+        elif section == 'notifications':
+            def cb(name):
+                return request.POST.get(name) == '1'
+            notif_settings.notif_contribution_due      = cb('notif_contribution_due')
+            notif_settings.notif_contribution_received = cb('notif_contribution_received')
+            notif_settings.notif_contribution_overdue  = cb('notif_contribution_overdue')
+            notif_settings.notif_fine_issued           = cb('notif_fine_issued')
+            notif_settings.reminder_days_before        = int(request.POST.get('reminder_days_before', 3))
+            notif_settings.notif_loan_requested        = cb('notif_loan_requested')
+            notif_settings.notif_loan_approved         = cb('notif_loan_approved')
+            notif_settings.notif_loan_rejected         = cb('notif_loan_rejected')
+            notif_settings.notif_loan_repayment        = cb('notif_loan_repayment')
+            notif_settings.notif_withdrawal_requested  = cb('notif_withdrawal_requested')
+            notif_settings.notif_member_joined         = cb('notif_member_joined')
+            notif_settings.notif_member_left           = cb('notif_member_left')
+            notif_settings.notif_role_changed          = cb('notif_role_changed')
+            notif_settings.channel_in_app              = cb('channel_in_app')
+            notif_settings.channel_email               = cb('channel_email')
+            notif_settings.channel_sms                 = cb('channel_sms')
+            notif_settings.from_email = request.POST.get(
+                'notif_from_email', 'noreply@chamapro.app'
+            ).strip()
+            notif_settings.sms_sender = request.POST.get(
+                'notif_sms_sender', 'ChamaPro'
+            ).strip()[:11]
+            notif_settings.save()
+            messages.success(request, 'Notification settings saved.')
+
+        # ── Profile (personal details) ──
+        elif section == 'profile':
+            user            = request.user
+            user.first_name = request.POST.get('first_name', '').strip()
+            user.last_name  = request.POST.get('last_name', '').strip()
+            email           = request.POST.get('email', '').strip()
+            phone           = request.POST.get('phone', '').strip() or None
+            if email and email != user.email:
+                if User.objects.filter(email=email).exclude(pk=user.pk).exists():
+                    messages.error(request, 'That email is already in use.')
+                    return redirect('chama_settings', chama_id=chama_id)
+                user.email = email
+            user.phone = phone
+            if 'avatar' in request.FILES:
+                user.avatar = request.FILES['avatar']
+            user.save()
+            messages.success(request, 'Profile updated successfully.')
+
+        # ── Password Change ──
+        elif section == 'password':
+            from django.contrib.auth import update_session_auth_hash
+            user        = request.user
+            current_pwd = request.POST.get('current_password', '')
+            new_pwd     = request.POST.get('new_password', '')
+            confirm_pwd = request.POST.get('confirm_password', '')
+            if not user.check_password(current_pwd):
+                messages.error(request, 'Current password is incorrect.')
+                return redirect('chama_settings', chama_id=chama_id)
+            if len(new_pwd) < 8:
+                messages.error(request, 'New password must be at least 8 characters.')
+                return redirect('chama_settings', chama_id=chama_id)
+            if new_pwd != confirm_pwd:
+                messages.error(request, 'Passwords do not match.')
+                return redirect('chama_settings', chama_id=chama_id)
+            user.set_password(new_pwd)
+            user.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Password updated successfully.')
+
+        # ── Leave Chama ──
+        elif section == 'leave_chama':
+            admin_count = Membership.objects.filter(
+                chama=chama, role='admin', active=True
+            ).count()
+            if my.role == 'admin' and admin_count <= 1:
+                messages.error(request, 'Transfer admin to another member before leaving.')
+                return redirect('chama_settings', chama_id=chama_id)
+            my.active = False
+            my.save()
+            if request.session.get('active_chama_id') == chama_id:
+                try:
+                    del request.session['active_chama_id']
+                except KeyError:
+                    pass
+            messages.success(request, f'You have left {chama.name}.')
+            return redirect('dashboard')
+
         return redirect('chama_settings', chama_id=chama_id)
 
     return render(request, 'settings.html', {
@@ -464,8 +576,13 @@ def chama_settings(request, chama_id):
         'my_membership':     my,
         'members':           members,
         'contribution_days': contribution_days,
+        'notif_settings':    notif_settings,
+        'billing_history':   billing_history,
+        'billing':           latest_paid,
     })
 
+
+# ─── Chama Delete (soft) ─────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def chama_delete(request, chama_id):
@@ -477,26 +594,183 @@ def chama_delete(request, chama_id):
         return redirect('chama_settings', chama_id=chama_id)
 
     if request.method == 'POST':
-        name = chama.name
-        # Clear session if deleted chama was active
+        chama.is_active = False
+        chama.save()
         if request.session.get('active_chama_id') == chama_id:
             try:
                 del request.session['active_chama_id']
             except KeyError:
                 pass
-        chama.delete()
-        messages.success(request, f'"{name}" has been permanently deleted.')
+        messages.success(request, f'"{chama.name}" has been deactivated. You can restore it anytime.')
         return redirect('dashboard')
+
+    return render(request, 'chama_confirm_delete.html', {'chama': chama})
+
+
+# ─── Chama Restore ───────────────────────────────────────────────────────────
+
+@login_required(login_url='login')
+def chama_restore(request, chama_id):
+    chama = get_object_or_404(Chama, id=chama_id, is_active=False)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user)
+
+    if my.role != 'admin':
+        messages.error(request, 'Only admins can restore a chama.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        chama.is_active = True
+        chama.save()
+        request.session['active_chama_id'] = chama.id
+        messages.success(request, f'"{chama.name}" has been restored successfully!')
+        return redirect('dashboard')
+
+    return render(request, 'chama_confirm_restore.html', {'chama': chama})
+
+
+# ─── Chama Billing ───────────────────────────────────────────────────────────
+
+CHAMA_PLAN_PRICES = {
+    'starter': 299,
+    'growth':  699,
+    'pro':     1499,
+}
+
+
+@login_required(login_url='login')
+def chama_billing_pay(request, chama_id):
+    if request.method != 'POST':
+        return redirect('chama_settings', chama_id=chama_id)
+
+    chama = get_object_or_404(Chama, id=chama_id)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    if my.role != 'admin':
+        messages.error(request, 'Only admins can manage billing.')
+        return redirect('chama_settings', chama_id=chama_id)
+
+    # Accept both JSON and form POST
+    try:
+        body   = json.loads(request.body)
+        phone  = body.get('phone', '').strip()
+        plan   = body.get('plan', '').lower()
+        amount = int(body.get('amount', 0))
+    except (json.JSONDecodeError, ValueError):
+        phone  = request.POST.get('mpesa_phone', '').strip()
+        plan   = request.POST.get('plan', '').lower()
+        try:
+            amount = int(request.POST.get('amount', 0))
+        except ValueError:
+            amount = 0
+
+    if plan not in CHAMA_PLAN_PRICES:
+        messages.error(request, 'Invalid plan selected.')
+        return redirect('chama_settings', chama_id=chama_id)
+
+    if amount != CHAMA_PLAN_PRICES[plan]:
+        messages.error(request, 'Amount mismatch. Please try again.')
+        return redirect('chama_settings', chama_id=chama_id)
+
+    # Normalize phone to 254XXXXXXXXX
+    phone = phone.replace('+', '').replace(' ', '')
+    if phone.startswith('07') or phone.startswith('01'):
+        phone = '254' + phone[1:]
+
+    if not phone.startswith('254') or len(phone) != 12:
+        messages.error(request, 'Invalid phone number. Use 07XX or +254 format.')
+        return redirect('chama_settings', chama_id=chama_id)
+
+    try:
+        result = mpesa.stk_push(
+            phone_number=phone,
+            amount=amount,
+            account_reference=f'CHAMA-{chama_id}',
+            transaction_desc=f'ChamaPro {plan.title()} Plan',
+        )
+    except Exception as e:
+        messages.error(request, f'M-Pesa error: {str(e)}')
+        return redirect('chama_settings', chama_id=chama_id)
+
+    if result.get('ResponseCode') == '0':
+        ChamaBillingPayment.objects.create(
+            chama=chama,
+            paid_by=request.user,
+            plan_name=plan,
+            amount=amount,
+            phone=phone,
+            checkout_request_id=result.get('CheckoutRequestID'),
+            status='pending',
+        )
+        messages.success(
+            request,
+            f'STK Push sent to {phone}. Enter your M-Pesa PIN to activate the {plan.title()} plan.'
+        )
+    else:
+        messages.error(
+            request,
+            result.get('errorMessage', 'M-Pesa request failed. Please try again.')
+        )
 
     return redirect('chama_settings', chama_id=chama_id)
 
 
-# ─── Contributions ────────────────────────────────────────────────────────────
+@login_required(login_url='login')
+def chama_billing_poll(request, chama_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=405)
+
+    chama = get_object_or_404(Chama, id=chama_id)
+    get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+
+    try:
+        body        = json.loads(request.body)
+        checkout_id = body.get('checkout_request_id', '')
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error'}, status=400)
+
+    try:
+        payment = ChamaBillingPayment.objects.get(
+            checkout_request_id=checkout_id, chama=chama
+        )
+    except ChamaBillingPayment.DoesNotExist:
+        return JsonResponse({'status': 'error', 'error': 'Payment not found.'})
+
+    if payment.status == 'paid':
+        return JsonResponse({'status': 'success', 'receipt': payment.mpesa_ref})
+    if payment.status in ('failed', 'cancelled'):
+        return JsonResponse({'status': payment.status})
+
+    try:
+        result      = mpesa.stk_query(checkout_id)
+        result_code = str(result.get('ResultCode', ''))
+
+        if result_code == '0':
+            payment.status    = 'paid'
+            payment.mpesa_ref = result.get('MpesaReceiptNumber', '')
+            payment.save()
+            return JsonResponse({'status': 'success', 'receipt': payment.mpesa_ref})
+        elif result_code == '1032':
+            payment.status = 'cancelled'
+            payment.save()
+            return JsonResponse({'status': 'cancelled'})
+        elif result_code:
+            payment.status         = 'failed'
+            payment.failure_reason = result.get('ResultDesc', 'Payment failed.')
+            payment.save()
+            return JsonResponse({'status': 'failed', 'error': payment.failure_reason})
+
+        return JsonResponse({'status': 'pending'})
+
+    except Exception:
+        return JsonResponse({'status': 'pending'})
+
+
+# ─── Contributions ───────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def contributions(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     contribs = chama.contributions.select_related('member', 'recorded_by').order_by('-date', '-created_at')
 
@@ -504,14 +778,11 @@ def contributions(request, chama_id):
     method_filter = request.GET.get('method', '')
     status_filter = request.GET.get('status', '')
 
-    if member_filter:
-        contribs = contribs.filter(member_id=member_filter)
-    if method_filter:
-        contribs = contribs.filter(payment_method=method_filter)
-    if status_filter:
-        contribs = contribs.filter(status=status_filter)
+    if member_filter: contribs = contribs.filter(member_id=member_filter)
+    if method_filter: contribs = contribs.filter(payment_method=method_filter)
+    if status_filter: contribs = contribs.filter(status=status_filter)
 
-    today = datetime.date.today()
+    today            = datetime.date.today()
     total_confirmed  = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or 0
     total_pending    = chama.contributions.filter(status='pending').aggregate(t=Sum('amount'))['t'] or 0
     total_this_month = chama.contributions.filter(
@@ -521,18 +792,18 @@ def contributions(request, chama_id):
     members = chama.memberships.filter(active=True).select_related('user')
 
     context = {
-        'chama': chama,
-        'my_membership': my,
-        'can_manage': my.role in ('admin', 'treasurer'),
-        'contributions': contribs,
-        'members': members,
-        'total_confirmed': total_confirmed,
-        'total_pending': total_pending,
+        'chama':            chama,
+        'my_membership':    my,
+        'can_manage':       my.role in ('admin', 'treasurer'),
+        'contributions':    contribs,
+        'members':          members,
+        'total_confirmed':  total_confirmed,
+        'total_pending':    total_pending,
         'total_this_month': total_this_month,
-        'member_filter': member_filter,
-        'method_filter': method_filter,
-        'status_filter': status_filter,
-        'payment_methods': Contribution.PAYMENT_METHODS,
+        'member_filter':    member_filter,
+        'method_filter':    method_filter,
+        'status_filter':    status_filter,
+        'payment_methods':  Contribution.PAYMENT_METHODS,
     }
     return render(request, 'contributions.html', context)
 
@@ -540,7 +811,7 @@ def contributions(request, chama_id):
 @login_required(login_url='login')
 def contribution_add(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can record contributions.')
@@ -584,8 +855,8 @@ def contribution_add(request, chama_id):
 
 @login_required(login_url='login')
 def contribution_delete(request, chama_id, contribution_id):
-    chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    chama  = get_object_or_404(Chama, id=chama_id)
+    my     = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can delete contributions.')
         return redirect('contributions', chama_id=chama_id)
@@ -597,12 +868,12 @@ def contribution_delete(request, chama_id, contribution_id):
 
 @login_required(login_url='login')
 def contribution_status_update(request, chama_id, contribution_id):
-    chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    chama  = get_object_or_404(Chama, id=chama_id)
+    my     = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Permission denied.')
         return redirect('contributions', chama_id=chama_id)
-    contrib = get_object_or_404(Contribution, id=contribution_id, chama=chama)
+    contrib    = get_object_or_404(Contribution, id=contribution_id, chama=chama)
     new_status = request.POST.get('status')
     if new_status in ('confirmed', 'rejected', 'pending'):
         contrib.status = new_status
@@ -611,12 +882,12 @@ def contribution_status_update(request, chama_id, contribution_id):
     return redirect('contributions', chama_id=chama_id)
 
 
-# ─── Penalties ────────────────────────────────────────────────────────────────
+# ─── Penalties ───────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def penalty_add(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can issue penalties.')
         return redirect('contributions', chama_id=chama_id)
@@ -634,7 +905,7 @@ def penalty_add(request, chama_id):
     return redirect('contributions', chama_id=chama_id)
 
 
-# ─── Fines ────────────────────────────────────────────────────────────────────
+# ─── Fines ───────────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def fines(request, chama_id):
@@ -714,8 +985,11 @@ def fine_add(request, chama_id):
             description=description or None,
             issued_by=request.user, status='unpaid',
         )
-        log_activity(member, 'fine_issued', chama=chama, amount=float(penalty.amount),
-                     note=f'{penalty.get_reason_display()} — KES {penalty.amount}')
+        log_activity(
+            member, 'fine_issued', chama=chama,
+            amount=float(penalty.amount),
+            note=f'{penalty.get_reason_display()} — KES {penalty.amount}'
+        )
         messages.success(request, f'Fine of KES {penalty.amount:,.2f} issued to {member.get_full_name()}.')
 
     return redirect('fines', chama_id=chama_id)
@@ -738,9 +1012,11 @@ def fine_update_status(request, chama_id, penalty_id):
             penalty.status = new_status
             penalty.save()
             if new_status == 'paid' and old_status != 'paid':
-                log_activity(penalty.member, 'fine_paid', chama=chama,
-                             amount=float(penalty.amount),
-                             note=f'Fine paid — KES {penalty.amount}')
+                log_activity(
+                    penalty.member, 'fine_paid', chama=chama,
+                    amount=float(penalty.amount),
+                    note=f'Fine paid — KES {penalty.amount}'
+                )
                 messages.success(request, f'Fine marked as paid for {penalty.member.get_full_name()}.')
             elif new_status == 'waived':
                 messages.success(request, f'Fine waived for {penalty.member.get_full_name()}.')
@@ -805,7 +1081,10 @@ def fine_pay_mpesa(request, chama_id, penalty_id):
             'message': f'STK Push sent to {phone}. Enter your M-Pesa PIN.',
             'checkout_request_id': result.get('CheckoutRequestID'),
         })
-    return JsonResponse({'success': False, 'error': result.get('errorMessage', 'STK Push failed.')})
+    return JsonResponse({
+        'success': False,
+        'error': result.get('errorMessage', 'STK Push failed.')
+    })
 
 
 @login_required(login_url='login')
@@ -823,9 +1102,14 @@ def fine_report(request, chama_id):
         waived = mf.filter(status='waived').aggregate(t=Sum('amount'))['t'] or Decimal('0')
         latest = mf.order_by('-issued_at').first()
         report_data.append({
-            'member': m.user, 'role': m.get_role_display(),
-            'total': total, 'unpaid': unpaid, 'paid': paid,
-            'waived': waived, 'count': mf.count(), 'latest_fine': latest,
+            'member':      m.user,
+            'role':        m.get_role_display(),
+            'total':       total,
+            'unpaid':      unpaid,
+            'paid':        paid,
+            'waived':      waived,
+            'count':       mf.count(),
+            'latest_fine': latest,
         })
 
     report_data.sort(key=lambda x: x['unpaid'], reverse=True)
@@ -838,21 +1122,18 @@ def fine_report(request, chama_id):
     })
 
 
-# ─── Loans ────────────────────────────────────────────────────────────────────
+# ─── Loans ───────────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def loans(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
-    all_loans = chama.loans.select_related('member', 'approved_by').order_by('-created_at')
-
+    all_loans     = chama.loans.select_related('member', 'approved_by').order_by('-created_at')
     status_filter = request.GET.get('status', '')
     member_filter = request.GET.get('member', '')
-    if status_filter:
-        all_loans = all_loans.filter(status=status_filter)
-    if member_filter:
-        all_loans = all_loans.filter(member_id=member_filter)
+    if status_filter: all_loans = all_loans.filter(status=status_filter)
+    if member_filter: all_loans = all_loans.filter(member_id=member_filter)
 
     total_disbursed   = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
     total_outstanding = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
@@ -862,19 +1143,19 @@ def loans(request, chama_id):
     members = chama.memberships.filter(active=True).select_related('user')
 
     context = {
-        'chama': chama,
-        'my_membership': my,
-        'can_manage': my.role in ('admin', 'treasurer'),
-        'loans': all_loans,
-        'members': members,
-        'total_disbursed': total_disbursed,
+        'chama':             chama,
+        'my_membership':     my,
+        'can_manage':        my.role in ('admin', 'treasurer'),
+        'loans':             all_loans,
+        'members':           members,
+        'total_disbursed':   total_disbursed,
         'total_outstanding': total_outstanding,
-        'total_pending': total_pending,
-        'total_overdue': total_overdue,
-        'status_filter': status_filter,
-        'member_filter': member_filter,
-        'loan_statuses': Loan.STATUS_CHOICES,
-        'purpose_choices': Loan.PURPOSE_CHOICES,
+        'total_pending':     total_pending,
+        'total_overdue':     total_overdue,
+        'status_filter':     status_filter,
+        'member_filter':     member_filter,
+        'loan_statuses':     Loan.STATUS_CHOICES,
+        'purpose_choices':   Loan.PURPOSE_CHOICES,
     }
     return render(request, 'loans.html', context)
 
@@ -882,7 +1163,7 @@ def loans(request, chama_id):
 @login_required(login_url='login')
 def loan_apply(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     if request.method == 'POST':
         member_id    = request.POST.get('member_id') or request.user.id
@@ -905,11 +1186,11 @@ def loan_apply(request, chama_id):
             for e in errors: messages.error(request, e)
             return redirect('loans', chama_id=chama_id)
 
-        if my.role in ('admin', 'treasurer') and member_id:
-            member = get_object_or_404(User, id=member_id)
-        else:
-            member = request.user
-
+        member = (
+            get_object_or_404(User, id=member_id)
+            if my.role in ('admin', 'treasurer') and member_id
+            else request.user
+        )
         Loan.objects.create(
             chama=chama, member=member,
             amount=Decimal(amount),
@@ -919,7 +1200,10 @@ def loan_apply(request, chama_id):
             status='pending',
             applied_at=applied_date or datetime.date.today(),
         )
-        messages.success(request, f'Loan application of KES {amount_val:,.2f} submitted for {member.get_full_name()}.')
+        messages.success(
+            request,
+            f'Loan application of KES {amount_val:,.2f} submitted for {member.get_full_name()}.'
+        )
         return redirect('loans', chama_id=chama_id)
 
     return redirect('loans', chama_id=chama_id)
@@ -928,7 +1212,7 @@ def loan_apply(request, chama_id):
 @login_required(login_url='login')
 def loan_approve(request, chama_id, loan_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can approve loans.')
@@ -959,7 +1243,7 @@ def loan_approve(request, chama_id, loan_id):
 @login_required(login_url='login')
 def loan_repayment_add(request, chama_id, loan_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     if my.role not in ('admin', 'treasurer'):
         messages.error(request, 'Only admins and treasurers can record repayments.')
@@ -992,35 +1276,38 @@ def loan_repayment_add(request, chama_id, loan_id):
             log_activity(loan.member, 'loan_repaid', chama=chama, amount=float(loan.amount))
             messages.success(request, f'Loan fully repaid by {loan.member.get_full_name()}! 🎉')
         else:
-            messages.success(request, f'Repayment of KES {amount_val:,.2f} recorded. Balance: KES {loan.balance():,.2f}')
+            messages.success(
+                request,
+                f'Repayment of KES {amount_val:,.2f} recorded. Balance: KES {loan.balance():,.2f}'
+            )
 
     return redirect('loans', chama_id=chama_id)
 
 
 @login_required(login_url='login')
 def loan_detail(request, chama_id, loan_id):
-    chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
-    loan = get_object_or_404(Loan, id=loan_id, chama=chama)
+    chama      = get_object_or_404(Chama, id=chama_id)
+    my         = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    loan       = get_object_or_404(Loan, id=loan_id, chama=chama)
     repayments = loan.repayments.all()
 
     context = {
-        'chama': chama,
-        'my_membership': my,
-        'can_manage': my.role in ('admin', 'treasurer'),
-        'loan': loan,
-        'repayments': repayments,
+        'chama':           chama,
+        'my_membership':   my,
+        'can_manage':      my.role in ('admin', 'treasurer'),
+        'loan':            loan,
+        'repayments':      repayments,
         'payment_methods': LoanRepayment.PAYMENT_METHODS,
     }
     return render(request, 'loan_detail.html', context)
 
 
-# ─── Reports ──────────────────────────────────────────────────────────────────
+# ─── Reports ─────────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def reports(request, chama_id):
     chama = get_object_or_404(Chama, id=chama_id)
-    my = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
+    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     today = datetime.date.today()
 
@@ -1040,7 +1327,7 @@ def reports(request, chama_id):
         ).aggregate(t=Sum('amount'))['t'] or 0
         monthly_data.append({'label': d.strftime('%b %Y'), 'amount': float(month_total)})
 
-    memberships = chama.memberships.filter(active=True).select_related('user')
+    memberships    = chama.memberships.filter(active=True).select_related('user')
     member_summary = []
     for m in memberships:
         paid = chama.contributions.filter(
@@ -1050,11 +1337,11 @@ def reports(request, chama_id):
             member=m.user, status='confirmed'
         ).order_by('-date').first()
         member_summary.append({
-            'member': m.user,
-            'role': m.get_role_display(),
-            'total_paid': paid,
+            'member':            m.user,
+            'role':              m.get_role_display(),
+            'total_paid':        paid,
             'last_contribution': last_contrib.date if last_contrib else None,
-            'arrears': max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0')),
+            'arrears':           max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0')),
         })
 
     total_loans        = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
@@ -1077,36 +1364,36 @@ def reports(request, chama_id):
 
     repayment_rate = 0
     if total_loans > 0:
-        repaid_amount = chama.loans.filter(status='repaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+        repaid_amount  = chama.loans.filter(status='repaid').aggregate(t=Sum('amount'))['t'] or Decimal('0')
         repayment_rate = int((repaid_amount / total_loans) * 100)
 
     context = {
-        'chama': chama,
-        'my_membership': my,
-        'can_manage': my.role in ('admin', 'treasurer'),
-        'total_contributions': total_contributions,
+        'chama':                    chama,
+        'my_membership':            my,
+        'can_manage':               my.role in ('admin', 'treasurer'),
+        'total_contributions':      total_contributions,
         'this_month_contributions': this_month_contributions,
-        'monthly_labels': [d['label'] for d in monthly_data],
-        'monthly_amounts': [d['amount'] for d in monthly_data],
-        'member_summary': member_summary,
-        'total_members': chama.member_count(),
-        'total_loans': total_loans,
-        'total_outstanding': total_outstanding,
-        'total_interest_earned': total_interest_earned,
-        'active_loans': active_loans,
-        'total_overdue': total_overdue,
-        'total_pending': total_pending,
-        'total_repaid': total_repaid_count,
-        'total_penalties': total_penalties,
-        'unpaid_penalties': unpaid_penalties,
-        'contrib_to_loan_ratio': contrib_to_loan_ratio,
-        'repayment_rate': repayment_rate,
-        'today': today,
+        'monthly_labels':           [d['label'] for d in monthly_data],
+        'monthly_amounts':          [d['amount'] for d in monthly_data],
+        'member_summary':           member_summary,
+        'total_members':            chama.member_count(),
+        'total_loans':              total_loans,
+        'total_outstanding':        total_outstanding,
+        'total_interest_earned':    total_interest_earned,
+        'active_loans':             active_loans,
+        'total_overdue':            total_overdue,
+        'total_pending':            total_pending,
+        'total_repaid':             total_repaid_count,
+        'total_penalties':          total_penalties,
+        'unpaid_penalties':         unpaid_penalties,
+        'contrib_to_loan_ratio':    contrib_to_loan_ratio,
+        'repayment_rate':           repayment_rate,
+        'today':                    today,
     }
     return render(request, 'reports.html', context)
 
 
-# ── Export: CSV ───────────────────────────────────────────────────────────────
+# ── Export: CSV ──────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def export_contributions_csv(request, chama_id):
@@ -1114,11 +1401,14 @@ def export_contributions_csv(request, chama_id):
     get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{chama.name}_contributions_{datetime.date.today()}.csv"'
-
+    response['Content-Disposition'] = (
+        f'attachment; filename="{chama.name}_contributions_{datetime.date.today()}.csv"'
+    )
     writer = csv.writer(response)
     writer.writerow(['#', 'Member', 'Email', 'Amount (KES)', 'Date', 'Payment Method', 'Reference', 'Status', 'Recorded By'])
-    for i, c in enumerate(chama.contributions.select_related('member', 'recorded_by').order_by('-date'), 1):
+    for i, c in enumerate(
+        chama.contributions.select_related('member', 'recorded_by').order_by('-date'), 1
+    ):
         writer.writerow([
             i, c.member.get_full_name() or c.member.username, c.member.email,
             c.amount, c.date, c.get_payment_method_display(),
@@ -1134,11 +1424,14 @@ def export_loans_csv(request, chama_id):
     get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{chama.name}_loans_{datetime.date.today()}.csv"'
-
+    response['Content-Disposition'] = (
+        f'attachment; filename="{chama.name}_loans_{datetime.date.today()}.csv"'
+    )
     writer = csv.writer(response)
     writer.writerow(['#', 'Member', 'Amount', 'Interest Rate %', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status', 'Purpose', 'Applied', 'Due Date'])
-    for i, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 1):
+    for i, loan in enumerate(
+        chama.loans.select_related('member').order_by('-created_at'), 1
+    ):
         writer.writerow([
             i, loan.member.get_full_name() or loan.member.username,
             loan.amount, loan.interest_rate, loan.interest_amount(),
@@ -1155,12 +1448,15 @@ def export_members_csv(request, chama_id):
     get_object_or_404(Membership, chama=chama, user=request.user, active=True)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{chama.name}_members_{datetime.date.today()}.csv"'
-
+    response['Content-Disposition'] = (
+        f'attachment; filename="{chama.name}_members_{datetime.date.today()}.csv"'
+    )
     writer = csv.writer(response)
     writer.writerow(['#', 'Name', 'Email', 'Phone', 'Role', 'Joined', 'Total Contributed (KES)', 'Arrears (KES)'])
-    for i, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1):
-        paid = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    for i, m in enumerate(
+        chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1
+    ):
+        paid    = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
         arrears = max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0'))
         writer.writerow([
             i, m.user.get_full_name() or m.user.username, m.user.email,
@@ -1170,7 +1466,7 @@ def export_members_csv(request, chama_id):
     return response
 
 
-# ── Export: PDF ───────────────────────────────────────────────────────────────
+# ── Export: PDF ──────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def export_report_pdf(request, chama_id):
@@ -1185,22 +1481,25 @@ def export_report_pdf(request, chama_id):
     from reportlab.lib.enums import TA_CENTER
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            leftMargin=18*mm, rightMargin=18*mm,
-                            topMargin=16*mm, bottomMargin=16*mm)
+    doc    = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        leftMargin=18*mm, rightMargin=18*mm,
+        topMargin=16*mm, bottomMargin=16*mm
+    )
 
-    styles = getSampleStyleSheet()
     brand       = colors.HexColor('#0d6e4f')
     light_brand = colors.HexColor('#e6f5f0')
-    story = []
+    story       = []
 
     title_style = ParagraphStyle('title', fontSize=20, fontName='Helvetica-Bold', textColor=brand, spaceAfter=2)
-    sub_style   = ParagraphStyle('sub', fontSize=10, textColor=colors.HexColor('#6b7280'), spaceAfter=12)
-    h2_style    = ParagraphStyle('h2', fontSize=13, fontName='Helvetica-Bold', textColor=brand, spaceBefore=14, spaceAfter=6)
-    normal      = ParagraphStyle('norm', fontSize=9, leading=14)
+    sub_style   = ParagraphStyle('sub',   fontSize=10, textColor=colors.HexColor('#6b7280'), spaceAfter=12)
+    h2_style    = ParagraphStyle('h2',    fontSize=13, fontName='Helvetica-Bold', textColor=brand, spaceBefore=14, spaceAfter=6)
+    normal      = ParagraphStyle('norm',  fontSize=9, leading=14)
 
     story.append(Paragraph(f'{chama.name}', title_style))
-    story.append(Paragraph(f'Financial Report  ·  Generated {datetime.date.today().strftime("%B %d, %Y")}', sub_style))
+    story.append(Paragraph(
+        f'Financial Report  ·  Generated {datetime.date.today().strftime("%B %d, %Y")}', sub_style
+    ))
     story.append(HRFlowable(width='100%', thickness=1, color=brand))
     story.append(Spacer(1, 8))
 
@@ -1212,19 +1511,22 @@ def export_report_pdf(request, chama_id):
     summary_data = [
         ['Metric', 'Value'],
         ['Total Contributions (Confirmed)', f'KES {total_contribs:,.2f}'],
-        ['Total Loans Disbursed', f'KES {total_loans_amt:,.2f}'],
-        ['Outstanding Loans', f'KES {outstanding:,.2f}'],
-        ['Total Penalties/Fines', f'KES {total_penalties:,.2f}'],
-        ['Active Members', str(chama.member_count())],
+        ['Total Loans Disbursed',           f'KES {total_loans_amt:,.2f}'],
+        ['Outstanding Loans',               f'KES {outstanding:,.2f}'],
+        ['Total Penalties/Fines',           f'KES {total_penalties:,.2f}'],
+        ['Active Members',                  str(chama.member_count())],
     ]
     st = Table(summary_data, colWidths=[100*mm, 60*mm])
     st.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), brand), ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('BACKGROUND',     (0,0), (-1,0), brand),
+        ('TEXTCOLOR',      (0,0), (-1,0), colors.white),
+        ('FONTNAME',       (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE',       (0,0), (-1,-1), 9),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_brand]),
-        ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
-        ('TOPPADDING', (0,0), (-1,-1), 5), ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-        ('LEFTPADDING', (0,0), (-1,-1), 8),
+        ('GRID',           (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
+        ('TOPPADDING',     (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING',  (0,0), (-1,-1), 5),
+        ('LEFTPADDING',    (0,0), (-1,-1), 8),
     ]))
     story.append(Paragraph('Financial Summary', h2_style))
     story.append(st)
@@ -1232,19 +1534,26 @@ def export_report_pdf(request, chama_id):
 
     story.append(Paragraph('Member Contribution Summary', h2_style))
     rows = [['#', 'Member', 'Email', 'Total Paid (KES)', 'Last Contribution']]
-    for i, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1):
+    for i, m in enumerate(
+        chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 1
+    ):
         paid = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
         last = chama.contributions.filter(member=m.user, status='confirmed').order_by('-date').first()
-        rows.append([str(i), m.user.get_full_name() or m.user.username, m.user.email,
-                     f'{paid:,.2f}', last.date.strftime('%b %d, %Y') if last else '—'])
+        rows.append([
+            str(i), m.user.get_full_name() or m.user.username, m.user.email,
+            f'{paid:,.2f}', last.date.strftime('%b %d, %Y') if last else '—'
+        ])
     ct = Table(rows, colWidths=[10*mm, 50*mm, 55*mm, 35*mm, 30*mm])
     ct.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), brand), ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 8),
+        ('BACKGROUND',     (0,0), (-1,0), brand),
+        ('TEXTCOLOR',      (0,0), (-1,0), colors.white),
+        ('FONTNAME',       (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE',       (0,0), (-1,-1), 8),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_brand]),
-        ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
-        ('TOPPADDING', (0,0), (-1,-1), 5), ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-        ('LEFTPADDING', (0,0), (-1,-1), 6),
+        ('GRID',           (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
+        ('TOPPADDING',     (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING',  (0,0), (-1,-1), 5),
+        ('LEFTPADDING',    (0,0), (-1,-1), 6),
     ]))
     story.append(ct)
     story.append(Spacer(1, 10))
@@ -1252,19 +1561,24 @@ def export_report_pdf(request, chama_id):
     story.append(Paragraph('Loan Summary', h2_style))
     loan_rows = [['#', 'Member', 'Amount', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status']]
     for i, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 1):
-        loan_rows.append([str(i), loan.member.get_full_name() or loan.member.username,
-                          f'{loan.amount:,.2f}', f'{loan.interest_rate}%',
-                          f'{loan.total_payable():,.2f}', f'{loan.total_repaid():,.2f}',
-                          f'{loan.balance():,.2f}', loan.get_status_display()])
+        loan_rows.append([
+            str(i), loan.member.get_full_name() or loan.member.username,
+            f'{loan.amount:,.2f}', f'{loan.interest_rate}%',
+            f'{loan.total_payable():,.2f}', f'{loan.total_repaid():,.2f}',
+            f'{loan.balance():,.2f}', loan.get_status_display()
+        ])
     if len(loan_rows) > 1:
         lt = Table(loan_rows, colWidths=[8*mm, 38*mm, 22*mm, 16*mm, 24*mm, 20*mm, 20*mm, 22*mm])
         lt.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), brand), ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'), ('FONTSIZE', (0,0), (-1,-1), 7.5),
+            ('BACKGROUND',     (0,0), (-1,0), brand),
+            ('TEXTCOLOR',      (0,0), (-1,0), colors.white),
+            ('FONTNAME',       (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE',       (0,0), (-1,-1), 7.5),
             ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_brand]),
-            ('GRID', (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
-            ('TOPPADDING', (0,0), (-1,-1), 4), ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-            ('LEFTPADDING', (0,0), (-1,-1), 5),
+            ('GRID',           (0,0), (-1,-1), 0.3, colors.HexColor('#e5e7eb')),
+            ('TOPPADDING',     (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING',  (0,0), (-1,-1), 4),
+            ('LEFTPADDING',    (0,0), (-1,-1), 5),
         ]))
         story.append(lt)
     else:
@@ -1281,11 +1595,13 @@ def export_report_pdf(request, chama_id):
     doc.build(story)
     buffer.seek(0)
     response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{chama.name}_report_{datetime.date.today()}.pdf"'
+    response['Content-Disposition'] = (
+        f'attachment; filename="{chama.name}_report_{datetime.date.today()}.pdf"'
+    )
     return response
 
 
-# ── Export: Excel ─────────────────────────────────────────────────────────────
+# ── Export: Excel ────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def export_report_excel(request, chama_id):
@@ -1300,28 +1616,33 @@ def export_report_excel(request, chama_id):
         messages.error(request, 'Run: pip install openpyxl')
         return redirect('reports', chama_id=chama_id)
 
-    wb = openpyxl.Workbook()
+    wb          = openpyxl.Workbook()
     brand_fill  = PatternFill('solid', fgColor='0D6E4F')
     header_font = Font(bold=True, color='FFFFFF', size=10)
     alt_fill    = PatternFill('solid', fgColor='E6F5F0')
     border_side = Side(style='thin', color='E5E7EB')
-    thin_border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+    thin_border = Border(
+        left=border_side, right=border_side,
+        top=border_side, bottom=border_side
+    )
 
     def style_header(ws, row, cols):
-        for c in range(1, cols+1):
-            cell = ws.cell(row=row, column=c)
-            cell.fill = brand_fill; cell.font = header_font
+        for c in range(1, cols + 1):
+            cell           = ws.cell(row=row, column=c)
+            cell.fill      = brand_fill
+            cell.font      = header_font
             cell.alignment = Alignment(horizontal='left', vertical='center')
-            cell.border = thin_border
+            cell.border    = thin_border
 
     def style_row(ws, row, cols, alt=False):
-        for c in range(1, cols+1):
-            cell = ws.cell(row=row, column=c)
+        for c in range(1, cols + 1):
+            cell           = ws.cell(row=row, column=c)
             if alt: cell.fill = alt_fill
-            cell.border = thin_border
+            cell.border    = thin_border
             cell.alignment = Alignment(vertical='center')
 
-    ws1 = wb.active; ws1.title = 'Summary'
+    ws1       = wb.active
+    ws1.title = 'Summary'
     ws1['A1'] = f'{chama.name} – Financial Report'
     ws1['A1'].font = Font(bold=True, size=14, color='0D6E4F')
     ws1['A2'] = f'Generated: {datetime.date.today().strftime("%B %d, %Y")}'
@@ -1331,16 +1652,16 @@ def export_report_excel(request, chama_id):
     style_header(ws1, 4, 2)
 
     total_contribs  = chama.contributions.filter(status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    total_loans_amt = chama.loans.filter(status__in=['active','overdue','repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
-    outstanding     = chama.loans.filter(status__in=['active','overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    total_loans_amt = chama.loans.filter(status__in=['active', 'overdue', 'repaid']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    outstanding     = chama.loans.filter(status__in=['active', 'overdue']).aggregate(t=Sum('amount'))['t'] or Decimal('0')
     total_penalties = chama.penalties.aggregate(t=Sum('amount'))['t'] or Decimal('0')
 
     for ri, (metric, val) in enumerate([
-        ('Total Contributions', float(total_contribs)),
+        ('Total Contributions',   float(total_contribs)),
         ('Total Loans Disbursed', float(total_loans_amt)),
-        ('Outstanding Loans', float(outstanding)),
-        ('Total Penalties', float(total_penalties)),
-        ('Active Members', chama.member_count()),
+        ('Outstanding Loans',     float(outstanding)),
+        ('Total Penalties',       float(total_penalties)),
+        ('Active Members',        chama.member_count()),
     ], 5):
         ws1.cell(row=ri, column=1, value=metric)
         ws1.cell(row=ri, column=2, value=val)
@@ -1349,46 +1670,58 @@ def export_report_excel(request, chama_id):
     ws1.column_dimensions['B'].width = 20
 
     ws2 = wb.create_sheet('Contributions')
-    h2 = ['#', 'Member', 'Email', 'Amount (KES)', 'Date', 'Method', 'Reference', 'Status']
+    h2  = ['#', 'Member', 'Email', 'Amount (KES)', 'Date', 'Method', 'Reference', 'Status']
     for ci, h in enumerate(h2, 1): ws2.cell(row=1, column=ci, value=h)
     style_header(ws2, 1, len(h2))
-    for ri, c in enumerate(chama.contributions.select_related('member').order_by('-date'), 2):
-        vals = [ri-1, c.member.get_full_name() or c.member.username, c.member.email,
-                float(c.amount), str(c.date), c.get_payment_method_display(),
-                c.reference or '', c.get_status_display()]
+    for ri, c in enumerate(
+        chama.contributions.select_related('member').order_by('-date'), 2
+    ):
+        vals = [
+            ri - 1, c.member.get_full_name() or c.member.username, c.member.email,
+            float(c.amount), str(c.date), c.get_payment_method_display(),
+            c.reference or '', c.get_status_display()
+        ]
         for ci, v in enumerate(vals, 1): ws2.cell(row=ri, column=ci, value=v)
         style_row(ws2, ri, len(h2), alt=(ri % 2 == 0))
-    for ci, w in enumerate([6,26,28,16,14,14,18,14], 1):
+    for ci, w in enumerate([6, 26, 28, 16, 14, 14, 18, 14], 1):
         ws2.column_dimensions[get_column_letter(ci)].width = w
 
     ws3 = wb.create_sheet('Members')
-    h3 = ['#', 'Name', 'Email', 'Phone', 'Role', 'Joined', 'Total Contributed', 'Arrears']
+    h3  = ['#', 'Name', 'Email', 'Phone', 'Role', 'Joined', 'Total Contributed', 'Arrears']
     for ci, h in enumerate(h3, 1): ws3.cell(row=1, column=ci, value=h)
     style_header(ws3, 1, len(h3))
-    for ri, m in enumerate(chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 2):
-        paid = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
+    for ri, m in enumerate(
+        chama.memberships.filter(active=True).select_related('user').order_by('joined_at'), 2
+    ):
+        paid    = chama.contributions.filter(member=m.user, status='confirmed').aggregate(t=Sum('amount'))['t'] or Decimal('0')
         arrears = max((chama.contribution_amount or Decimal('0')) - paid, Decimal('0'))
-        vals = [ri-1, m.user.get_full_name() or m.user.username, m.user.email,
-                m.user.phone or '', m.get_role_display(), str(m.joined_at.date()),
-                float(paid), float(arrears)]
+        vals    = [
+            ri - 1, m.user.get_full_name() or m.user.username, m.user.email,
+            m.user.phone or '', m.get_role_display(), str(m.joined_at.date()),
+            float(paid), float(arrears)
+        ]
         for ci, v in enumerate(vals, 1): ws3.cell(row=ri, column=ci, value=v)
         style_row(ws3, ri, len(h3), alt=(ri % 2 == 0))
-    for ci, w in enumerate([6,26,28,18,14,14,22,16], 1):
+    for ci, w in enumerate([6, 26, 28, 18, 14, 14, 22, 16], 1):
         ws3.column_dimensions[get_column_letter(ci)].width = w
 
     ws4 = wb.create_sheet('Loans')
-    h4 = ['#', 'Member', 'Amount', 'Rate %', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status', 'Purpose', 'Applied', 'Due Date']
+    h4  = ['#', 'Member', 'Amount', 'Rate %', 'Interest', 'Total Payable', 'Repaid', 'Balance', 'Status', 'Purpose', 'Applied', 'Due Date']
     for ci, h in enumerate(h4, 1): ws4.cell(row=1, column=ci, value=h)
     style_header(ws4, 1, len(h4))
-    for ri, loan in enumerate(chama.loans.select_related('member').order_by('-created_at'), 2):
-        vals = [ri-1, loan.member.get_full_name() or loan.member.username,
-                float(loan.amount), float(loan.interest_rate), float(loan.interest_amount()),
-                float(loan.total_payable()), float(loan.total_repaid()), float(loan.balance()),
-                loan.get_status_display(), loan.get_purpose_display(),
-                str(loan.applied_at), str(loan.due_date) if loan.due_date else '']
+    for ri, loan in enumerate(
+        chama.loans.select_related('member').order_by('-created_at'), 2
+    ):
+        vals = [
+            ri - 1, loan.member.get_full_name() or loan.member.username,
+            float(loan.amount), float(loan.interest_rate), float(loan.interest_amount()),
+            float(loan.total_payable()), float(loan.total_repaid()), float(loan.balance()),
+            loan.get_status_display(), loan.get_purpose_display(),
+            str(loan.applied_at), str(loan.due_date) if loan.due_date else ''
+        ]
         for ci, v in enumerate(vals, 1): ws4.cell(row=ri, column=ci, value=v)
         style_row(ws4, ri, len(h4), alt=(ri % 2 == 0))
-    for ci, w in enumerate([6,24,16,10,14,16,14,14,16,18,14,14], 1):
+    for ci, w in enumerate([6, 24, 16, 10, 14, 16, 14, 14, 16, 18, 14, 14], 1):
         ws4.column_dimensions[get_column_letter(ci)].width = w
 
     output = io.BytesIO()
@@ -1398,11 +1731,13 @@ def export_report_excel(request, chama_id):
         output,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = f'attachment; filename="{chama.name}_report_{datetime.date.today()}.xlsx"'
+    response['Content-Disposition'] = (
+        f'attachment; filename="{chama.name}_report_{datetime.date.today()}.xlsx"'
+    )
     return response
 
 
-# ─── M-Pesa Views ─────────────────────────────────────────────────────────────
+# ─── M-Pesa Views ────────────────────────────────────────────────────────────
 
 @login_required(login_url='login')
 def mpesa_stk_push(request, chama_id):
@@ -1429,8 +1764,7 @@ def mpesa_stk_push(request, chama_id):
 
     try:
         amount = int(float(amount))
-        if amount < 1:
-            raise ValueError
+        if amount < 1: raise ValueError
     except (ValueError, TypeError):
         return JsonResponse({'success': False, 'error': 'Invalid amount.'})
 
@@ -1439,20 +1773,15 @@ def mpesa_stk_push(request, chama_id):
 
     try:
         response = mpesa.stk_push(
-            phone_number=phone,
-            amount=amount,
-            account_reference=account_ref,
-            transaction_desc=tx_desc,
+            phone_number=phone, amount=amount,
+            account_reference=account_ref, transaction_desc=tx_desc,
         )
     except Exception as e:
         return JsonResponse({'success': False, 'error': f'M-Pesa error: {str(e)}'})
 
     if response.get('ResponseCode') == '0':
         MpesaTransaction.objects.create(
-            chama=chama,
-            member=request.user,
-            phone=phone,
-            amount=amount,
+            chama=chama, member=request.user, phone=phone, amount=amount,
             transaction_type=tx_type,
             checkout_request_id=response.get('CheckoutRequestID'),
             merchant_request_id=response.get('MerchantRequestID'),
@@ -1463,11 +1792,10 @@ def mpesa_stk_push(request, chama_id):
             'message': f'STK Push sent to {phone}. Check your phone and enter your M-Pesa PIN.',
             'checkout_request_id': response.get('CheckoutRequestID'),
         })
-    else:
-        return JsonResponse({
-            'success': False,
-            'error': response.get('errorMessage') or response.get('ResponseDescription', 'STK Push failed.'),
-        })
+    return JsonResponse({
+        'success': False,
+        'error':   response.get('errorMessage') or response.get('ResponseDescription', 'STK Push failed.'),
+    })
 
 
 @login_required(login_url='login')
@@ -1476,7 +1804,7 @@ def mpesa_stk_query(request, chama_id):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     try:
-        data = json.loads(request.body)
+        data                = json.loads(request.body)
         checkout_request_id = data.get('checkout_request_id')
     except Exception:
         checkout_request_id = request.POST.get('checkout_request_id')
@@ -1486,8 +1814,7 @@ def mpesa_stk_query(request, chama_id):
 
     try:
         tx = MpesaTransaction.objects.get(
-            checkout_request_id=checkout_request_id,
-            member=request.user,
+            checkout_request_id=checkout_request_id, member=request.user
         )
     except MpesaTransaction.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Transaction not found.'})
@@ -1508,8 +1835,7 @@ def mpesa_stk_query(request, chama_id):
         return JsonResponse({'success': True, 'status': 'cancelled'})
     elif result_code:
         return JsonResponse({'success': True, 'status': 'failed', 'error': result.get('ResultDesc', '')})
-    else:
-        return JsonResponse({'success': True, 'status': 'pending'})
+    return JsonResponse({'success': True, 'status': 'pending'})
 
 
 @csrf_exempt
@@ -1537,40 +1863,30 @@ def mpesa_callback(request):
     tx.result_desc = result_desc
 
     if result_code == '0':
-        items = body.get('CallbackMetadata', {}).get('Item', [])
-        meta  = {item['Name']: item.get('Value') for item in items}
-
+        items            = body.get('CallbackMetadata', {}).get('Item', [])
+        meta             = {item['Name']: item.get('Value') for item in items}
         tx.mpesa_receipt = meta.get('MpesaReceiptNumber')
         tx.status        = 'success'
         tx.save()
 
         if tx.transaction_type == 'contribution' and not tx.contribution:
             contrib = Contribution.objects.create(
-                chama=tx.chama,
-                member=tx.member,
-                amount=tx.amount,
-                payment_method='mpesa',
-                reference=tx.mpesa_receipt,
+                chama=tx.chama, member=tx.member, amount=tx.amount,
+                payment_method='mpesa', reference=tx.mpesa_receipt,
                 notes='Auto-recorded via M-Pesa STK Push',
-                status='confirmed',
-                date=datetime.date.today(),
+                status='confirmed', date=datetime.date.today(),
             )
             tx.contribution = contrib
             tx.save()
 
         elif tx.transaction_type == 'loan_repayment' and not tx.loan_repayment:
             loan = Loan.objects.filter(
-                chama=tx.chama,
-                member=tx.member,
-                status__in=['active', 'overdue']
+                chama=tx.chama, member=tx.member, status__in=['active', 'overdue']
             ).first()
             if loan:
                 repayment = LoanRepayment.objects.create(
-                    loan=loan,
-                    amount=tx.amount,
-                    payment_method='mpesa',
-                    reference=tx.mpesa_receipt,
-                    status='confirmed',
+                    loan=loan, amount=tx.amount, payment_method='mpesa',
+                    reference=tx.mpesa_receipt, status='confirmed',
                     date=datetime.date.today(),
                 )
                 tx.loan_repayment = repayment
@@ -1587,21 +1903,20 @@ def mpesa_callback(request):
 
 @login_required(login_url='login')
 def mpesa_transactions(request, chama_id):
-    chama = get_object_or_404(Chama, id=chama_id)
-    my    = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
-
+    chama        = get_object_or_404(Chama, id=chama_id)
+    my           = get_object_or_404(Membership, chama=chama, user=request.user, active=True)
     transactions = MpesaTransaction.objects.filter(chama=chama).select_related('member').order_by('-created_at')
 
     context = {
-        'chama': chama,
+        'chama':         chama,
         'my_membership': my,
-        'transactions': transactions,
-        'can_manage': my.role in ('admin', 'treasurer'),
+        'transactions':  transactions,
+        'can_manage':    my.role in ('admin', 'treasurer'),
     }
     return render(request, 'mpesa_transactions.html', context)
 
 
-# ─── Upgrade / Subscription ───────────────────────────────────────────────────
+# ─── Upgrade / Subscription ──────────────────────────────────────────────────
 
 PLAN_PRICES = {
     'premium': {'monthly': 999,  'annual': 9588},
@@ -1613,9 +1928,7 @@ PLAN_PRICES = {
 def upgrade(request):
     membership   = Membership.objects.filter(user=request.user).select_related('chama').first()
     active_chama = membership.chama if membership else None
-    return render(request, 'chamapro/upgrade.html', {
-        'active_chama': active_chama,
-    })
+    return render(request, 'chamapro/upgrade.html', {'active_chama': active_chama})
 
 
 @login_required(login_url='login')
@@ -1642,32 +1955,26 @@ def upgrade_pay(request):
     try:
         description = f'ChamaPro {plan.title()} Plan - {billing.title()}'
         result = mpesa.stk_push(
-            phone_number=phone,
-            amount=amount,
-            account_reference='ChamaPro-Upgrade',
-            transaction_desc=description,
+            phone_number=phone, amount=amount,
+            account_reference='ChamaPro-Upgrade', transaction_desc=description,
         )
-
         if result.get('ResponseCode') == '0':
             checkout_id = result.get('CheckoutRequestID')
             from .models import SubscriptionPayment
             SubscriptionPayment.objects.create(
-                user=request.user,
-                plan=plan,
-                billing_cycle=billing,
-                amount=amount,
-                phone=phone,
-                checkout_request_id=checkout_id,
-                status='pending',
+                user=request.user, plan=plan, billing_cycle=billing,
+                amount=amount, phone=phone,
+                checkout_request_id=checkout_id, status='pending',
             )
             return JsonResponse({
                 'success': True,
                 'message': f'STK Push sent to +{phone}. Enter your M-Pesa PIN to complete.',
                 'checkout_request_id': checkout_id,
             })
-        else:
-            return JsonResponse({'success': False, 'error': result.get('errorMessage', 'M-Pesa request failed.')})
-
+        return JsonResponse({
+            'success': False,
+            'error': result.get('errorMessage', 'M-Pesa request failed.')
+        })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
@@ -1686,10 +1993,8 @@ def upgrade_poll(request):
     try:
         from .models import SubscriptionPayment
         payment = SubscriptionPayment.objects.get(
-            checkout_request_id=checkout_id,
-            user=request.user,
+            checkout_request_id=checkout_id, user=request.user
         )
-
         if payment.status == 'completed':
             return JsonResponse({'status': 'success', 'receipt': payment.mpesa_receipt})
         elif payment.status == 'failed':
@@ -1702,8 +2007,8 @@ def upgrade_poll(request):
 
         if result_code == '0':
             _activate_subscription(request.user, payment.plan, payment.billing_cycle, payment.amount)
-            receipt        = result.get('MpesaReceiptNumber', '')
-            payment.status = 'completed'
+            receipt               = result.get('MpesaReceiptNumber', '')
+            payment.status        = 'completed'
             payment.mpesa_receipt = receipt
             payment.save()
             return JsonResponse({'status': 'success', 'receipt': receipt})
@@ -1734,10 +2039,10 @@ def _activate_subscription(user, plan, billing_cycle, amount):
     UserSubscription.objects.update_or_create(
         user=user,
         defaults={
-            'plan': plan,
+            'plan':          plan,
             'billing_cycle': billing_cycle,
-            'amount_paid': amount,
-            'expires_at': expires,
-            'is_active': True,
+            'amount_paid':   amount,
+            'expires_at':    expires,
+            'is_active':     True,
         }
     )

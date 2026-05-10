@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Restore {{ chama.name }}{% endblock %}
+{% block content %}
+<div style="max-width:520px;margin:60px auto;">
+  <div style="background:#fff;border-radius:16px;box-shadow:var(--card-shadow);overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);padding:32px;text-align:center;border-bottom:1px solid #bbf7d0;">
+      <div style="width:64px;height:64px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-rotate-left" style="font-size:26px;color:#fff;"></i>
+      </div>
+      <h4 style="font-size:20px;font-weight:800;color:#065f46;margin:0 0 6px;">Restore Chama</h4>
+      <p style="color:#047857;font-size:14px;margin:0;">Bring <strong>{{ chama.name }}</strong> back to your dashboard.</p>
+    </div>
+    <div style="padding:28px 32px;">
+      <div style="background:#f9fafb;border-radius:12px;padding:18px;margin-bottom:24px;">
+        <p style="font-size:12px;font-weight:700;color:#374151;margin:0 0 12px;text-transform:uppercase;letter-spacing:.05em;">What happens:</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <i class="fas fa-eye" style="color:#10b981;margin-top:2px;width:16px;"></i>
+            <span style="font-size:13px;color:#4b5563;">Chama reappears in your dashboard and sidebar</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <i class="fas fa-database" style="color:#10b981;margin-top:2px;width:16px;"></i>
+            <span style="font-size:13px;color:#4b5563;">All members, contributions, loans and balances <strong>exactly as you left them</strong></span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <i class="fas fa-users" style="color:#3b82f6;margin-top:2px;width:16px;"></i>
+            <span style="font-size:13px;color:#4b5563;">Members regain full access immediately</span>
+          </div>
+        </div>
+      </div>
+      <form method="post" style="display:flex;gap:12px;">
+        {% csrf_token %}
+        <a href="{% url 'dashboard' %}"
+           style="flex:1;text-align:center;padding:11px;border-radius:10px;border:1px solid var(--border);font-size:14px;font-weight:600;color:#374151;text-decoration:none;background:#f9fafb;">
+          Cancel
+        </a>
+        <button type="submit"
+                style="flex:1;padding:11px;border-radius:10px;border:none;background:#10b981;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">
+          <i class="fas fa-rotate-left me-2"></i>Yes, Restore
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
