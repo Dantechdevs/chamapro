@@ -63,9 +63,9 @@
   background: var(--brand); display: flex; align-items: center;
   justify-content: center; color: #fff; font-size: 16px; flex-shrink: 0;
 }
-.st-card-icon.danger { background: var(--danger); }
+.st-card-icon.danger  { background: var(--danger); }
 .st-card-icon.warning { background: var(--accent2); }
-.st-card-icon.info { background: var(--info); }
+.st-card-icon.info    { background: var(--info); }
 .st-card-header h6 {
   font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
   margin: 0 0 2px; color: var(--text);
@@ -165,7 +165,7 @@
 .btn-cancel-edit:hover { border-color: var(--text); color: var(--text); }
 
 /* ── Danger zone ── */
-.danger-zone { border: 1.5px solid #fecaca; border-radius: 14px; overflow: hidden; background: #fff; }
+.danger-zone { border: 1.5px solid #fecaca; border-radius: 14px; overflow: hidden; background: #fff; margin-bottom: 20px; }
 .danger-zone-header {
   padding: 14px 20px; background: #fef2f2; border-bottom: 1px solid #fecaca;
   display: flex; align-items: center; gap: 10px;
@@ -206,6 +206,14 @@
 .toggle-switch input:checked + .toggle-slider { background: var(--brand); }
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
 
+/* ── Password eye toggle ── */
+.pwd-eye {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 13px; padding: 4px; transition: color .15s;
+}
+.pwd-eye:hover { color: var(--brand); }
+
 /* ── Confirm modal ── */
 .confirm-overlay {
   display: none; position: fixed; inset: 0;
@@ -228,7 +236,7 @@
 .cb-input {
   width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
   padding: 10px 14px; font-size: 14px; margin-bottom: 20px; outline: none;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif; box-sizing: border-box;
 }
 .cb-input:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
 .confirm-actions { display: flex; gap: 10px; }
@@ -244,35 +252,29 @@
   font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* ════════════════════════════════════
-   ROLES TAB STYLES
-════════════════════════════════════ */
-
-/* ── Role legend cards ── */
+/* ════ ROLES TAB STYLES ════ */
 .role-legend { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
 @media(max-width:700px) { .role-legend { grid-template-columns: repeat(2,1fr); } }
 @media(max-width:420px) { .role-legend { grid-template-columns: 1fr; } }
 .role-card {
   border-radius: 13px; padding: 16px 14px; border: 1.5px solid var(--border);
-  background: #fafafa; transition: border-color .15s;
+  background: #fafafa;
 }
-.role-card.admin   { border-top: 3px solid var(--brand); }
+.role-card.admin     { border-top: 3px solid var(--brand); }
 .role-card.treasurer { border-top: 3px solid var(--accent2); }
 .role-card.secretary { border-top: 3px solid var(--info); }
-.role-card.member  { border-top: 3px solid var(--border); }
+.role-card.member    { border-top: 3px solid var(--border); }
 .role-card-title { font-size: 13px; font-weight: 800; margin-bottom: 6px; }
-.role-card.admin   .role-card-title { color: var(--brand); }
+.role-card.admin     .role-card-title { color: var(--brand); }
 .role-card.treasurer .role-card-title { color: var(--accent2); }
 .role-card.secretary .role-card-title { color: var(--info); }
-.role-card.member  .role-card-title { color: var(--muted); }
+.role-card.member    .role-card-title { color: var(--muted); }
 .role-card ul { margin: 0; padding: 0 0 0 14px; }
 .role-card ul li { font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
 
-/* ── Member role table ── */
 .role-member-row {
   display: flex; align-items: center; gap: 14px;
-  padding: 14px 0; border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
+  padding: 14px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap;
 }
 .role-member-row:last-child { border-bottom: none; padding-bottom: 0; }
 .rm-avatar {
@@ -282,7 +284,7 @@
   font-size: 13px; font-weight: 700; flex-shrink: 0;
 }
 .rm-info { flex: 1; min-width: 120px; }
-.rm-name { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.rm-name  { font-size: 13.5px; font-weight: 700; color: var(--text); }
 .rm-email { font-size: 11.5px; color: var(--muted); }
 .rm-joined { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .role-badge {
@@ -303,19 +305,16 @@
 .btn-rm-save {
   background: var(--brand); color: #fff; border: none; border-radius: 9px;
   padding: 8px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer;
-  font-family: 'Plus Jakarta Sans', sans-serif; transition: background .15s;
-  white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', sans-serif; transition: background .15s; white-space: nowrap;
 }
 .btn-rm-save:hover { background: var(--brand-light); }
 .btn-rm-remove {
   background: transparent; border: 1.5px solid #fecaca; color: var(--danger);
   border-radius: 9px; padding: 7px 12px; font-size: 12px; font-weight: 700;
-  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .15s;
-  white-space: nowrap;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .15s; white-space: nowrap;
 }
 .btn-rm-remove:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
-/* ── Permissions matrix ── */
 .perm-table { width: 100%; border-collapse: collapse; }
 .perm-table thead th {
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
@@ -330,8 +329,8 @@
 .perm-table tbody td:first-child { text-align: left; font-weight: 600; color: var(--text); }
 .perm-table tbody tr:last-child td { border-bottom: none; }
 .perm-table tbody tr:hover { background: #fafafa; }
-.perm-check { color: var(--brand); font-size: 15px; }
-.perm-cross { color: #d1d5db; font-size: 15px; }
+.perm-check   { color: var(--brand); font-size: 15px; }
+.perm-cross   { color: #d1d5db; font-size: 15px; }
 .perm-partial { color: var(--accent2); font-size: 13px; font-weight: 700; }
 .perm-section-row td {
   background: var(--brand-xlight); font-size: 11px; font-weight: 700;
@@ -339,7 +338,6 @@
   padding: 8px 14px !important; text-align: left !important;
 }
 
-/* ── Invite section ── */
 .invite-link-box {
   display: flex; align-items: center; gap: 10px;
   background: #f3f6f4; border: 1.5px solid var(--border);
@@ -356,13 +354,58 @@
   white-space: nowrap; display: flex; align-items: center; gap: 6px;
 }
 .btn-copy-link:hover { background: var(--brand-light); }
+
+/* ════ BILLING PLAN CARDS ════ */
+.billing-plan-card {
+  border: 1.5px solid var(--border); border-radius: 16px;
+  padding: 24px 20px; background: #fafafa; position: relative;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  display: flex; flex-direction: column;
+}
+.billing-plan-card:hover { border-color: var(--brand); box-shadow: 0 4px 16px rgba(13,110,79,.1); }
+.billing-plan-card.featured {
+  border-color: var(--brand); background: var(--brand-xlight);
+  box-shadow: 0 4px 24px rgba(13,110,79,.15);
+}
+.bpc-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--accent2); color: #fff; font-size: 10px; font-weight: 700;
+  padding: 3px 12px; border-radius: 20px; white-space: nowrap;
+}
+.bpc-name {
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+  color: var(--text); margin-bottom: 6px;
+}
+.bpc-price {
+  font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 700;
+  color: var(--brand); margin-bottom: 16px;
+}
+.bpc-price span { font-size: 13px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; }
+.bpc-features { list-style: none; padding: 0; margin: 0 0 20px; flex: 1; }
+.bpc-features li {
+  font-size: 12.5px; color: var(--text); padding: 5px 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.bpc-features li i { font-size: 11px; color: var(--brand); flex-shrink: 0; }
+.bpc-btn {
+  width: 100%; background: var(--brand); color: #fff; border: none;
+  border-radius: 11px; padding: 11px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: background .15s, transform .1s;
+}
+.bpc-btn:hover { background: var(--brand-light); transform: translateY(-1px); }
+@media(max-width:640px) {
+  div[style*="grid-template-columns:repeat(3,1fr)"] { grid-template-columns: 1fr !important; }
+}
 {% endblock %}
 
 {% block content %}
 <div class="st-shell">
 
   <!-- Header -->
-  <h1 class="st-page-title"><i class="fas fa-cog me-2" style="color:var(--brand);font-size:20px;"></i>Settings</h1>
+  <h1 class="st-page-title">
+    <i class="fas fa-cog me-2" style="color:var(--brand);font-size:20px;"></i>Settings
+  </h1>
   <p class="st-page-sub">Manage your chama preferences, roles, notifications, and account.</p>
 
   <!-- Tab nav -->
@@ -375,17 +418,15 @@
     </button>
     <button class="st-tab" onclick="switchTab('notifications')" id="tab-notifications">
       <i class="fas fa-bell"></i> Notifications
-      <span class="tab-badge">NEXT</span>
     </button>
     <button class="st-tab" onclick="switchTab('profile')" id="tab-profile">
       <i class="fas fa-user"></i> Profile
-      <span class="tab-badge">NEXT</span>
     </button>
     <button class="st-tab" onclick="switchTab('billing')" id="tab-billing">
       <i class="fas fa-credit-card"></i> Billing
-      <span class="tab-badge">NEXT</span>
     </button>
   </div>
+
 
   <!-- ════════════════════════════════════
        TAB 1 — CHAMA SETTINGS
@@ -406,7 +447,8 @@
           </div>
           <div class="st-field">
             <label class="st-label">Description</label>
-            <textarea name="description" class="st-textarea st-input" placeholder="What is this chama about?">{{ chama.description }}</textarea>
+            <textarea name="description" class="st-textarea st-input"
+              placeholder="What is this chama about?">{{ chama.description }}</textarea>
             <div class="st-hint">Shown to new members on the invite page.</div>
           </div>
           <div class="st-grid-2">
@@ -416,19 +458,27 @@
                 <input type="text" class="st-input" value="{{ chama.id }}" readonly
                   style="font-family:'DM Mono',monospace;font-size:13px;background:#f3f4f6;color:var(--muted);">
                 <button type="button" class="btn-cancel-edit" style="white-space:nowrap;padding:10px 14px;"
-                  onclick="copyText('{{ chama.id }}',event)"><i class="fas fa-copy"></i></button>
+                  onclick="copyText('{{ chama.id }}',event)">
+                  <i class="fas fa-copy"></i>
+                </button>
               </div>
             </div>
             <div class="st-field mb-0">
               <label class="st-label">Status</label>
-              <span class="info-chip mt-1 d-inline-flex"><i class="fas fa-circle" style="font-size:8px;"></i> Active</span>
+              <span class="info-chip mt-1 d-inline-flex">
+                <i class="fas fa-circle" style="font-size:8px;"></i> Active
+              </span>
               <div class="st-hint">Since {{ chama.created_at|date:"M d, Y" }}</div>
             </div>
           </div>
         </div>
         <div class="st-save-bar">
-          <span class="st-save-info"><i class="fas fa-clock"></i> Last updated {{ chama.updated_at|date:"M d, Y" }}</span>
-          <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Identity</button>
+          <span class="st-save-info">
+            <i class="fas fa-clock"></i> Last updated {{ chama.updated_at|date:"M d, Y" }}
+          </span>
+          <button type="submit" class="btn-save">
+            <i class="fas fa-floppy-disk"></i> Save Identity
+          </button>
         </div>
       </div>
     </form>
@@ -445,26 +495,42 @@
           <div class="st-field">
             <label class="st-label">Regular Meeting Day</label>
             <div class="day-pills">
-              
-              <label class="day-pill {% if chama.meeting_day == 'Monday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Monday" {% if chama.meeting_day == 'Monday' %}checked{% endif %}>Mon</label>
-              <label class="day-pill {% if chama.meeting_day == 'Tuesday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Tuesday" {% if chama.meeting_day == 'Tuesday' %}checked{% endif %}>Tue</label>
-              <label class="day-pill {% if chama.meeting_day == 'Wednesday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Wednesday" {% if chama.meeting_day == 'Wednesday' %}checked{% endif %}>Wed</label>
-              <label class="day-pill {% if chama.meeting_day == 'Thursday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Thursday" {% if chama.meeting_day == 'Thursday' %}checked{% endif %}>Thu</label>
-              <label class="day-pill {% if chama.meeting_day == 'Friday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Friday" {% if chama.meeting_day == 'Friday' %}checked{% endif %}>Fri</label>
-              <label class="day-pill {% if chama.meeting_day == 'Saturday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Saturday" {% if chama.meeting_day == 'Saturday' %}checked{% endif %}>Sat</label>
-              <label class="day-pill {% if chama.meeting_day == 'Sunday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Sunday" {% if chama.meeting_day == 'Sunday' %}checked{% endif %}>Sun</label>
+              <label class="day-pill {% if chama.meeting_day == 'Monday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Monday" {% if chama.meeting_day == 'Monday' %}checked{% endif %}>Mon
+              </label>
+              <label class="day-pill {% if chama.meeting_day == 'Tuesday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Tuesday" {% if chama.meeting_day == 'Tuesday' %}checked{% endif %}>Tue
+              </label>
+              <label class="day-pill {% if chama.meeting_day == 'Wednesday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Wednesday" {% if chama.meeting_day == 'Wednesday' %}checked{% endif %}>Wed
+              </label>
+              <label class="day-pill {% if chama.meeting_day == 'Thursday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Thursday" {% if chama.meeting_day == 'Thursday' %}checked{% endif %}>Thu
+              </label>
+              <label class="day-pill {% if chama.meeting_day == 'Friday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Friday" {% if chama.meeting_day == 'Friday' %}checked{% endif %}>Fri
+              </label>
+              <label class="day-pill {% if chama.meeting_day == 'Saturday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Saturday" {% if chama.meeting_day == 'Saturday' %}checked{% endif %}>Sat
+              </label>
+              <label class="day-pill {% if chama.meeting_day == 'Sunday' %}selected{% endif %}" onclick="selectDay(this)">
+                <input type="radio" name="meeting_day" value="Sunday" {% if chama.meeting_day == 'Sunday' %}checked{% endif %}>Sun
+              </label>
             </div>
           </div>
           <div class="st-grid-3">
             <div class="st-field">
               <label class="st-label">Contribution Amount</label>
-              <input type="number" name="contribution_amount" class="st-input" value="{{ chama.contribution_amount }}" placeholder="e.g. 5000" min="0">
+              <input type="number" name="contribution_amount" class="st-input"
+                value="{{ chama.contribution_amount }}" placeholder="e.g. 5000" min="0">
             </div>
             <div class="st-field">
               <label class="st-label">Due Day of Month</label>
               <select name="contribution_day" class="st-select st-input">
                 {% for day in contribution_days %}
-                  <option value="{{ day }}" {% if chama.contribution_day == day %}selected{% endif %}>{{ day }}{% if day == 1 %}st{% elif day == 2 %}nd{% elif day == 3 %}rd{% else %}th{% endif %}</option>
+                  <option value="{{ day }}" {% if chama.contribution_day == day %}selected{% endif %}>
+                    {{ day }}{% if day == 1 %}st{% elif day == 2 %}nd{% elif day == 3 %}rd{% else %}th{% endif %}
+                  </option>
                 {% endfor %}
               </select>
             </div>
@@ -472,7 +538,8 @@
               <label class="st-label">Max Members</label>
               <div class="st-stepper">
                 <button type="button" onclick="stepVal('s_maxmembers',-1)"><i class="fas fa-minus"></i></button>
-                <input type="number" name="max_members" id="s_maxmembers" value="{{ chama.max_members|default:10 }}" min="2" max="500">
+                <input type="number" name="max_members" id="s_maxmembers"
+                  value="{{ chama.max_members|default:10 }}" min="2" max="500">
                 <button type="button" onclick="stepVal('s_maxmembers',1)"><i class="fas fa-plus"></i></button>
               </div>
             </div>
@@ -482,7 +549,8 @@
               <label class="st-label">Late Penalty (%)</label>
               <div class="st-stepper">
                 <button type="button" onclick="stepVal('s_penalty',-0.5)"><i class="fas fa-minus"></i></button>
-                <input type="number" name="late_penalty" id="s_penalty" value="{{ chama.late_penalty|default:5 }}" min="0" max="100" step="0.5">
+                <input type="number" name="late_penalty" id="s_penalty"
+                  value="{{ chama.late_penalty|default:5 }}" min="0" max="100" step="0.5">
                 <button type="button" onclick="stepVal('s_penalty',0.5)"><i class="fas fa-plus"></i></button>
               </div>
             </div>
@@ -490,14 +558,17 @@
               <label class="st-label">Loan Interest Rate (%)</label>
               <div class="st-stepper">
                 <button type="button" onclick="stepVal('s_interest',-0.5)"><i class="fas fa-minus"></i></button>
-                <input type="number" name="loan_interest" id="s_interest" value="{{ chama.loan_interest|default:10 }}" min="0" max="100" step="0.5">
+                <input type="number" name="loan_interest" id="s_interest"
+                  value="{{ chama.loan_interest|default:10 }}" min="0" max="100" step="0.5">
                 <button type="button" onclick="stepVal('s_interest',0.5)"><i class="fas fa-plus"></i></button>
               </div>
             </div>
           </div>
         </div>
         <div class="st-save-bar">
-          <span class="st-save-info"><i class="fas fa-info-circle"></i> Changes apply from next billing cycle.</span>
+          <span class="st-save-info">
+            <i class="fas fa-info-circle"></i> Changes apply from next billing cycle.
+          </span>
           <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Schedule</button>
         </div>
       </div>
@@ -513,27 +584,36 @@
         </div>
         <div class="st-card-body">
           <div class="currency-tiles">
-            <label class="currency-tile {% if chama.currency == 'KES' or not chama.currency %}selected{% endif %}" onclick="selectCurrency(this,'KES')">
+            <label class="currency-tile {% if chama.currency == 'KES' or not chama.currency %}selected{% endif %}"
+              onclick="selectCurrency(this,'KES')">
               <input type="radio" name="currency" value="KES" {% if chama.currency == 'KES' or not chama.currency %}checked{% endif %}>
               <div class="ct-code">KES</div><div class="ct-name">Kenyan Shilling</div>
             </label>
-            <label class="currency-tile {% if chama.currency == 'UGX' %}selected{% endif %}" onclick="selectCurrency(this,'UGX')">
+            <label class="currency-tile {% if chama.currency == 'UGX' %}selected{% endif %}"
+              onclick="selectCurrency(this,'UGX')">
               <input type="radio" name="currency" value="UGX" {% if chama.currency == 'UGX' %}checked{% endif %}>
               <div class="ct-code">UGX</div><div class="ct-name">Ugandan Shilling</div>
             </label>
-            <label class="currency-tile {% if chama.currency == 'TZS' %}selected{% endif %}" onclick="selectCurrency(this,'TZS')">
+            <label class="currency-tile {% if chama.currency == 'TZS' %}selected{% endif %}"
+              onclick="selectCurrency(this,'TZS')">
               <input type="radio" name="currency" value="TZS" {% if chama.currency == 'TZS' %}checked{% endif %}>
               <div class="ct-code">TZS</div><div class="ct-name">Tanzanian Shilling</div>
             </label>
-            <label class="currency-tile {% if chama.currency == 'USD' %}selected{% endif %}" onclick="selectCurrency(this,'USD')">
+            <label class="currency-tile {% if chama.currency == 'USD' %}selected{% endif %}"
+              onclick="selectCurrency(this,'USD')">
               <input type="radio" name="currency" value="USD" {% if chama.currency == 'USD' %}checked{% endif %}>
               <div class="ct-code">USD</div><div class="ct-name">US Dollar</div>
             </label>
           </div>
-          <div class="st-hint mt-3"><i class="fas fa-triangle-exclamation" style="color:var(--accent2);"></i> Changing currency does not convert existing balances.</div>
+          <div class="st-hint mt-3">
+            <i class="fas fa-triangle-exclamation" style="color:var(--accent2);"></i>
+            Changing currency does not convert existing balances.
+          </div>
         </div>
         <div class="st-save-bar">
-          <span class="st-save-info"><i class="fas fa-globe"></i> Current: <strong>{{ chama.currency|default:"KES" }}</strong></span>
+          <span class="st-save-info">
+            <i class="fas fa-globe"></i> Current: <strong>{{ chama.currency|default:"KES" }}</strong>
+          </span>
           <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Currency</button>
         </div>
       </div>
@@ -550,21 +630,27 @@
           <div class="da-title">Transfer Admin</div>
           <div class="da-sub">Hand over admin privileges to another member.</div>
         </div>
-        <button type="button" class="btn-danger" onclick="openModal('modal-transfer')"><i class="fas fa-right-left me-1"></i> Transfer</button>
+        <button type="button" class="btn-danger" onclick="openModal('modal-transfer')">
+          <i class="fas fa-right-left me-1"></i> Transfer
+        </button>
       </div>
       <div class="danger-action">
         <div class="danger-action-info">
           <div class="da-title">Archive Chama</div>
           <div class="da-sub">Freeze all activity. Data is preserved but members can't transact.</div>
         </div>
-        <button type="button" class="btn-danger" onclick="openModal('modal-archive')"><i class="fas fa-box-archive me-1"></i> Archive</button>
+        <button type="button" class="btn-danger" onclick="openModal('modal-archive')">
+          <i class="fas fa-box-archive me-1"></i> Archive
+        </button>
       </div>
       <div class="danger-action">
         <div class="danger-action-info">
           <div class="da-title">Delete Chama</div>
           <div class="da-sub">Permanently delete this chama and all data. Cannot be undone.</div>
         </div>
-        <button type="button" class="btn-danger" onclick="openModal('modal-delete')"><i class="fas fa-trash me-1"></i> Delete</button>
+        <button type="button" class="btn-danger" onclick="openModal('modal-delete')">
+          <i class="fas fa-trash me-1"></i> Delete
+        </button>
       </div>
     </div>
   </div><!-- /panel-chama -->
@@ -575,7 +661,6 @@
   ════════════════════════════════════ -->
   <div class="st-panel active" id="panel-roles">
 
-    <!-- Role legend -->
     <div class="st-card">
       <div class="st-card-header">
         <div class="st-card-icon info"><i class="fas fa-shield-halved"></i></div>
@@ -630,7 +715,6 @@
       </div>
     </div>
 
-    <!-- Member roles table -->
     <div class="st-card">
       <div class="st-card-header">
         <div class="st-card-icon"><i class="fas fa-users-gear"></i></div>
@@ -639,20 +723,19 @@
           <p>Assign or change roles for each member of this chama.</p>
         </div>
         <div class="ms-auto">
-          <button type="button" class="btn-save" style="padding:8px 16px;font-size:13px;" onclick="openModal('modal-invite')">
+          <button type="button" class="btn-save" style="padding:8px 16px;font-size:13px;"
+            onclick="openModal('modal-invite')">
             <i class="fas fa-user-plus"></i> Invite Member
           </button>
         </div>
       </div>
       <div class="st-card-body" style="padding:0;">
         <div style="padding:0 24px;">
-
           {% for membership in members %}
           <form method="post" action="{% url 'chama_settings' chama.id %}" class="role-member-row">
             {% csrf_token %}
             <input type="hidden" name="section" value="role">
             <input type="hidden" name="member_id" value="{{ membership.user.id }}">
-
             <div class="rm-avatar">
               {{ membership.user.first_name.0|upper }}{{ membership.user.last_name.0|upper }}
             </div>
@@ -660,16 +743,13 @@
               <div class="rm-name">
                 {{ membership.user.get_full_name|default:membership.user.username }}
                 {% if membership.user == request.user %}
-                  <span style="font-size:10px;background:var(--brand-xlight);color:var(--brand);padding:2px 7px;border-radius:10px;font-weight:700;margin-left:4px;">You</span>
+                  <span style="font-size:10px;background:var(--brand-xlight);color:var(--brand);
+                    padding:2px 7px;border-radius:10px;font-weight:700;margin-left:4px;">You</span>
                 {% endif %}
               </div>
               <div class="rm-email">{{ membership.user.email }}</div>
             </div>
-
-            <span class="rm-joined d-none d-md-block">
-              Joined {{ membership.joined_at|date:"M Y" }}
-            </span>
-
+            <span class="rm-joined d-none d-md-block">Joined {{ membership.joined_at|date:"M Y" }}</span>
             <span class="role-badge {{ membership.get_role_display|lower }}">
               {% if membership.role == 'admin' %}<i class="fas fa-crown"></i>
               {% elif membership.role == 'treasurer' %}<i class="fas fa-coins"></i>
@@ -677,7 +757,6 @@
               {% else %}<i class="fas fa-user"></i>{% endif %}
               {{ membership.get_role_display }}
             </span>
-
             {% if membership.user != request.user %}
             <select name="role" class="role-select" onchange="markChanged(this)">
               <option value="admin"     {% if membership.role == 'admin' %}selected{% endif %}>Admin</option>
@@ -686,13 +765,13 @@
               <option value="member"    {% if membership.role == 'member' %}selected{% endif %}>Member</option>
             </select>
             <button type="submit" class="btn-rm-save"><i class="fas fa-check"></i> Save</button>
-            <button type="button" class="btn-rm-remove" onclick="confirmRemove('{{ membership.user.get_full_name|default:membership.user.username }}', '{{ membership.user.id }}')">
+            <button type="button" class="btn-rm-remove"
+              onclick="confirmRemove('{{ membership.user.get_full_name|default:membership.user.username }}','{{ membership.user.id }}')">
               <i class="fas fa-user-minus"></i>
             </button>
             {% else %}
             <span style="font-size:12px;color:var(--muted);font-style:italic;">Cannot edit own role</span>
             {% endif %}
-
           </form>
           {% empty %}
           <div class="text-center py-5" style="color:var(--muted);">
@@ -701,12 +780,10 @@
             <div style="font-size:13px;">Invite members using the button above.</div>
           </div>
           {% endfor %}
-
         </div>
       </div>
     </div>
 
-    <!-- Permissions matrix -->
     <div class="st-card">
       <div class="st-card-header">
         <div class="st-card-icon" style="background:#7c3aed;"><i class="fas fa-table-cells"></i></div>
@@ -731,21 +808,17 @@
             <tr><td>View all contributions</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><span class="perm-partial">Own</span></td></tr>
             <tr><td>Record contributions</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
             <tr><td>Edit / delete contributions</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
-
             <tr class="perm-section-row"><td colspan="5">Loans</td></tr>
             <tr><td>Request a loan</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td></tr>
             <tr><td>Approve / reject loans</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
             <tr><td>View all loans</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><span class="perm-partial">Own</span></td></tr>
-
             <tr class="perm-section-row"><td colspan="5">Fines</td></tr>
             <tr><td>Issue fines</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
             <tr><td>Waive fines</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
-
             <tr class="perm-section-row"><td colspan="5">Members</td></tr>
             <tr><td>Invite members</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
             <tr><td>Remove members</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
             <tr><td>Change member roles</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
-
             <tr class="perm-section-row"><td colspan="5">Reports & Settings</td></tr>
             <tr><td>View reports</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
             <tr><td>Export data</td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-check perm-check"></i></td><td><i class="fas fa-xmark perm-cross"></i></td><td><i class="fas fa-xmark perm-cross"></i></td></tr>
@@ -756,7 +829,6 @@
       </div>
     </div>
 
-    <!-- Invite link -->
     <div class="st-card">
       <div class="st-card-header">
         <div class="st-card-icon"><i class="fas fa-link"></i></div>
@@ -768,7 +840,8 @@
       <div class="st-card-body">
         <div class="invite-link-box">
           <i class="fas fa-link" style="color:var(--muted);font-size:13px;flex-shrink:0;"></i>
-          <input type="text" id="inviteLink" value="https://chamapro.app/join/{{ chama.invite_code|default:chama.id }}" readonly>
+          <input type="text" id="inviteLink"
+            value="https://chamapro.app/join/{{ chama.invite_code|default:chama.id }}" readonly>
           <button type="button" class="btn-copy-link" onclick="copyInviteLink()">
             <i class="fas fa-copy" id="copyIcon"></i> <span id="copyText">Copy</span>
           </button>
@@ -783,48 +856,470 @@
   </div><!-- /panel-roles -->
 
 
-  <!-- ════ Placeholder tabs ════ -->
+  <!-- ════════════════════════════════════
+       TAB 3 — NOTIFICATIONS
+  ════════════════════════════════════ -->
   <div class="st-panel" id="panel-notifications">
-    <div class="st-card">
-      <div class="st-card-header">
-        <div class="st-card-icon"><i class="fas fa-bell"></i></div>
-        <div><h6>Notification Settings</h6><p>Coming in the next step.</p></div>
-      </div>
-      <div class="st-card-body text-center py-5" style="color:var(--muted);">
-        <i class="fas fa-bell" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
-        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Notifications</div>
-        <div style="font-size:13px;">This tab is being built next.</div>
-      </div>
-    </div>
-  </div>
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="notifications">
 
+      <!-- Contribution Alerts -->
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon"><i class="fas fa-coins"></i></div>
+          <div><h6>Contribution Alerts</h6><p>Get notified about payments, dues, and reminders.</p></div>
+        </div>
+        <div class="st-card-body">
+          {% include "partials/_notif_row.html" with name="notif_contribution_due" label="Contribution Due Reminder" sub="Remind members X days before the due date." checked=notif_settings.notif_contribution_due %}
+          {% include "partials/_notif_row.html" with name="notif_contribution_received" label="Contribution Received" sub="Alert when a member records a payment." checked=notif_settings.notif_contribution_received %}
+          {% include "partials/_notif_row.html" with name="notif_contribution_overdue" label="Overdue Contribution" sub="Alert when a member misses the due date." checked=notif_settings.notif_contribution_overdue %}
+          {% include "partials/_notif_row.html" with name="notif_fine_issued" label="Fine Issued" sub="Notify member and admins when a fine is applied." checked=notif_settings.notif_fine_issued %}
+
+          <div class="st-field mt-4 mb-0">
+            <label class="st-label">Reminder — Days Before Due</label>
+            <div class="st-stepper" style="max-width:160px;">
+              <button type="button" onclick="stepVal('s_notif_days',-1)"><i class="fas fa-minus"></i></button>
+              <input type="number" id="s_notif_days" name="reminder_days_before"
+                value="{{ notif_settings.reminder_days_before|default:3 }}" min="1" max="14">
+              <button type="button" onclick="stepVal('s_notif_days',1)"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="st-hint">Members receive a reminder this many days before contributions are due.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loan & Withdrawal Alerts -->
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon info"><i class="fas fa-hand-holding-dollar"></i></div>
+          <div><h6>Loan & Withdrawal Alerts</h6><p>Notifications for loan requests, approvals, and rejections.</p></div>
+        </div>
+        <div class="st-card-body">
+          {% include "partials/_notif_row.html" with name="notif_loan_requested" label="Loan Requested" sub="Alert admins/treasurer when a member requests a loan." checked=notif_settings.notif_loan_requested %}
+          {% include "partials/_notif_row.html" with name="notif_loan_approved" label="Loan Approved" sub="Notify member when their loan is approved." checked=notif_settings.notif_loan_approved %}
+          {% include "partials/_notif_row.html" with name="notif_loan_rejected" label="Loan Rejected" sub="Notify member when their loan is rejected." checked=notif_settings.notif_loan_rejected %}
+          {% include "partials/_notif_row.html" with name="notif_loan_repayment" label="Loan Repayment Received" sub="Alert treasurer when a loan repayment is recorded." checked=notif_settings.notif_loan_repayment %}
+          {% include "partials/_notif_row.html" with name="notif_withdrawal_requested" label="Withdrawal Requested" sub="Alert admin when a withdrawal is submitted." checked=notif_settings.notif_withdrawal_requested %}
+        </div>
+      </div>
+
+      <!-- Member Activity -->
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon" style="background:#7c3aed;"><i class="fas fa-users"></i></div>
+          <div><h6>Member Activity</h6><p>Track joins, exits, and role changes.</p></div>
+        </div>
+        <div class="st-card-body">
+          {% include "partials/_notif_row.html" with name="notif_member_joined" label="Member Joined" sub="Notify admins when a new member joins." checked=notif_settings.notif_member_joined %}
+          {% include "partials/_notif_row.html" with name="notif_member_left" label="Member Left / Removed" sub="Notify admins when a member leaves or is removed." checked=notif_settings.notif_member_left %}
+          {% include "partials/_notif_row.html" with name="notif_role_changed" label="Role Changed" sub="Notify member when their role is updated." checked=notif_settings.notif_role_changed %}
+        </div>
+      </div>
+
+      <!-- Delivery Channels -->
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon warning"><i class="fas fa-paper-plane"></i></div>
+          <div><h6>Delivery Channels</h6><p>Choose how notifications are sent.</p></div>
+        </div>
+        <div class="st-card-body">
+          {% include "partials/_notif_row.html" with name="channel_in_app" label="In-App Notifications" sub="Show alerts inside ChamaPro (bell icon)." checked=notif_settings.channel_in_app %}
+          {% include "partials/_notif_row.html" with name="channel_email" label="Email Notifications" sub="Send an email to each affected member." checked=notif_settings.channel_email %}
+          {% include "partials/_notif_row.html" with name="channel_sms" label="SMS via M-Pesa / Safaricom" sub="Send SMS to member's registered phone number." checked=notif_settings.channel_sms %}
+
+          <div class="st-grid-2 mt-4">
+            <div class="st-field mb-0">
+              <label class="st-label">Notify From Email</label>
+              <input type="email" name="notif_from_email" class="st-input"
+                value="{{ notif_settings.from_email|default:'noreply@chamapro.app' }}">
+              <div class="st-hint">Replies will go to this address.</div>
+            </div>
+            <div class="st-field mb-0">
+              <label class="st-label">SMS Sender Name</label>
+              <input type="text" name="notif_sms_sender" class="st-input" maxlength="11"
+                value="{{ notif_settings.sms_sender|default:chama.name|truncatechars:11 }}"
+                placeholder="ChamaPro">
+              <div class="st-hint">Max 11 characters. Used as SMS sender ID.</div>
+            </div>
+          </div>
+        </div>
+        <div class="st-save-bar">
+          <span class="st-save-info">
+            <i class="fas fa-clock"></i>
+            {% if notif_settings.updated_at %}
+              Last updated {{ notif_settings.updated_at|date:"M d, Y" }}
+            {% else %}
+              Not yet saved
+            {% endif %}
+          </span>
+          <button type="submit" class="btn-save">
+            <i class="fas fa-floppy-disk"></i> Save Notifications
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div><!-- /panel-notifications -->
+
+
+  <!-- ════════════════════════════════════
+       TAB 4 — PROFILE
+  ════════════════════════════════════ -->
   <div class="st-panel" id="panel-profile">
-    <div class="st-card">
-      <div class="st-card-header">
-        <div class="st-card-icon"><i class="fas fa-user"></i></div>
-        <div><h6>Profile Settings</h6><p>Coming soon.</p></div>
-      </div>
-      <div class="st-card-body text-center py-5" style="color:var(--muted);">
-        <i class="fas fa-user" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
-        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Profile</div>
-        <div style="font-size:13px;">Coming soon.</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="st-panel" id="panel-billing">
-    <div class="st-card">
-      <div class="st-card-header">
-        <div class="st-card-icon warning"><i class="fas fa-credit-card"></i></div>
-        <div><h6>Billing & Plan</h6><p>Coming soon.</p></div>
+    <form method="post" action="{% url 'chama_settings' chama.id %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="profile">
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon"><i class="fas fa-id-card"></i></div>
+          <div><h6>Personal Details</h6><p>Update your name and contact information.</p></div>
+        </div>
+        <div class="st-card-body">
+
+          <!-- Avatar row -->
+          <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap;">
+            <div id="avatarPreview" style="
+              width:72px;height:72px;border-radius:50%;flex-shrink:0;
+              background:linear-gradient(135deg,var(--brand),#10b981);
+              color:#fff;display:flex;align-items:center;justify-content:center;
+              font-size:26px;font-weight:800;font-family:'Syne',sans-serif;
+              {% if request.user.avatar %}
+                background-image:url({{ request.user.avatar.url }});
+                background-size:cover;background-position:center;
+              {% endif %}
+            ">
+              {% if not request.user.avatar %}
+                {{ request.user.first_name.0|upper }}{{ request.user.last_name.0|upper }}
+              {% endif %}
+            </div>
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:4px;">
+                {{ request.user.get_full_name|default:request.user.username }}
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+                {{ request.user.email }}
+              </div>
+              <label class="btn-cancel-edit" style="cursor:pointer;font-size:12.5px;padding:8px 14px;">
+                <i class="fas fa-camera me-1"></i> Change Photo
+                <input type="file" name="avatar" accept="image/*" style="display:none;"
+                  onchange="previewAvatar(this)">
+              </label>
+            </div>
+          </div>
+
+          <div class="st-grid-2">
+            <div class="st-field">
+              <label class="st-label">First Name <span>*</span></label>
+              <input type="text" name="first_name" class="st-input"
+                value="{{ request.user.first_name }}" required>
+            </div>
+            <div class="st-field">
+              <label class="st-label">Last Name <span>*</span></label>
+              <input type="text" name="last_name" class="st-input"
+                value="{{ request.user.last_name }}" required>
+            </div>
+          </div>
+
+          <div class="st-grid-2">
+            <div class="st-field mb-0">
+              <label class="st-label">Email Address <span>*</span></label>
+              <input type="email" name="email" class="st-input"
+                value="{{ request.user.email }}" required>
+            </div>
+            <div class="st-field mb-0">
+              <label class="st-label">Phone Number</label>
+              <input type="tel" name="phone" class="st-input"
+                value="{{ request.user.phone|default:'' }}"
+                placeholder="+254 7XX XXX XXX">
+              <div class="st-hint">Used for SMS notifications.</div>
+            </div>
+          </div>
+        </div>
+        <div class="st-save-bar">
+          <span class="st-save-info">
+            <i class="fas fa-user-check"></i> Member since {{ request.user.date_joined|date:"M d, Y" }}
+          </span>
+          <button type="submit" class="btn-save"><i class="fas fa-floppy-disk"></i> Save Profile</button>
+        </div>
       </div>
-      <div class="st-card-body text-center py-5" style="color:var(--muted);">
-        <i class="fas fa-credit-card" style="font-size:40px;opacity:.2;display:block;margin-bottom:12px;"></i>
-        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Billing</div>
-        <div style="font-size:13px;">Coming soon.</div>
+    </form>
+
+    <!-- Change Password -->
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="password">
+      <div class="st-card">
+        <div class="st-card-header">
+          <div class="st-card-icon warning"><i class="fas fa-lock"></i></div>
+          <div><h6>Change Password</h6><p>Keep your account secure with a strong password.</p></div>
+        </div>
+        <div class="st-card-body">
+          <div class="st-field">
+            <label class="st-label">Current Password <span>*</span></label>
+            <div style="position:relative;">
+              <input type="password" name="current_password" id="pwd_current" class="st-input"
+                style="padding-right:44px;" required>
+              <button type="button" class="pwd-eye" onclick="togglePwd('pwd_current',this)">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="st-grid-2">
+            <div class="st-field mb-0">
+              <label class="st-label">New Password <span>*</span></label>
+              <div style="position:relative;">
+                <input type="password" name="new_password" id="pwd_new" class="st-input"
+                  style="padding-right:44px;" required>
+                <button type="button" class="pwd-eye" onclick="togglePwd('pwd_new',this)">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="st-field mb-0">
+              <label class="st-label">Confirm New Password <span>*</span></label>
+              <div style="position:relative;">
+                <input type="password" name="confirm_password" id="pwd_confirm" class="st-input"
+                  style="padding-right:44px;" oninput="checkPwdMatch()" required>
+                <button type="button" class="pwd-eye" onclick="togglePwd('pwd_confirm',this)">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div id="pwd_match_hint" class="st-hint"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div style="font-size:11.5px;font-weight:700;color:var(--muted);
+              text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">
+              Password Strength
+            </div>
+            <div style="height:5px;background:var(--border);border-radius:10px;overflow:hidden;">
+              <div id="pwd_strength_bar" style="height:100%;width:0%;background:var(--brand);
+                border-radius:10px;transition:width .3s,background .3s;"></div>
+            </div>
+            <div id="pwd_strength_label" class="st-hint mt-1"></div>
+          </div>
+        </div>
+        <div class="st-save-bar">
+          <span class="st-save-info">
+            <i class="fas fa-shield-halved"></i> Use 8+ characters with numbers and symbols.
+          </span>
+          <button type="submit" class="btn-save"><i class="fas fa-lock"></i> Update Password</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Danger: Leave Chama -->
+    <div class="danger-zone">
+      <div class="danger-zone-header">
+        <i class="fas fa-triangle-exclamation" style="color:var(--danger);"></i>
+        <h6>Danger Zone</h6>
+      </div>
+      <div class="danger-action">
+        <div class="danger-action-info">
+          <div class="da-title">Leave Chama</div>
+          <div class="da-sub">
+            Remove yourself from <strong>{{ chama.name }}</strong>. Your data will be retained.
+          </div>
+        </div>
+        <button type="button" class="btn-danger" onclick="openModal('modal-leave')">
+          <i class="fas fa-right-from-bracket me-1"></i> Leave
+        </button>
       </div>
     </div>
-  </div>
+
+  </div><!-- /panel-profile -->
+
+
+  <!-- ════════════════════════════════════
+       TAB 5 — BILLING
+  ════════════════════════════════════ -->
+  <div class="st-panel" id="panel-billing">
+
+    <!-- Current Plan -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon warning"><i class="fas fa-crown"></i></div>
+        <div>
+          <h6>Current Plan</h6>
+          <p>Your active subscription and usage for <strong>{{ chama.name }}</strong>.</p>
+        </div>
+      </div>
+      <div class="st-card-body">
+        <div style="display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;">
+
+          <!-- Plan badge -->
+          <div style="flex:1;min-width:200px;border:2px solid var(--brand);border-radius:14px;
+            padding:20px 22px;background:var(--brand-xlight);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <i class="fas fa-crown" style="color:var(--accent2);font-size:18px;"></i>
+              <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--brand);">
+                {% if billing %}{{ billing.plan_name|title }}{% else %}Free Plan{% endif %}
+              </span>
+            </div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+              {% if billing %}
+                KES {{ billing.amount }}/month &bull; Renews {{ billing.next_renewal|date:"M d, Y" }}
+              {% else %}
+                Limited to 10 members &bull; No SMS notifications
+              {% endif %}
+            </div>
+            {% if billing %}
+              <span class="info-chip"><i class="fas fa-circle" style="font-size:8px;"></i> Active</span>
+            {% else %}
+              <span style="display:inline-flex;align-items:center;gap:6px;background:#fef2f2;
+                color:var(--danger);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;">
+                <i class="fas fa-circle" style="font-size:8px;"></i> Free
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Usage stats -->
+          <div style="flex:2;min-width:200px;">
+            {% include "partials/_billing_usage.html" with label="Members" used=members.count limit=billing.member_limit|default:10 %}
+            {% include "partials/_billing_usage.html" with label="SMS Sent This Month" used=0 limit=billing.sms_limit|default:0 %}
+            {% include "partials/_billing_usage.html" with label="Data Storage" used=0 limit=billing.storage_limit_mb|default:50 unit="MB" %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upgrade Plans -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon" style="background:#7c3aed;"><i class="fas fa-rocket"></i></div>
+        <div><h6>Upgrade Your Plan</h6><p>Choose the plan that fits your chama's size and needs.</p></div>
+      </div>
+      <div class="st-card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+
+          <!-- Starter -->
+          <div class="billing-plan-card" id="plan-starter" onclick="selectPlan('starter')">
+            <div class="bpc-name">Starter</div>
+            <div class="bpc-price">KES 299<span>/mo</span></div>
+            <ul class="bpc-features">
+              <li><i class="fas fa-check"></i> Up to 20 members</li>
+              <li><i class="fas fa-check"></i> 100 SMS/month</li>
+              <li><i class="fas fa-check"></i> Email notifications</li>
+              <li><i class="fas fa-check"></i> Financial reports</li>
+              <li style="color:#d1d5db;"><i class="fas fa-xmark"></i> Loan management</li>
+              <li style="color:#d1d5db;"><i class="fas fa-xmark"></i> Investment tracking</li>
+            </ul>
+            <button type="button" class="bpc-btn"
+              onclick="openPayModal('Starter','299')">Choose Starter</button>
+          </div>
+
+          <!-- Growth -->
+          <div class="billing-plan-card featured" id="plan-growth" onclick="selectPlan('growth')">
+            <div class="bpc-badge">Most Popular</div>
+            <div class="bpc-name">Growth</div>
+            <div class="bpc-price">KES 699<span>/mo</span></div>
+            <ul class="bpc-features">
+              <li><i class="fas fa-check"></i> Up to 50 members</li>
+              <li><i class="fas fa-check"></i> 500 SMS/month</li>
+              <li><i class="fas fa-check"></i> Email + SMS notifications</li>
+              <li><i class="fas fa-check"></i> Full financial reports</li>
+              <li><i class="fas fa-check"></i> Loan management</li>
+              <li style="color:#d1d5db;"><i class="fas fa-xmark"></i> Investment tracking</li>
+            </ul>
+            <button type="button" class="bpc-btn"
+              onclick="openPayModal('Growth','699')">Choose Growth</button>
+          </div>
+
+          <!-- Pro -->
+          <div class="billing-plan-card" id="plan-pro" onclick="selectPlan('pro')">
+            <div class="bpc-name">Pro</div>
+            <div class="bpc-price">KES 1,499<span>/mo</span></div>
+            <ul class="bpc-features">
+              <li><i class="fas fa-check"></i> Unlimited members</li>
+              <li><i class="fas fa-check"></i> Unlimited SMS</li>
+              <li><i class="fas fa-check"></i> All notification channels</li>
+              <li><i class="fas fa-check"></i> Advanced reports + export</li>
+              <li><i class="fas fa-check"></i> Loan management</li>
+              <li><i class="fas fa-check"></i> Investment tracking</li>
+            </ul>
+            <button type="button" class="bpc-btn"
+              onclick="openPayModal('Pro','1499')">Choose Pro</button>
+          </div>
+
+        </div>
+        <div style="text-align:center;margin-top:16px;">
+          <span style="font-size:12px;color:var(--muted);">
+            <i class="fas fa-shield-halved" style="color:var(--brand);"></i>
+            All plans paid monthly via M-Pesa STK Push. Cancel anytime.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing History -->
+    <div class="st-card">
+      <div class="st-card-header">
+        <div class="st-card-icon info"><i class="fas fa-receipt"></i></div>
+        <div><h6>Billing History</h6><p>Past M-Pesa subscription payments.</p></div>
+      </div>
+      <div class="st-card-body" style="padding:0;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f9fafb;border-bottom:1px solid var(--border);">
+              <th style="padding:11px 20px;font-size:11px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.05em;color:var(--muted);text-align:left;">Date</th>
+              <th style="padding:11px 20px;font-size:11px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.05em;color:var(--muted);text-align:left;">Plan</th>
+              <th style="padding:11px 20px;font-size:11px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.05em;color:var(--muted);text-align:right;">Amount</th>
+              <th style="padding:11px 20px;font-size:11px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.05em;color:var(--muted);text-align:left;">M-Pesa Ref</th>
+              <th style="padding:11px 20px;font-size:11px;font-weight:700;text-transform:uppercase;
+                letter-spacing:.05em;color:var(--muted);text-align:center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for payment in billing_history %}
+            <tr style="border-bottom:1px solid var(--border);">
+              <td style="padding:13px 20px;font-size:13px;color:var(--text);">
+                {{ payment.created_at|date:"M d, Y" }}
+              </td>
+              <td style="padding:13px 20px;font-size:13px;font-weight:700;color:var(--text);">
+                {{ payment.plan_name|title }}
+              </td>
+              <td style="padding:13px 20px;font-size:13px;font-family:'DM Mono',monospace;
+                text-align:right;color:var(--brand);font-weight:700;">
+                KES {{ payment.amount|floatformat:0 }}
+              </td>
+              <td style="padding:13px 20px;font-size:12px;font-family:'DM Mono',monospace;color:var(--muted);">
+                {{ payment.mpesa_ref|default:"—" }}
+              </td>
+              <td style="padding:13px 20px;text-align:center;">
+                {% if payment.status == 'paid' %}
+                  <span style="background:#e6f5f0;color:var(--brand);border-radius:20px;
+                    padding:4px 12px;font-size:11px;font-weight:700;">Paid</span>
+                {% elif payment.status == 'pending' %}
+                  <span style="background:#fffbeb;color:var(--accent2);border-radius:20px;
+                    padding:4px 12px;font-size:11px;font-weight:700;">Pending</span>
+                {% else %}
+                  <span style="background:#fef2f2;color:var(--danger);border-radius:20px;
+                    padding:4px 12px;font-size:11px;font-weight:700;">Failed</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="padding:40px;text-align:center;color:var(--muted);">
+                <i class="fas fa-receipt" style="font-size:32px;opacity:.2;display:block;margin-bottom:10px;"></i>
+                <div style="font-weight:700;">No payments yet</div>
+                <div style="font-size:13px;">Your M-Pesa payment history will appear here.</div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /panel-billing -->
 
 </div><!-- /st-shell -->
 
@@ -832,7 +1327,9 @@
 <!-- ════ MODAL: Invite Member ════ -->
 <div class="confirm-overlay" id="modal-invite">
   <div class="confirm-box">
-    <div class="cb-icon" style="background:var(--brand-xlight);color:var(--brand);"><i class="fas fa-user-plus"></i></div>
+    <div class="cb-icon" style="background:var(--brand-xlight);color:var(--brand);">
+      <i class="fas fa-user-plus"></i>
+    </div>
     <h5>Invite a Member</h5>
     <p>Enter their email address. They'll receive an invite link to join <strong>{{ chama.name }}</strong>.</p>
     <form method="post" action="{% url 'chama_settings' chama.id %}">
@@ -854,14 +1351,17 @@
   <div class="confirm-box">
     <div class="cb-icon"><i class="fas fa-user-minus"></i></div>
     <h5>Remove Member</h5>
-    <p>Are you sure you want to remove <strong id="removeName"></strong> from this chama? Their data will be retained but they'll lose access.</p>
+    <p>Are you sure you want to remove <strong id="removeName"></strong> from this chama?
+      Their data will be retained but they'll lose access.</p>
     <form method="post" action="{% url 'chama_settings' chama.id %}">
       {% csrf_token %}
       <input type="hidden" name="section" value="remove_member">
       <input type="hidden" name="member_id" id="removeId">
       <div class="confirm-actions">
         <button type="button" class="btn-confirm-cancel" onclick="closeModal('modal-remove')">Cancel</button>
-        <button type="submit" class="btn-confirm-danger"><i class="fas fa-user-minus me-1"></i> Remove</button>
+        <button type="submit" class="btn-confirm-danger">
+          <i class="fas fa-user-minus me-1"></i> Remove
+        </button>
       </div>
     </form>
   </div>
@@ -870,7 +1370,9 @@
 <!-- ════ MODAL: Transfer Admin ════ -->
 <div class="confirm-overlay" id="modal-transfer">
   <div class="confirm-box">
-    <div class="cb-icon" style="background:#eff6ff;color:var(--info);"><i class="fas fa-right-left"></i></div>
+    <div class="cb-icon" style="background:#eff6ff;color:var(--info);">
+      <i class="fas fa-right-left"></i>
+    </div>
     <h5>Transfer Admin</h5>
     <p>Select the member to hand admin privileges to. You will become a regular Member.</p>
     <select class="cb-input">
@@ -883,7 +1385,9 @@
     </select>
     <div class="confirm-actions">
       <button class="btn-confirm-cancel" onclick="closeModal('modal-transfer')">Cancel</button>
-      <button class="btn-confirm-danger" style="background:var(--info);border:none;"><i class="fas fa-right-left me-1"></i> Transfer</button>
+      <button class="btn-confirm-danger" style="background:var(--info);border:none;">
+        <i class="fas fa-right-left me-1"></i> Transfer
+      </button>
     </div>
   </div>
 </div>
@@ -891,9 +1395,12 @@
 <!-- ════ MODAL: Archive ════ -->
 <div class="confirm-overlay" id="modal-archive">
   <div class="confirm-box">
-    <div class="cb-icon" style="background:#fffbeb;color:var(--accent2);"><i class="fas fa-box-archive"></i></div>
+    <div class="cb-icon" style="background:#fffbeb;color:var(--accent2);">
+      <i class="fas fa-box-archive"></i>
+    </div>
     <h5>Archive Chama</h5>
-    <p>This will freeze all activity. No new transactions or contributions. Members can still view data.</p>
+    <p>This will freeze all activity. No new transactions or contributions.
+      Members can still view data.</p>
     <p style="font-size:13px;color:var(--muted);">Type <strong>ARCHIVE</strong> to confirm:</p>
     <input type="text" class="cb-input" id="archiveInput" placeholder="Type ARCHIVE"
       oninput="checkConfirm(this,'ARCHIVE','btn-archive-confirm')">
@@ -911,7 +1418,8 @@
   <div class="confirm-box">
     <div class="cb-icon"><i class="fas fa-trash"></i></div>
     <h5>Delete Chama</h5>
-    <p>This is <strong>permanent and irreversible</strong>. All members, transactions, loans, and data will be deleted forever.</p>
+    <p>This is <strong>permanent and irreversible</strong>. All members, transactions, loans,
+      and data will be deleted forever.</p>
     <p style="font-size:13px;color:var(--muted);">Type <strong>{{ chama.name|upper }}</strong> to confirm:</p>
     <input type="text" class="cb-input" id="deleteInput" placeholder="Type chama name"
       oninput="checkConfirm(this,'{{ chama.name|upper }}','btn-delete-confirm')">
@@ -926,7 +1434,63 @@
     </div>
   </div>
 </div>
+
+<!-- ════ MODAL: Leave Chama ════ -->
+<div class="confirm-overlay" id="modal-leave">
+  <div class="confirm-box">
+    <div class="cb-icon"><i class="fas fa-right-from-bracket"></i></div>
+    <h5>Leave Chama</h5>
+    <p>Are you sure you want to leave <strong>{{ chama.name }}</strong>?
+      You'll need a new invite to rejoin.</p>
+    <form method="post" action="{% url 'chama_settings' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="section" value="leave_chama">
+      <div class="confirm-actions">
+        <button type="button" class="btn-confirm-cancel" onclick="closeModal('modal-leave')">Cancel</button>
+        <button type="submit" class="btn-confirm-danger">
+          <i class="fas fa-right-from-bracket me-1"></i> Leave
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ════ MODAL: M-Pesa Pay ════ -->
+<div class="confirm-overlay" id="modal-mpesa-pay">
+  <div class="confirm-box">
+    <div class="cb-icon" style="background:#e6f5f0;color:var(--brand);">
+      <i class="fas fa-mobile-screen-button"></i>
+    </div>
+    <h5>Pay via M-Pesa</h5>
+    <p>
+      Subscribing to the <strong id="mp-plan-name"></strong> plan at
+      <strong>KES <span id="mp-plan-price"></span>/month</strong>.
+      An STK Push will be sent to your phone.
+    </p>
+    <form method="post" action="{% url 'chama_billing_pay' chama.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="plan" id="mp-plan-input">
+      <input type="hidden" name="amount" id="mp-amount-input">
+      <label class="st-label">M-Pesa Phone Number <span>*</span></label>
+      <input type="tel" name="mpesa_phone" class="cb-input"
+        value="{{ request.user.phone|default:'' }}"
+        placeholder="+254 7XX XXX XXX" required>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">
+        <i class="fas fa-info-circle"></i>
+        Enter the Safaricom number to receive the STK Push.
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="btn-confirm-cancel" onclick="closeModal('modal-mpesa-pay')">Cancel</button>
+        <button type="submit" class="btn-confirm-danger" style="background:var(--brand);">
+          <i class="fas fa-mobile-screen-button me-1"></i> Send STK Push
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 {% endblock %}
+
 
 {% block extra_js %}
 <script>
@@ -956,14 +1520,14 @@ function selectCurrency(el) {
 function stepVal(id, delta) {
   const inp = document.getElementById(id);
   let val = parseFloat(inp.value) || 0;
-  val = Math.max(parseFloat(inp.min||0), Math.min(parseFloat(inp.max||9999), val + delta));
+  val = Math.max(parseFloat(inp.min || 0), Math.min(parseFloat(inp.max || 9999), val + delta));
   inp.value = Number.isInteger(delta) ? Math.round(val) : parseFloat(val.toFixed(1));
 }
 
 /* ── Copy text ── */
 function copyText(text, e) {
   navigator.clipboard.writeText(text).then(() => {
-    const btn = e.currentTarget;
+    const btn  = e.currentTarget;
     const orig = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-check"></i>';
     btn.style.color = 'var(--brand)';
@@ -1014,17 +1578,95 @@ function checkConfirm(input, expected, btnId) {
 
 /* ── Role badge colour update on select change ── */
 function markChanged(sel) {
-  const row = sel.closest('.role-member-row');
-  const badge = row.querySelector('.role-badge');
+  const row    = sel.closest('.role-member-row');
+  const badge  = row.querySelector('.role-badge');
   const roleMap = {
     admin:     ['admin',     'fas fa-crown'],
     treasurer: ['treasurer', 'fas fa-coins'],
     secretary: ['secretary', 'fas fa-pen-clip'],
     member:    ['member',    'fas fa-user'],
   };
-  const [cls, icon] = roleMap[sel.value] || ['member','fas fa-user'];
+  const [cls, icon] = roleMap[sel.value] || ['member', 'fas fa-user'];
   badge.className = 'role-badge ' + cls;
   badge.innerHTML = `<i class="${icon}"></i> ${sel.options[sel.selectedIndex].text}`;
+}
+
+/* ── Avatar preview ── */
+function previewAvatar(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const el = document.getElementById('avatarPreview');
+    el.style.backgroundImage    = `url(${e.target.result})`;
+    el.style.backgroundSize     = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.textContent = '';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+/* ── Toggle password visibility ── */
+function togglePwd(id, btn) {
+  const inp    = document.getElementById(id);
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  btn.querySelector('i').className = isText ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+/* ── Password match hint ── */
+function checkPwdMatch() {
+  const np   = document.getElementById('pwd_new').value;
+  const cp   = document.getElementById('pwd_confirm').value;
+  const hint = document.getElementById('pwd_match_hint');
+  if (!cp) { hint.textContent = ''; return; }
+  if (np === cp) {
+    hint.textContent  = '✓ Passwords match';
+    hint.style.color  = 'var(--brand)';
+  } else {
+    hint.textContent  = '✗ Passwords do not match';
+    hint.style.color  = 'var(--danger)';
+  }
+}
+
+/* ── Password strength ── */
+document.getElementById('pwd_new')?.addEventListener('input', function () {
+  const v = this.value;
+  let score = 0;
+  if (v.length >= 8)          score++;
+  if (/[A-Z]/.test(v))        score++;
+  if (/[0-9]/.test(v))        score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const bar = document.getElementById('pwd_strength_bar');
+  const lbl = document.getElementById('pwd_strength_label');
+  const map = [
+    [0, '0%',   '#e5e7eb',       ''],
+    [1, '25%',  'var(--danger)', 'Weak'],
+    [2, '50%',  'var(--accent2)','Fair'],
+    [3, '75%',  '#3b82f6',       'Good'],
+    [4, '100%', 'var(--brand)',  'Strong'],
+  ];
+  const [, w, c, t] = map[score];
+  bar.style.width      = w;
+  bar.style.background = c;
+  lbl.textContent      = t;
+  lbl.style.color      = c;
+});
+
+/* ── Billing plan select ── */
+function selectPlan(plan) {
+  document.querySelectorAll('.billing-plan-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById('plan-' + plan);
+  if (card) card.classList.add('selected');
+}
+
+/* ── Open M-Pesa pay modal ── */
+function openPayModal(planName, amount) {
+  event.stopPropagation();
+  document.getElementById('mp-plan-name').textContent  = planName;
+  document.getElementById('mp-plan-price').textContent = parseInt(amount).toLocaleString();
+  document.getElementById('mp-plan-input').value       = planName.toLowerCase();
+  document.getElementById('mp-amount-input').value     = amount;
+  openModal('modal-mpesa-pay');
 }
 </script>
 {% endblock %}
