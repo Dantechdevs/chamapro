@@ -58,6 +58,13 @@
 .badge-new{margin-left:auto;font-size:9px;background:var(--accent);color:#fff;padding:2px 6px;border-radius:20px;font-weight:700;}
 .topbar-quick-actions{background:var(--brand);color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;}
 .topbar-quick-actions:hover{background:var(--brand-light);}
+/* Deactivated chamas section */
+.deactivated-section{background:#fff;border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;margin-top:20px;}
+.deactivated-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.deactivated-header h6{font-size:14px;font-weight:700;margin:0;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.deactivated-header .count-badge{font-size:11px;background:#f3f4f6;color:var(--muted);padding:2px 8px;border-radius:20px;font-weight:600;}
+.restore-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:#f0fdf4;color:#065f46;font-size:12px;font-weight:700;text-decoration:none;border:1px solid #bbf7d0;transition:background .15s;}
+.restore-btn:hover{background:#dcfce7;color:#065f46;}
 @media(max-width:1100px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:900px){.fin-summary-body{grid-template-columns:repeat(2,1fr);}.quick-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:768px){.stat-grid{grid-template-columns:1fr 1fr;}}
@@ -91,7 +98,7 @@
 </div>
 {% else %}
 
-<!-- STAT CARDS -->
+<!-- ── STAT CARDS ─────────────────────────────────────────────────────────── -->
 <div class="stat-grid">
   <div class="stat-card">
     <div class="stat-icon green"><i class="fas fa-coins"></i></div>
@@ -117,6 +124,8 @@
 
 <div class="row g-3 mb-3">
   <div class="col-lg-8">
+
+    <!-- ── GROUP SUMMARY CARD ──────────────────────────────────────────────── -->
     <div class="fin-summary">
       <div class="fin-summary-header">
         <h6><i class="fas fa-info-circle me-2"></i>YOUR GROUP INFORMATION</h6>
@@ -139,7 +148,7 @@
           <i class="fas fa-money-bills fin-stat-icon"></i>
           <div class="fin-stat-label">Outstanding Loans</div>
           <div class="fin-stat-value">KES {{ active_chama.total_loans_outstanding|floatformat:2 }}</div>
-          <div class="fin-stat-sub">Active & overdue</div>
+          <div class="fin-stat-sub">Active &amp; overdue</div>
         </div>
       </div>
       <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);">
@@ -152,6 +161,7 @@
       </div>
     </div>
 
+    <!-- ── CONTRIBUTIONS TREND CHART ───────────────────────────────────────── -->
     <div class="chart-card">
       <div class="card-header-cp">
         <h6>Contributions Trend</h6>
@@ -165,9 +175,12 @@
         <canvas id="contributionsChart" height="180"></canvas>
       </div>
     </div>
+
   </div>
 
   <div class="col-lg-4">
+
+    <!-- ── BALANCES CARD ───────────────────────────────────────────────────── -->
     <div class="balances-card mb-3">
       <div class="card-header-cp">
         <h6>Balances</h6>
@@ -178,7 +191,9 @@
         <div class="balances-tab">Fines</div>
       </div>
       <div class="balances-header">
-        <span>#</span><span>Name</span><span style="text-align:right;">Paid</span><span style="text-align:right;">Arrears</span>
+        <span>#</span><span>Name</span>
+        <span style="text-align:right;">Paid</span>
+        <span style="text-align:right;">Arrears</span>
       </div>
       {% for m in active_chama.memberships.all %}{% if m.active %}
       <div class="balance-row">
@@ -192,6 +207,7 @@
       {% endfor %}
     </div>
 
+    <!-- ── UPCOMING MEETINGS ───────────────────────────────────────────────── -->
     <div class="activity-card">
       <div class="card-header-cp">
         <h6>Upcoming Meetings</h6>
@@ -202,10 +218,11 @@
         No meetings scheduled yet
       </div>
     </div>
+
   </div>
 </div>
 
-<!-- Quick Access -->
+<!-- ── QUICK ACCESS ───────────────────────────────────────────────────────── -->
 <div class="mb-3">
   <h6 style="font-weight:700;margin-bottom:12px;">Quick Access</h6>
   <div class="quick-grid">
@@ -254,7 +271,59 @@
 
 {% endif %}
 
-<!-- Quick Actions Modal -->
+<!-- ── DEACTIVATED CHAMAS (restore section — admin only) ──────────────────── -->
+{% if deleted_chamas %}
+<div class="deactivated-section">
+  <div class="deactivated-header">
+    <h6>
+      <i class="fas fa-box-archive"></i>
+      Deactivated Chamas
+      <span class="count-badge">{{ deleted_chamas.count }} hidden</span>
+    </h6>
+    <span style="font-size:12px;color:var(--muted);">Only visible to you as admin</span>
+  </div>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 18px;background:#f9fafb;border-bottom:1px solid var(--border);text-align:left;">Chama</th>
+        <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 18px;background:#f9fafb;border-bottom:1px solid var(--border);text-align:left;">Description</th>
+        <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 18px;background:#f9fafb;border-bottom:1px solid var(--border);text-align:left;">Members</th>
+        <th style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:10px 18px;background:#f9fafb;border-bottom:1px solid var(--border);"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in deleted_chamas %}
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:14px 18px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:9px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-users" style="font-size:13px;color:#9ca3af;"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:#374151;">{{ c.name }}</div>
+              <div style="font-size:11px;color:var(--muted);">Created {{ c.created_at|date:"N j, Y" }}</div>
+            </div>
+          </div>
+        </td>
+        <td style="padding:14px 18px;font-size:13px;color:var(--muted);">
+          {{ c.description|truncatechars:50|default:"No description" }}
+        </td>
+        <td style="padding:14px 18px;font-size:13px;color:var(--muted);">
+          {{ c.memberships.count }} member{{ c.memberships.count|pluralize }}
+        </td>
+        <td style="padding:14px 18px;text-align:right;">
+          <a href="{% url 'chama_restore' c.id %}" class="restore-btn">
+            <i class="fas fa-rotate-left"></i> Restore
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- ── QUICK ACTIONS MODAL ────────────────────────────────────────────────── -->
 <div class="modal fade" id="quickActionsModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -280,17 +349,64 @@
     </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
   const sCtx = document.getElementById('summaryChart');
-  if(sCtx) new Chart(sCtx,{type:'line',data:{labels:['Jan','02','03','04','05','06','07','08','09','10','11','12'],datasets:[{label:'Contributions',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#00c97a',tension:.4,pointRadius:3,borderWidth:2,fill:false},{label:'Fines',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#f59e0b',tension:.4,pointRadius:3,borderWidth:2,fill:false},{label:'Expenses',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#ef4444',tension:.4,pointRadius:3,borderWidth:2,fill:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}},beginAtZero:true}}}});
+  if(sCtx) new Chart(sCtx,{
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets:[
+        {label:'Contributions',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#00c97a',tension:.4,pointRadius:3,borderWidth:2,fill:false},
+        {label:'Fines',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#f59e0b',tension:.4,pointRadius:3,borderWidth:2,fill:false},
+        {label:'Expenses',data:[0,0,0,0,0,0,0,0,0,0,0,0],borderColor:'#ef4444',tension:.4,pointRadius:3,borderWidth:2,fill:false}
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'rgba(255,255,255,.4)',font:{size:10}},beginAtZero:true}
+      }
+    }
+  });
+
   const cCtx = document.getElementById('contributionsChart');
-  if(cCtx) new Chart(cCtx,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],datasets:[{label:'Contributions (KES)',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(13,110,79,.15)',borderColor:'#0d6e4f',borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}});
-  document.querySelectorAll('.balances-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.balances-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
-  document.querySelectorAll('.chart-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.chart-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
+  if(cCtx) new Chart(cCtx,{
+    type:'bar',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets:[{
+        label:'Contributions (KES)',
+        data:[0,0,0,0,0,0,0,0,0,0,0,0],
+        backgroundColor:'rgba(13,110,79,.15)',
+        borderColor:'#0d6e4f',
+        borderWidth:2,
+        borderRadius:6
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}
+    }
+  });
+
+  document.querySelectorAll('.balances-tab').forEach(t => t.addEventListener('click', function(){
+    document.querySelectorAll('.balances-tab').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  }));
+
+  document.querySelectorAll('.chart-tab').forEach(t => t.addEventListener('click', function(){
+    document.querySelectorAll('.chart-tab').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  }));
 </script>
 {% endblock %}

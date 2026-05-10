@@ -445,7 +445,7 @@
           <div class="st-field">
             <label class="st-label">Regular Meeting Day</label>
             <div class="day-pills">
-              {% for day,short in "Monday:Mon,Tuesday:Tue,Wednesday:Wed,Thursday:Thu,Friday:Fri,Saturday:Sat,Sunday:Sun"|split:"," %}{% endfor %}
+              
               <label class="day-pill {% if chama.meeting_day == 'Monday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Monday" {% if chama.meeting_day == 'Monday' %}checked{% endif %}>Mon</label>
               <label class="day-pill {% if chama.meeting_day == 'Tuesday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Tuesday" {% if chama.meeting_day == 'Tuesday' %}checked{% endif %}>Tue</label>
               <label class="day-pill {% if chama.meeting_day == 'Wednesday' %}selected{% endif %}" onclick="selectDay(this)"><input type="radio" name="meeting_day" value="Wednesday" {% if chama.meeting_day == 'Wednesday' %}checked{% endif %}>Wed</label>
