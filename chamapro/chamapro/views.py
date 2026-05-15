@@ -2114,3 +2114,37 @@ def partner_apply(request):
         return redirect('partner_apply')
 
     return render(request, 'customers.html')
+
+# ─── Static Public Pages ─────────────────────────────────────────────────────
+
+def terms(request):
+    return render(request, 'terms.html')
+
+def support(request):
+    return render(request, 'support.html')
+
+def awards(request):
+    return render(request, 'awards.html')
+
+def blog(request):
+    return render(request, 'blog.html')
+
+def use_cases(request):
+    return render(request, 'use_cases.html')
+
+def use_case_financial(request):
+    return render(request, 'use_case_financial.html')
+
+def use_case_ngo(request):
+    return render(request, 'use_case_ngo.html')
+
+def technology(request):
+    return render(request, 'technology.html')
+
+def company(request):
+    return render(request, 'company.html')
+
+def view_demo(request):
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'demo.html')

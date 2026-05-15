@@ -14,6 +14,18 @@ urlpatterns = [
     path('customers/', views.customers, name='customers'),
     path('partners/apply/', views.partner_apply, name='partner_apply'),
 
+    # ── Static Pages ─────────────────────────────────────────────────────────
+    path('terms/', views.terms, name='terms'),
+    path('support/', views.support, name='support'),
+    path('awards/', views.awards, name='awards'),
+    path('blog/', views.blog, name='blog'),
+    path('technology/', views.technology, name='technology'),
+    path('company/', views.company, name='company'),
+    path('demo/', views.view_demo, name='view_demo'),
+    path('use-cases/', views.use_cases, name='use_cases'),
+    path('use-cases/financial-institutions/', views.use_case_financial, name='use_case_financial'),
+    path('use-cases/ngos/', views.use_case_ngo, name='use_case_ngo'),
+
     # ── Auth ─────────────────────────────────────────────────────────────────
     path('login/', views.login, name='login'),
     path('signup/', views.signup, name='signup'),
@@ -69,7 +81,7 @@ urlpatterns = [
     path('chama/<int:chama_id>/reports/', views.reports, name='reports'),
     path('chama/<int:chama_id>/export/contributions/csv/', views.export_contributions_csv, name='export_contributions_csv'),
     path('chama/<int:chama_id>/export/loans/csv/', views.export_loans_csv, name='export_loans_csv'),
-    path('chama/<int:choma_id>/export/members/csv/', views.export_members_csv, name='export_members_csv'),
+    path('chama/<int:chama_id>/export/members/csv/', views.export_members_csv, name='export_members_csv'),
     path('chama/<int:chama_id>/export/pdf/', views.export_report_pdf, name='export_report_pdf'),
     path('chama/<int:chama_id>/export/excel/', views.export_report_excel, name='export_report_excel'),
 
