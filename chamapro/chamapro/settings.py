@@ -104,17 +104,20 @@ MPESA_CALLBACK_URL    = os.getenv('MPESA_CALLBACK_URL', 'https://yourcallback.ng
 
 # ── Investments ───────────────────────────────────────────────────────────────
 
-# Starting NAV per unit when no NAVHistory record exists yet (par value)
-INVESTMENT_DEFAULT_NAV = Decimal('100.00')
+INVESTMENT_DEFAULT_NAV          = Decimal('100.00')
+INVESTMENT_DEFAULT_RETURN_MODE  = 'distribute'
+INVESTMENT_CURRENCY             = 'KES'
+INVESTMENT_UNIT_DECIMAL_PLACES  = 4
+INVESTMENT_NAV_DECIMAL_PLACES   = 2
 
-# Default return mode: 'distribute' pays out cash, 'reinvest' buys more units
-INVESTMENT_DEFAULT_RETURN_MODE = 'distribute'
+# ── Email ─────────────────────────────────────────────────────────────────────
 
-# Currency symbol rendered in investment templates
-INVESTMENT_CURRENCY = 'KES'
-
-# Decimal places for unit quantities  (e.g. 4 → 1.2345 units)
-INVESTMENT_UNIT_DECIMAL_PLACES = 4
-
-# Decimal places for NAV and all monetary amounts
-INVESTMENT_NAV_DECIMAL_PLACES = 2
+# Dev: prints emails to console. Switch to SMTP in production.
+EMAIL_BACKEND           = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST              = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT              = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS           = True
+EMAIL_HOST_USER         = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD     = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL      = os.getenv('DEFAULT_FROM_EMAIL', 'ChamaPro <info@chamapro.com>')
+PARTNER_NOTIFICATION_EMAIL = os.getenv('PARTNER_NOTIFICATION_EMAIL', 'info@chamapro.com')

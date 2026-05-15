@@ -12,6 +12,7 @@ urlpatterns = [
     path('features/', views.features, name='features'),
     path('pricing/', views.pricing, name='pricing'),
     path('customers/', views.customers, name='customers'),
+    path('partners/apply/', views.partner_apply, name='partner_apply'),
 
     # ── Auth ─────────────────────────────────────────────────────────────────
     path('login/', views.login, name='login'),
@@ -68,7 +69,7 @@ urlpatterns = [
     path('chama/<int:chama_id>/reports/', views.reports, name='reports'),
     path('chama/<int:chama_id>/export/contributions/csv/', views.export_contributions_csv, name='export_contributions_csv'),
     path('chama/<int:chama_id>/export/loans/csv/', views.export_loans_csv, name='export_loans_csv'),
-    path('chama/<int:chama_id>/export/members/csv/', views.export_members_csv, name='export_members_csv'),
+    path('chama/<int:choma_id>/export/members/csv/', views.export_members_csv, name='export_members_csv'),
     path('chama/<int:chama_id>/export/pdf/', views.export_report_pdf, name='export_report_pdf'),
     path('chama/<int:chama_id>/export/excel/', views.export_report_excel, name='export_report_excel'),
 

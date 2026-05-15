@@ -2046,3 +2046,71 @@ def _activate_subscription(user, plan, billing_cycle, amount):
             'is_active':     True,
         }
     )
+
+    # ─── Partner Application ─────────────────────────────────────────────────────
+
+def partner_apply(request):
+    if request.method == 'POST':
+        from .models import PartnerApplication
+        from django.core.mail import send_mail
+
+        org_type      = request.POST.get('org_type', '').strip()
+        org_name      = request.POST.get('org_name', '').strip()
+        contact_name  = request.POST.get('contact_name', '').strip()
+        contact_email = request.POST.get('contact_email', '').strip()
+        contact_phone = request.POST.get('contact_phone', '').strip()
+        job_title     = request.POST.get('job_title', '').strip()
+        offering      = request.POST.get('offering', '').strip()
+        expectations  = request.POST.get('expectations', '').strip()
+        scale         = request.POST.get('scale', '').strip()
+        agreed_terms  = request.POST.get('agreed_terms') == 'on'
+
+        errors = []
+        if not org_type:      errors.append('Organisation type is required.')
+        if not org_name:      errors.append('Organisation name is required.')
+        if not contact_name:  errors.append('Contact name is required.')
+        if not contact_email: errors.append('Email address is required.')
+        if not contact_phone: errors.append('Phone number is required.')
+        if not offering:      errors.append('Please select what you are offering.')
+        if not agreed_terms:  errors.append('You must agree to the partner terms and conditions.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'customers.html')
+
+        application = PartnerApplication.objects.create(
+            org_type=org_type,
+            org_name=org_name,
+            contact_name=contact_name,
+            contact_email=contact_email,
+            contact_phone=contact_phone,
+            job_title=job_title,
+            offering=offering,
+            expectations=expectations,
+            scale=scale,
+            agreed_terms=agreed_terms,
+        )
+
+        # Notify ChamaPro team
+        send_mail(
+            subject=f'New partner application – {application.org_name}',
+            message=f'Organisation: {application.org_name}\nType: {application.get_org_type_display()}\nContact: {application.contact_name} ({application.job_title})\nEmail: {application.contact_email}\nPhone: {application.contact_phone}\nOffering: {application.get_offering_display()}\nScale: {application.get_scale_display()}\nExpectations:\n{application.expectations}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.PARTNER_NOTIFICATION_EMAIL],
+            fail_silently=True,
+        )
+
+        # Acknowledgement to applicant
+        send_mail(
+            subject='We received your ChamaPro partner application',
+            message=f'Hi {application.contact_name},\n\nThank you for applying to the ChamaPro Partner Program.\n\nWe\'ve received your application for {application.org_name} and will review it within 2 business days. We\'ll be in touch at {application.contact_email}.\n\nBest regards,\nThe ChamaPro Team\ninfo@chamapro.com | +254 712 328 150',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[application.contact_email],
+            fail_silently=True,
+        )
+
+        messages.success(request, "Application received! We'll be in touch within 2 business days.")
+        return redirect('partner_apply')
+
+    return render(request, 'customers.html')

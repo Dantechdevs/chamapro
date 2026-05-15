@@ -587,3 +587,51 @@ class ChamaBillingPayment(models.Model):
     def storage_limit_mb(self):
         limits = {'starter': 200, 'growth': 1000, 'pro': 9999}
         return limits.get(self.plan_name, 50)
+    
+    # ── Partner Applications ───────────────────────────────────────────────────────
+
+class PartnerApplication(models.Model):
+    ORG_TYPES = [
+        ('financial', 'Financial institution'),
+        ('sacco',     'Sacco'),
+        ('ngo',       'NGO'),
+        ('tech',      'Technology company'),
+        ('consultant','Consultant'),
+        ('other',     'Other'),
+    ]
+    OFFERING_CHOICES = [
+        ('referrals',    'Client referrals'),
+        ('reselling',    'Distribution / reselling'),
+        ('integration',  'Technical integration'),
+        ('comarketing',  'Co-marketing'),
+        ('other',        'Other'),
+    ]
+    SCALE_CHOICES = [
+        ('1-50',    '1 – 50'),
+        ('51-200',  '51 – 200'),
+        ('201-1000','201 – 1,000'),
+        ('1000+',   '1,000+'),
+    ]
+
+    org_type        = models.CharField(max_length=20,  choices=ORG_TYPES)
+    org_name        = models.CharField(max_length=200)
+    contact_name    = models.CharField(max_length=200)
+    contact_email   = models.EmailField()
+    contact_phone   = models.CharField(max_length=30)
+    job_title       = models.CharField(max_length=200, blank=True)
+    offering        = models.CharField(max_length=20,  choices=OFFERING_CHOICES)
+    expectations    = models.TextField(blank=True)
+    scale           = models.CharField(max_length=20,  choices=SCALE_CHOICES, blank=True)
+    agreed_terms    = models.BooleanField(default=False)
+    submitted_at    = models.DateTimeField(auto_now_add=True)
+    reviewed        = models.BooleanField(default=False)
+    reviewed_at     = models.DateTimeField(null=True, blank=True)
+    notes           = models.TextField(blank=True, help_text='Internal notes')
+
+    class Meta:
+        ordering = ['-submitted_at']
+        verbose_name        = 'Partner application'
+        verbose_name_plural = 'Partner applications'
+
+    def __str__(self):
+        return f"{self.org_name} ({self.get_org_type_display()}) – {self.submitted_at:%Y-%m-%d}"
