@@ -1,0 +1,365 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Financial Institutions – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .fi-hero {
+            background: linear-gradient(135deg, #002855 0%, #7c3aed 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .feature-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 28px 24px;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .feature-card:hover {
+            box-shadow: 0 12px 40px rgba(124,58,237,0.12);
+            transform: translateY(-5px);
+            border-color: #7c3aed;
+        }
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 28px 16px;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+        }
+        .stat-card h3 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #002855;
+            margin-bottom: 4px;
+        }
+        .quote-block {
+            border-left: 4px solid #7c3aed;
+            padding: 20px 24px;
+            background: #fdf6ff;
+            border-radius: 0 12px 12px 0;
+        }
+        .step-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .step-num {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #002855, #7c3aed);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 0.92rem;
+            color: #374151;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .check-item:last-child { border-bottom: none; }
+        .check-item i { margin-top: 2px; flex-shrink: 0; }
+        .breadcrumb-nav {
+            background: #f8f9fa;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-nav">
+        <div class="container">
+            <small>
+                <a href="{% url 'home' %}" style="color:#00AEEF;">Home</a>
+                <span class="mx-2 text-muted">/</span>
+                <a href="{% url 'use_cases' %}" style="color:#00AEEF;">Use Cases</a>
+                <span class="mx-2 text-muted">/</span>
+                <span class="text-muted">Financial Institutions</span>
+            </small>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="fi-hero text-center">
+        <div class="container">
+            <span class="badge mb-3 px-3 py-2" style="background:rgba(255,255,255,0.2);font-size:0.85rem;">Enterprise</span>
+            <h1 class="display-5 fw-bold mb-3">ChamaPro for Financial Institutions</h1>
+            <p class="lead mb-4">Serve your Chama clients at scale — with white-label branding, API integration, and enterprise-grade compliance tools.</p>
+            <a href="{% url 'partner_apply' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color:#002855;">
+                <i class="fa fa-handshake me-2"></i>Contact Sales
+            </a>
+            <a href="{% url 'use_cases' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">
+                View All Use Cases
+            </a>
+        </div>
+    </div>
+
+    <div class="container py-5">
+
+        <!-- Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h3>200+</h3>
+                    <p class="text-muted small mb-0">Chamas per institution on average</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h3>&lt;1mo</h3>
+                    <p class="text-muted small mb-0">Average onboarding time</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h3>100%</h3>
+                    <p class="text-muted small mb-0">Audit trail coverage</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h3>API</h3>
+                    <p class="text-muted small mb-0">Core banking integration ready</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- The Problem -->
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3" style="color:#002855;">The Challenge Banks Face</h2>
+                <p class="text-muted mb-3">Financial institutions serving Chama clients face a recurring problem — their clients are managing hundreds of thousands of shillings in spreadsheets, notebooks, and WhatsApp groups. This creates risk for the bank and frustration for the client.</p>
+                <p class="text-muted mb-4">When Chama records are informal, loan applications are slower, audits are harder, and compliance reporting becomes a manual headache for your relationship managers.</p>
+                <div class="check-item"><i class="fa fa-times-circle text-danger"></i> Manual record-keeping creates audit gaps</div>
+                <div class="check-item"><i class="fa fa-times-circle text-danger"></i> Relationship managers spend hours reconciling records</div>
+                <div class="check-item"><i class="fa fa-times-circle text-danger"></i> Loan eligibility is hard to verify without digital records</div>
+                <div class="check-item"><i class="fa fa-times-circle text-danger"></i> No visibility into group financial health</div>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3" style="color:#002855;">How ChamaPro Solves It</h2>
+                <p class="text-muted mb-4">ChamaPro gives your institution a white-label digital platform that your Chama clients use to manage their own records — while giving your team the oversight and reporting tools you need.</p>
+                <div class="check-item"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Full digital audit trail for every transaction</div>
+                <div class="check-item"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Relationship managers get group financial dashboards</div>
+                <div class="check-item"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Loan history and contribution records for credit scoring</div>
+                <div class="check-item"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Compliance-ready PDF and Excel exports</div>
+                <div class="check-item"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> API integration with your core banking system</div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color:#002855;">Enterprise Features</h2>
+                <p class="text-muted">Everything your institution needs to serve Chama clients at scale.</p>
+            </div>
+            <div class="row g-4">
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#ede9fe;">
+                            <i class="fa fa-paint-brush" style="color:#7c3aed;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">White-Label Branding</h6>
+                        <p class="text-muted small mb-0">Deploy ChamaPro under your own brand — your logo, your colours, your domain. Your clients see your bank, not ChamaPro.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#e6f5fb;">
+                            <i class="fa fa-plug" style="color:#00AEEF;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Core Banking API</h6>
+                        <p class="text-muted small mb-0">REST API integration with your core banking system. Sync account balances, loan disbursements, and repayments automatically.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#e6faf0;">
+                            <i class="fa fa-users-cog" style="color:#10b981;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Portfolio Management</h6>
+                        <p class="text-muted small mb-0">Manage thousands of Chama groups from a single admin dashboard. Filter by branch, region, relationship manager, or group size.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#fef3c7;">
+                            <i class="fa fa-file-contract" style="color:#f59e0b;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Compliance Reporting</h6>
+                        <p class="text-muted small mb-0">Generate CBK-ready compliance reports, AML transaction summaries, and audit logs — all exportable in PDF or Excel.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#fee2e2;">
+                            <i class="fa fa-chart-bar" style="color:#ef4444;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Credit Scoring Data</h6>
+                        <p class="text-muted small mb-0">Access contribution consistency, loan repayment history, and group health scores to inform credit decisions for Chama loans.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#ede9fe;">
+                            <i class="fa fa-headset" style="color:#7c3aed;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Dedicated Support</h6>
+                        <p class="text-muted small mb-0">A dedicated account manager, custom SLA, and priority support queue. We're a partner, not just a vendor.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- How Onboarding Works -->
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-lg-5">
+                <h2 class="fw-bold mb-3" style="color:#002855;">Onboarding Your Chama Portfolio</h2>
+                <p class="text-muted mb-4">We handle the heavy lifting. Most institutions are fully live within 4 weeks.</p>
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Discovery Call</h6>
+                        <p class="text-muted small mb-0">We learn your portfolio size, integration requirements, and compliance needs. We scope the engagement together.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Branding & Configuration</h6>
+                        <p class="text-muted small mb-0">We configure your white-label instance with your brand, set up your admin accounts, and connect to your core banking API.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Staff Training</h6>
+                        <p class="text-muted small mb-0">We train your relationship managers and support staff. Includes onboarding guides and recorded walkthroughs.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Chama Onboarding</h6>
+                        <p class="text-muted small mb-0">We support bulk migration of existing Chama records and help your team onboard groups in batches.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="quote-block mb-4">
+                    <p class="mb-2">"We onboarded 200 Chama groups onto ChamaPro in under a month. The API integration with our core banking was seamless and our relationship managers were trained in a single afternoon."</p>
+                    <span class="fw-bold" style="color:#002855;">— David K., Head of Digital Banking, Tier-2 Bank</span>
+                </div>
+                <div class="quote-block">
+                    <p class="mb-2">"Our Chama clients now come to loan interviews with clean digital records instead of exercise books. The credit assessment process has been cut from 5 days to 1."</p>
+                    <span class="fw-bold" style="color:#002855;">— Susan M., Head of SME Lending, Microfinance Institution</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center p-5 rounded" style="background: linear-gradient(135deg, #002855, #7c3aed);">
+            <h3 class="text-white fw-bold mb-2">Ready to Serve Your Chama Clients Better?</h3>
+            <p class="text-white mb-4">Talk to our enterprise team about a custom deployment for your institution.</p>
+            <a href="{% url 'partner_apply' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color:#002855;">
+                <i class="fa fa-handshake me-2"></i>Contact Sales
+            </a>
+            <a href="{% url 'use_cases' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">
+                View All Use Cases
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

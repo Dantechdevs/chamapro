@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Terms & Conditions – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .terms-hero {
+            background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .terms-section {
+            border-left: 4px solid #00AEEF;
+            padding-left: 20px;
+            margin-bottom: 40px;
+        }
+        .terms-section h4 {
+            color: #002855;
+            font-weight: 700;
+        }
+        .toc-card {
+            position: sticky;
+            top: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+        }
+        .toc-card a {
+            display: block;
+            color: #002855;
+            text-decoration: none;
+            padding: 6px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+        }
+        .toc-card a:hover { color: #00AEEF; }
+        .toc-card a:last-child { border-bottom: none; }
+        .last-updated {
+            background: #e6f5fb;
+            border-radius: 8px;
+            padding: 12px 20px;
+            color: #002855;
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="terms-hero text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">Terms & Conditions</h1>
+            <p class="lead mb-0">Please read these terms carefully before using ChamaPro.</p>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container py-5">
+        <div class="last-updated">
+            <i class="fa fa-calendar-alt me-2"></i> Last updated: <strong>January 1, 2025</strong>
+        </div>
+
+        <div class="row">
+            <!-- Table of Contents -->
+            <div class="col-lg-3 mb-4">
+                <div class="toc-card">
+                    <h6 class="fw-bold text-primary mb-3"><i class="fa fa-list me-2"></i>Contents</h6>
+                    <a href="#acceptance">1. Acceptance of Terms</a>
+                    <a href="#services">2. Our Services</a>
+                    <a href="#accounts">3. User Accounts</a>
+                    <a href="#payments">4. Payments & Billing</a>
+                    <a href="#data">5. Data & Privacy</a>
+                    <a href="#conduct">6. User Conduct</a>
+                    <a href="#liability">7. Liability</a>
+                    <a href="#termination">8. Termination</a>
+                    <a href="#changes">9. Changes to Terms</a>
+                    <a href="#contact">10. Contact Us</a>
+                </div>
+            </div>
+
+            <!-- Terms Content -->
+            <div class="col-lg-9">
+
+                <div class="terms-section" id="acceptance">
+                    <h4>1. Acceptance of Terms</h4>
+                    <p>By accessing or using ChamaPro ("the Platform"), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our platform.</p>
+                    <p>These terms apply to all users of the platform, including Chama administrators, treasurers, secretaries, and members.</p>
+                </div>
+
+                <div class="terms-section" id="services">
+                    <h4>2. Our Services</h4>
+                    <p>ChamaPro provides a digital platform for investment groups (Chamas) to manage:</p>
+                    <ul>
+                        <li>Member contributions and payment tracking</li>
+                        <li>Loan applications, approvals, and repayments</li>
+                        <li>Financial reporting and record keeping</li>
+                        <li>Member management and communication</li>
+                        <li>M-Pesa payment integration</li>
+                    </ul>
+                    <p>We reserve the right to modify, suspend, or discontinue any part of the service at any time with reasonable notice.</p>
+                </div>
+
+                <div class="terms-section" id="accounts">
+                    <h4>3. User Accounts</h4>
+                    <p>To use ChamaPro, you must create an account with accurate and complete information. You are responsible for:</p>
+                    <ul>
+                        <li>Maintaining the confidentiality of your login credentials</li>
+                        <li>All activities that occur under your account</li>
+                        <li>Notifying us immediately of any unauthorized use</li>
+                        <li>Ensuring your account information remains current and accurate</li>
+                    </ul>
+                    <p>Accounts must not be shared between individuals. Each user must have their own account.</p>
+                </div>
+
+                <div class="terms-section" id="payments">
+                    <h4>4. Payments & Billing</h4>
+                    <p>ChamaPro subscription fees are billed in advance on a monthly or annual basis. By subscribing, you agree to pay all applicable fees.</p>
+                    <ul>
+                        <li>All payments are processed via M-Pesa or bank transfer</li>
+                        <li>Subscription fees are non-refundable once the billing period has started</li>
+                        <li>We reserve the right to change pricing with 30 days notice</li>
+                        <li>Failed payments may result in suspension of your account</li>
+                    </ul>
+                    <p>ChamaPro is not responsible for M-Pesa transaction failures caused by network issues or incorrect phone numbers.</p>
+                </div>
+
+                <div class="terms-section" id="data">
+                    <h4>5. Data & Privacy</h4>
+                    <p>We take data privacy seriously. By using ChamaPro, you agree that:</p>
+                    <ul>
+                        <li>We collect and process personal data as described in our Privacy Policy</li>
+                        <li>Financial data entered into the platform is stored securely</li>
+                        <li>We do not sell your personal data to third parties</li>
+                        <li>You own the data you enter into ChamaPro</li>
+                        <li>You can request deletion of your account and data at any time</li>
+                    </ul>
+                </div>
+
+                <div class="terms-section" id="conduct">
+                    <h4>6. User Conduct</h4>
+                    <p>You agree not to use ChamaPro to:</p>
+                    <ul>
+                        <li>Enter false, misleading, or fraudulent financial records</li>
+                        <li>Impersonate another person or organisation</li>
+                        <li>Attempt to gain unauthorized access to other accounts</li>
+                        <li>Use the platform for any illegal financial activities</li>
+                        <li>Harass or harm other members through the platform</li>
+                    </ul>
+                    <p>Violation of these conduct rules may result in immediate account termination.</p>
+                </div>
+
+                <div class="terms-section" id="liability">
+                    <h4>7. Limitation of Liability</h4>
+                    <p>ChamaPro is a record-keeping and management tool. We are not responsible for:</p>
+                    <ul>
+                        <li>Financial decisions made by Chama administrators or members</li>
+                        <li>Disputes between Chama members regarding contributions or loans</li>
+                        <li>Loss of funds due to mismanagement by Chama administrators</li>
+                        <li>Data loss caused by circumstances beyond our control</li>
+                    </ul>
+                    <p>Our total liability to you shall not exceed the subscription fees paid in the last 3 months.</p>
+                </div>
+
+                <div class="terms-section" id="termination">
+                    <h4>8. Termination</h4>
+                    <p>Either party may terminate the agreement at any time. Upon termination:</p>
+                    <ul>
+                        <li>You may export your data within 30 days of termination</li>
+                        <li>We will delete your data after 30 days unless legally required to retain it</li>
+                        <li>No refunds will be issued for unused portions of a billing period</li>
+                    </ul>
+                    <p>We reserve the right to terminate accounts that violate these terms without notice.</p>
+                </div>
+
+                <div class="terms-section" id="changes">
+                    <h4>9. Changes to Terms</h4>
+                    <p>We may update these Terms and Conditions from time to time. We will notify you of significant changes via email or an in-app notification. Continued use of ChamaPro after changes take effect constitutes acceptance of the new terms.</p>
+                </div>
+
+                <div class="terms-section" id="contact">
+                    <h4>10. Contact Us</h4>
+                    <p>If you have any questions about these Terms and Conditions, please contact us:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="fa fa-envelope me-2 text-primary"></i> info@chamapro.com</li>
+                        <li><i class="fa fa-phone me-2 text-primary"></i> +254 712 328 150</li>
+                        <li><i class="fa fa-map-marker-alt me-2 text-primary"></i> Nairobi, Kenya</li>
+                    </ul>
+                </div>
+
+                <!-- CTA -->
+                <div class="text-center mt-5 p-4 rounded" style="background: linear-gradient(135deg, #002855, #00AEEF);">
+                    <h4 class="text-white fw-bold mb-2">Ready to get started?</h4>
+                    <p class="text-white mb-3">Join thousands of Chamas already using ChamaPro.</p>
+                    <a href="{% url 'signup' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold" style="color: #002855;">Create Free Account</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Support – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .support-hero {
+            background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .channel-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .channel-card:hover {
+            border-color: #00AEEF;
+            box-shadow: 0 8px 30px rgba(0,174,239,0.15);
+            transform: translateY(-4px);
+        }
+        .channel-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.6rem;
+        }
+        .faq-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 18px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #002855;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+        .faq-question:hover { background: #e6f5fb; }
+        .faq-answer {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            color: #4b5563;
+        }
+        .faq-answer.open {
+            max-height: 300px;
+            padding: 16px 24px;
+        }
+        .faq-icon { transition: transform 0.3s; }
+        .faq-icon.open { transform: rotate(180deg); }
+        .status-badge {
+            display: inline-block;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: 20px;
+            padding: 4px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .guide-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .guide-card:hover {
+            border-color: #00AEEF;
+            box-shadow: 0 4px 20px rgba(0,174,239,0.1);
+            color: inherit;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="support-hero text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">How Can We Help?</h1>
+            <p class="lead mb-4">Our support team is ready to assist you with anything ChamaPro related.</p>
+            <span class="status-badge"><i class="fa fa-circle me-1" style="font-size:0.6rem;"></i> All Systems Operational</span>
+        </div>
+    </div>
+
+    <!-- Contact Channels -->
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: #002855;">Get In Touch</h2>
+            <p class="text-muted">Choose the support channel that works best for you.</p>
+        </div>
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="channel-card">
+                    <div class="channel-icon" style="background: #e6f5fb;">
+                        <i class="fa fa-envelope" style="color: #00AEEF;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Email Support</h5>
+                    <p class="text-muted mb-3">Send us an email and we'll respond within 24 hours on business days.</p>
+                    <p class="fw-bold mb-3" style="color: #00AEEF;">info@chamapro.com</p>
+                    <a href="mailto:info@chamapro.com" class="btn btn-primary rounded-pill px-4" style="background-color: #00AEEF; border: none;">Send Email</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="channel-card">
+                    <div class="channel-icon" style="background: #e6faf0;">
+                        <i class="fa fa-phone-alt" style="color: #10b981;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Phone Support</h5>
+                    <p class="text-muted mb-3">Call us directly during business hours Mon–Fri, 8am–6pm EAT.</p>
+                    <p class="fw-bold mb-3" style="color: #10b981;">+254 712 328 150</p>
+                    <a href="tel:+254712328150" class="btn btn-success rounded-pill px-4">Call Now</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="channel-card">
+                    <div class="channel-icon" style="background: #fef3c7;">
+                        <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">WhatsApp</h5>
+                    <p class="text-muted mb-3">Chat with us on WhatsApp for quick responses during business hours.</p>
+                    <p class="fw-bold mb-3" style="color: #25D366;">+254 712 328 150</p>
+                    <a href="https://wa.me/254712328150" target="_blank" class="btn rounded-pill px-4 text-white" style="background-color: #25D366; border: none;">WhatsApp Us</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Guides -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Quick Guides</h2>
+                <p class="text-muted">Common tasks to help you get the most out of ChamaPro.</p>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{% url 'signup' %}" class="guide-card">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width:44px;height:44px;background:#e6f5fb;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-user-plus" style="color:#00AEEF;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Create an Account</h6>
+                                <small class="text-muted">Get started in under 2 minutes</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'signup' %}" class="guide-card">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width:44px;height:44px;background:#e6faf0;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-users" style="color:#10b981;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Create Your Chama</h6>
+                                <small class="text-muted">Set up your group in minutes</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'pricing' %}" class="guide-card">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width:44px;height:44px;background:#fef3c7;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-credit-card" style="color:#f59e0b;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Billing & Plans</h6>
+                                <small class="text-muted">Understand your subscription</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'login' %}" class="guide-card">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width:44px;height:44px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-mobile-alt" style="color:#7c3aed;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">M-Pesa Payments</h6>
+                                <small class="text-muted">Pay contributions via M-Pesa</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'login' %}" class="guide-card">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width:44px;height:44px;background:#fee2e2;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-file-alt" style="color:#ef4444;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Export Reports</h6>
+                                <small class="text-muted">Download PDF, Excel & CSV</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'partner_apply' %}" class="guide-card">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="width:44px;height:44px;background:#e0f2fe;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                                <i class="fa fa-handshake" style="color:#0284c7;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Partner Program</h6>
+                                <small class="text-muted">Become a ChamaPro partner</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Frequently Asked Questions</h2>
+                <p class="text-muted">Quick answers to common questions.</p>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I add members to my Chama?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Go to your Chama's Members page and click "Invite Member". Enter the email address of the person you want to add. They must already have a ChamaPro account. Once added, they will appear in your member list immediately.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How does M-Pesa payment work?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    When you initiate a payment, an STK Push notification is sent to your phone. Enter your M-Pesa PIN to confirm. The payment is automatically recorded in your Chama's contribution history once confirmed by Safaricom.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Can I export my Chama's financial records?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes. From the Reports section, you can export your financial data as PDF, Excel (.xlsx), or CSV. Exports include contributions, loans, member summaries, and financial overviews.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    What happens if I forget my password?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Click "Forgot Password" on the login page and enter your registered email address. You will receive a password reset link within a few minutes. Check your spam folder if you don't see it in your inbox.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Can I have multiple Chamas on one account?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes. A single ChamaPro account can belong to multiple Chamas. You can switch between them from your dashboard. Each Chama has its own contributions, loans, and member records.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I cancel my subscription?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    You can cancel your subscription from the Chama Settings page under the Billing section. Your account will remain active until the end of the current billing period. No refunds are issued for unused time.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    Is my financial data secure?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes. ChamaPro uses industry-standard encryption for all data. We never share your financial data with third parties. Backups are performed regularly to prevent data loss.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    How do I delete my account?
+                    <i class="fa fa-chevron-down faq-icon"></i>
+                </div>
+                <div class="faq-answer">
+                    To request account deletion, email us at info@chamapro.com with the subject "Account Deletion Request". Include your registered email address. We will process your request within 7 business days and send a confirmation.
+                </div>
+            </div>
+        </div>
+
+        <!-- Still Need Help -->
+        <div class="text-center p-5 rounded" style="background: linear-gradient(135deg, #002855, #00AEEF);">
+            <h3 class="text-white fw-bold mb-2">Still need help?</h3>
+            <p class="text-white mb-4">Our team is available Monday to Friday, 8am – 6pm EAT.</p>
+            <a href="mailto:info@chamapro.com" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color: #002855;">
+                <i class="fa fa-envelope me-2"></i>Email Us
+            </a>
+            <a href="https://wa.me/254712328150" target="_blank" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">
+                <i class="fab fa-whatsapp me-2"></i>WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function toggleFaq(el) {
+            const answer = el.nextElementSibling;
+            const icon   = el.querySelector('.faq-icon');
+            answer.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Technology – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .tech-hero {
+            background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .tech-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 32px 28px;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .tech-card:hover {
+            box-shadow: 0 12px 40px rgba(0,174,239,0.15);
+            transform: translateY(-5px);
+            border-color: #00AEEF;
+        }
+        .tech-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+        .stack-badge {
+            display: inline-block;
+            background: #f1f5f9;
+            color: #334155;
+            border-radius: 8px;
+            padding: 5px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .stack-badge.highlight {
+            background: #e6f5fb;
+            color: #00AEEF;
+            border-color: #bae6fd;
+        }
+        .security-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .security-item:last-child { border-bottom: none; }
+        .security-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-right: 16px;
+            margin-top: 2px;
+        }
+        .uptime-bar {
+            background: #e5e7eb;
+            border-radius: 999px;
+            height: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .uptime-fill {
+            background: linear-gradient(90deg, #002855, #00AEEF);
+            height: 100%;
+            border-radius: 999px;
+        }
+        .pipeline-step {
+            text-align: center;
+            position: relative;
+        }
+        .pipeline-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 28px;
+            right: -30px;
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, #00AEEF, #002855);
+        }
+        .pipeline-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="tech-hero text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">Built on Solid Technology</h1>
+            <p class="lead mb-0">Enterprise-grade infrastructure designed for reliability, security, and scale across Africa.</p>
+        </div>
+    </div>
+
+    <div class="container py-5">
+
+        <!-- Core Pillars -->
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: #002855;">Our Technology Pillars</h2>
+            <p class="text-muted">The foundation that makes ChamaPro fast, secure, and reliable.</p>
+        </div>
+        <div class="row g-4 mb-5">
+
+            <div class="col-md-4">
+                <div class="tech-card">
+                    <div class="tech-icon" style="background: #e6f5fb;">
+                        <i class="fa fa-shield-alt" style="color: #00AEEF;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: #002855;">Security First</h5>
+                    <p class="text-muted mb-3">Every layer of ChamaPro is built with security as the default — from database encryption to session management and M-Pesa callback verification.</p>
+                    <div>
+                        <span class="stack-badge highlight">TLS 1.3</span>
+                        <span class="stack-badge highlight">AES-256</span>
+                        <span class="stack-badge highlight">CSRF Protection</span>
+                        <span class="stack-badge highlight">Secure Cookies</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="tech-card">
+                    <div class="tech-icon" style="background: #e6faf0;">
+                        <i class="fa fa-bolt" style="color: #10b981;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: #002855;">High Performance</h5>
+                    <p class="text-muted mb-3">Optimised queries, efficient caching, and a lean backend mean ChamaPro loads fast — even on low-bandwidth mobile connections across Kenya.</p>
+                    <div>
+                        <span class="stack-badge">Django ORM</span>
+                        <span class="stack-badge">Query Optimisation</span>
+                        <span class="stack-badge">CDN Assets</span>
+                        <span class="stack-badge">Gzip Compression</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="tech-card">
+                    <div class="tech-icon" style="background: #ede9fe;">
+                        <i class="fa fa-expand-arrows-alt" style="color: #7c3aed;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: #002855;">Built to Scale</h5>
+                    <p class="text-muted mb-3">From a single Chama to thousands of groups, ChamaPro's architecture scales horizontally. Financial institutions can manage entire portfolios with confidence.</p>
+                    <div>
+                        <span class="stack-badge">PostgreSQL</span>
+                        <span class="stack-badge">Horizontal Scaling</span>
+                        <span class="stack-badge">Multi-tenant</span>
+                        <span class="stack-badge">Load Balanced</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="row align-items-center mb-5 g-5">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3" style="color: #002855;">Our Tech Stack</h2>
+                <p class="text-muted mb-4">ChamaPro is built on proven, battle-tested technologies — chosen for reliability and long-term maintainability, not trends.</p>
+                <div class="mb-3">
+                    <p class="fw-bold mb-2" style="color: #002855;">Backend</p>
+                    <span class="stack-badge highlight">Python 3.11</span>
+                    <span class="stack-badge highlight">Django 4.x</span>
+                    <span class="stack-badge highlight">PostgreSQL</span>
+                    <span class="stack-badge highlight">Gunicorn</span>
+                    <span class="stack-badge highlight">Nginx</span>
+                </div>
+                <div class="mb-3">
+                    <p class="fw-bold mb-2" style="color: #002855;">Frontend</p>
+                    <span class="stack-badge">Bootstrap 5</span>
+                    <span class="stack-badge">jQuery</span>
+                    <span class="stack-badge">Django Templates</span>
+                    <span class="stack-badge">Font Awesome</span>
+                </div>
+                <div class="mb-3">
+                    <p class="fw-bold mb-2" style="color: #002855;">Payments</p>
+                    <span class="stack-badge highlight">Safaricom Daraja API</span>
+                    <span class="stack-badge highlight">M-Pesa STK Push</span>
+                    <span class="stack-badge highlight">C2B Callbacks</span>
+                </div>
+                <div>
+                    <p class="fw-bold mb-2" style="color: #002855;">Infrastructure</p>
+                    <span class="stack-badge">Linux (Ubuntu)</span>
+                    <span class="stack-badge">Docker</span>
+                    <span class="stack-badge">GitHub Actions</span>
+                    <span class="stack-badge">SSL/TLS</span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <!-- Uptime / Reliability -->
+                <div class="p-4 rounded-3" style="background: #f8f9fa; border: 1px solid #e5e7eb;">
+                    <h5 class="fw-bold mb-4" style="color: #002855;"><i class="fa fa-chart-line me-2" style="color:#00AEEF;"></i>Platform Reliability</h5>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-600" style="color:#002855;">Uptime (Last 90 days)</small>
+                            <small class="fw-bold text-success">99.9%</small>
+                        </div>
+                        <div class="uptime-bar"><div class="uptime-fill" style="width:99.9%;"></div></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-600" style="color:#002855;">M-Pesa Success Rate</small>
+                            <small class="fw-bold text-success">98.4%</small>
+                        </div>
+                        <div class="uptime-bar"><div class="uptime-fill" style="width:98.4%;"></div></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-600" style="color:#002855;">Average Page Load</small>
+                            <small class="fw-bold" style="color:#00AEEF;">0.8s</small>
+                        </div>
+                        <div class="uptime-bar"><div class="uptime-fill" style="width:92%;"></div></div>
+                    </div>
+
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="fw-600" style="color:#002855;">Data Backup Coverage</small>
+                            <small class="fw-bold text-success">100%</small>
+                        </div>
+                        <div class="uptime-bar"><div class="uptime-fill" style="width:100%;"></div></div>
+                    </div>
+
+                    <hr class="my-4">
+                    <div class="row text-center g-2">
+                        <div class="col-4">
+                            <div class="fw-bold" style="font-size:1.4rem; color:#002855;">Daily</div>
+                            <small class="text-muted">Backups</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold" style="font-size:1.4rem; color:#002855;">24/7</div>
+                            <small class="text-muted">Monitoring</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold" style="font-size:1.4rem; color:#002855;">&lt;1hr</div>
+                            <small class="text-muted">Incident Response</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- M-Pesa Integration Deep Dive -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">M-Pesa Integration</h2>
+                <p class="text-muted">How a payment flows from phone to your Chama records in seconds.</p>
+            </div>
+            <div class="p-4 rounded-3" style="background: #f8f9fa; border: 1px solid #e5e7eb;">
+                <div class="row g-3 justify-content-center">
+                    <div class="col-6 col-md pipeline-step">
+                        <div class="pipeline-icon" style="background:#e6f5fb;">
+                            <i class="fa fa-mobile-alt" style="color:#00AEEF;"></i>
+                        </div>
+                        <small class="fw-bold d-block" style="color:#002855;">Member</small>
+                        <small class="text-muted">Initiates payment</small>
+                    </div>
+                    <div class="col-6 col-md pipeline-step">
+                        <div class="pipeline-icon" style="background:#e6faf0;">
+                            <i class="fa fa-bell" style="color:#10b981;"></i>
+                        </div>
+                        <small class="fw-bold d-block" style="color:#002855;">STK Push</small>
+                        <small class="text-muted">Sent to phone</small>
+                    </div>
+                    <div class="col-6 col-md pipeline-step">
+                        <div class="pipeline-icon" style="background:#fef3c7;">
+                            <i class="fa fa-lock" style="color:#f59e0b;"></i>
+                        </div>
+                        <small class="fw-bold d-block" style="color:#002855;">PIN Entered</small>
+                        <small class="text-muted">Authorised by member</small>
+                    </div>
+                    <div class="col-6 col-md pipeline-step">
+                        <div class="pipeline-icon" style="background:#ede9fe;">
+                            <i class="fa fa-server" style="color:#7c3aed;"></i>
+                        </div>
+                        <small class="fw-bold d-block" style="color:#002855;">Callback</small>
+                        <small class="text-muted">Received & verified</small>
+                    </div>
+                    <div class="col-6 col-md pipeline-step">
+                        <div class="pipeline-icon" style="background:#e6f5fb;">
+                            <i class="fa fa-check-circle" style="color:#00AEEF;"></i>
+                        </div>
+                        <small class="fw-bold d-block" style="color:#002855;">Recorded</small>
+                        <small class="text-muted">Auto-logged in Chama</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Details -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Security Practices</h2>
+                <p class="text-muted">How we protect your Chama's financial data.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="p-4 rounded-3" style="border: 1px solid #e5e7eb;">
+                        <div class="security-item">
+                            <div class="security-dot" style="background:#e6f5fb;">
+                                <i class="fa fa-key" style="color:#00AEEF;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Password Hashing</h6>
+                                <p class="text-muted small mb-0">All passwords are hashed using Django's PBKDF2 algorithm with SHA-256. Plain-text passwords are never stored.</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-dot" style="background:#e6faf0;">
+                                <i class="fa fa-user-shield" style="color:#10b981;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Role-Based Access Control</h6>
+                                <p class="text-muted small mb-0">Admins, treasurers, secretaries, and members each see only what their role permits. No accidental data exposure.</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-dot" style="background:#fef3c7;">
+                                <i class="fa fa-random" style="color:#f59e0b;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">CSRF Protection</h6>
+                                <p class="text-muted small mb-0">Every form submission is protected against Cross-Site Request Forgery attacks using Django's built-in token system.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4 rounded-3" style="border: 1px solid #e5e7eb;">
+                        <div class="security-item">
+                            <div class="security-dot" style="background:#ede9fe;">
+                                <i class="fa fa-lock" style="color:#7c3aed;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">HTTPS Everywhere</h6>
+                                <p class="text-muted small mb-0">All traffic is encrypted in transit using TLS 1.3. HTTP requests are permanently redirected to HTTPS.</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-dot" style="background:#fee2e2;">
+                                <i class="fa fa-database" style="color:#ef4444;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Database Encryption</h6>
+                                <p class="text-muted small mb-0">Sensitive fields are encrypted at rest. Database backups are encrypted and stored in separate locations daily.</p>
+                            </div>
+                        </div>
+                        <div class="security-item">
+                            <div class="security-dot" style="background:#e6f5fb;">
+                                <i class="fa fa-eye" style="color:#00AEEF;"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color:#002855;">Audit Logging</h6>
+                                <p class="text-muted small mb-0">All critical actions — contributions, loans, role changes — are logged with timestamps for full accountability.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center p-5 rounded" style="background: linear-gradient(135deg, #002855, #00AEEF);">
+            <h3 class="text-white fw-bold mb-2">Trust the Platform Built for Africa</h3>
+            <p class="text-white mb-4">Enterprise-grade security and reliability — for every Chama, big or small.</p>
+            <a href="{% url 'signup' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color: #002855;">Get Started Free</a>
+            <a href="{% url 'support' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">Talk to Us</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

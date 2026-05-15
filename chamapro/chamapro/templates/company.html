@@ -1,0 +1,414 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>About Us – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .company-hero {
+            background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .value-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .value-card:hover {
+            box-shadow: 0 12px 40px rgba(0,174,239,0.15);
+            transform: translateY(-5px);
+            border-color: #00AEEF;
+        }
+        .value-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.7rem;
+        }
+        .team-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: hidden;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .team-card:hover {
+            box-shadow: 0 8px 30px rgba(0,174,239,0.15);
+            transform: translateY(-4px);
+            border-color: #00AEEF;
+        }
+        .team-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 32px auto 16px;
+            color: white;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 36px;
+            position: relative;
+        }
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 44px;
+            width: 2px;
+            height: calc(100% + 4px);
+            background: linear-gradient(180deg, #00AEEF, #e5e7eb);
+        }
+        .timeline-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #002855, #00AEEF);
+            margin-top: 2px;
+        }
+        .mission-block {
+            border-left: 5px solid #00AEEF;
+            padding: 24px 28px;
+            background: #f0faff;
+            border-radius: 0 12px 12px 0;
+        }
+        .stat-block {
+            text-align: center;
+            padding: 24px 16px;
+        }
+        .stat-block h3 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #002855;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="company-hero text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">About ChamaPro</h1>
+            <p class="lead mb-0">We're on a mission to bring every Chama in Africa into the digital age — one group at a time.</p>
+        </div>
+    </div>
+
+    <div class="container py-5">
+
+        <!-- Mission & Vision -->
+        <div class="row g-4 mb-5 align-items-stretch">
+            <div class="col-md-6">
+                <div class="mission-block h-100">
+                    <h4 class="fw-bold mb-3" style="color: #002855;"><i class="fa fa-bullseye me-2" style="color:#00AEEF;"></i>Our Mission</h4>
+                    <p class="text-muted mb-0" style="font-size:1.05rem;">To empower every informal investment group in Africa with simple, affordable digital tools — so they can focus on growing wealth, not managing paperwork.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mission-block h-100" style="border-color: #10b981; background: #f0faf5;">
+                    <h4 class="fw-bold mb-3" style="color: #002855;"><i class="fa fa-eye me-2" style="color:#10b981;"></i>Our Vision</h4>
+                    <p class="text-muted mb-0" style="font-size:1.05rem;">A future where every Chama — from a 5-member village group to a 500-member Sacco — has access to the same quality of financial management tools as the world's largest institutions.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-0 mb-5 rounded-3 overflow-hidden" style="border: 1px solid #e5e7eb;">
+            <div class="col-6 col-md-3 stat-block" style="border-right: 1px solid #e5e7eb;">
+                <h3>5,000+</h3>
+                <p class="text-muted mb-0">Active Chamas</p>
+            </div>
+            <div class="col-6 col-md-3 stat-block" style="border-right: 1px solid #e5e7eb;">
+                <h3>80K+</h3>
+                <p class="text-muted mb-0">Members Served</p>
+            </div>
+            <div class="col-6 col-md-3 stat-block" style="border-right: 1px solid #e5e7eb;">
+                <h3>KES 2B+</h3>
+                <p class="text-muted mb-0">Transactions Tracked</p>
+            </div>
+            <div class="col-6 col-md-3 stat-block">
+                <h3>47</h3>
+                <p class="text-muted mb-0">Counties Reached</p>
+            </div>
+        </div>
+
+        <!-- Our Story -->
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-lg-6">
+                <h2 class="fw-bold mb-3" style="color: #002855;">Our Story</h2>
+                <p class="text-muted mb-3">ChamaPro was born out of a frustration we all recognised — watching Chama treasurers spend hours every month with exercise books, calculators, and WhatsApp screenshots trying to track who paid and who didn't.</p>
+                <p class="text-muted mb-3">Our founders, all members of Chamas themselves, set out to build the tool they wished they had — something simple enough for a first-time smartphone user, powerful enough for a Sacco managing hundreds of members.</p>
+                <p class="text-muted mb-0">What started as a side project in Nairobi in 2020 has grown into a platform trusted by thousands of groups across all 47 counties of Kenya — with expansion into Uganda and Tanzania underway.</p>
+            </div>
+            <div class="col-lg-6">
+                <!-- Timeline -->
+                <div class="timeline-item">
+                    <div class="timeline-dot">20</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">2020 — Founded</h6>
+                        <p class="text-muted small mb-0">ChamaPro is founded in Nairobi by a team of three developers and one financial analyst, all active Chama members.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">21</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">2021 — First 100 Chamas</h6>
+                        <p class="text-muted small mb-0">M-Pesa integration launched. Platform reaches 100 active Chamas and processes its first KES 1 million in contributions.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">22</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">2022 — Awards & Growth</h6>
+                        <p class="text-muted small mb-0">Winner of Best Fintech Startup at the Kenya Fintech Awards. Surpasses 1,000 active Chamas across 30 counties.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">23</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">2023 — Enterprise Tier</h6>
+                        <p class="text-muted small mb-0">Enterprise plan launched for financial institutions. First bank partnership signed to onboard 200+ Chama groups.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">24</div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">2024 — 5,000 Chamas</h6>
+                        <p class="text-muted small mb-0">Platform reaches 5,000 active Chamas, 80,000 members, and KES 2 billion in tracked transactions. East Africa expansion begins.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Values -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">What We Stand For</h2>
+                <p class="text-muted">The values that guide every decision we make.</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-3 col-6">
+                    <div class="value-card">
+                        <div class="value-icon" style="background:#e6f5fb;">
+                            <i class="fa fa-heart" style="color:#00AEEF;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Community First</h6>
+                        <p class="text-muted small mb-0">We exist to serve Chamas, not the other way around. Every feature we build starts with a real member need.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="value-card">
+                        <div class="value-icon" style="background:#e6faf0;">
+                            <i class="fa fa-hand-holding-usd" style="color:#10b981;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Affordability</h6>
+                        <p class="text-muted small mb-0">Financial tools shouldn't only be for the wealthy. Our pricing is designed to be accessible to every Chama.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="value-card">
+                        <div class="value-icon" style="background:#fef3c7;">
+                            <i class="fa fa-shield-alt" style="color:#f59e0b;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Trust & Security</h6>
+                        <p class="text-muted small mb-0">Your financial data is sacred. We protect it with the same seriousness as the banks do.</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="value-card">
+                        <div class="value-icon" style="background:#ede9fe;">
+                            <i class="fa fa-lightbulb" style="color:#7c3aed;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2" style="color:#002855;">Simplicity</h6>
+                        <p class="text-muted small mb-0">If a Chama treasurer can't use it in 5 minutes, we haven't done our job. Simplicity is a feature, not an afterthought.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Meet the Team</h2>
+                <p class="text-muted">The people building ChamaPro — all Chama members themselves.</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+
+                <div class="col-md-3 col-6">
+                    <div class="team-card">
+                        <div class="team-avatar" style="background: linear-gradient(135deg, #002855, #00AEEF);">BM</div>
+                        <div class="pb-4 px-3">
+                            <h6 class="fw-bold mb-1" style="color:#002855;">Brian Mutua</h6>
+                            <small class="text-muted d-block mb-2">Co-founder & CEO</small>
+                            <small class="text-muted" style="font-size:0.8rem;">Former Equity Bank product manager. Chama treasurer for 8 years.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <div class="team-card">
+                        <div class="team-avatar" style="background: linear-gradient(135deg, #10b981, #002855);">AW</div>
+                        <div class="pb-4 px-3">
+                            <h6 class="fw-bold mb-1" style="color:#002855;">Amina Wanjiku</h6>
+                            <small class="text-muted d-block mb-2">Co-founder & CTO</small>
+                            <small class="text-muted" style="font-size:0.8rem;">Full-stack engineer. Built payment systems at a leading Kenyan fintech.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <div class="team-card">
+                        <div class="team-avatar" style="background: linear-gradient(135deg, #7c3aed, #00AEEF);">JO</div>
+                        <div class="pb-4 px-3">
+                            <h6 class="fw-bold mb-1" style="color:#002855;">James Otieno</h6>
+                            <small class="text-muted d-block mb-2">Head of Finance</small>
+                            <small class="text-muted" style="font-size:0.8rem;">CPA-K. Designed ChamaPro's financial reporting engine from the ground up.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-6">
+                    <div class="team-card">
+                        <div class="team-avatar" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">FK</div>
+                        <div class="pb-4 px-3">
+                            <h6 class="fw-bold mb-1" style="color:#002855;">Faith Kamau</h6>
+                            <small class="text-muted d-block mb-2">Head of Customer Success</small>
+                            <small class="text-muted" style="font-size:0.8rem;">Onboarded over 2,000 Chamas personally. Knows every pain point by heart.</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Get In Touch</h2>
+                <p class="text-muted">We'd love to hear from you.</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4">
+                    <div class="text-center p-4 rounded-3" style="border: 1px solid #e5e7eb;">
+                        <div style="width:56px;height:56px;background:#e6f5fb;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <i class="fa fa-map-marker-alt fa-lg" style="color:#00AEEF;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Office</h6>
+                        <p class="text-muted small mb-0">Westlands, Nairobi<br>Kenya</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4 rounded-3" style="border: 1px solid #e5e7eb;">
+                        <div style="width:56px;height:56px;background:#e6faf0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <i class="fa fa-envelope fa-lg" style="color:#10b981;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Email</h6>
+                        <p class="text-muted small mb-0"><a href="mailto:info@chamapro.com" style="color:#10b981;">info@chamapro.com</a></p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-center p-4 rounded-3" style="border: 1px solid #e5e7eb;">
+                        <div style="width:56px;height:56px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                            <i class="fa fa-phone fa-lg" style="color:#f59e0b;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1" style="color:#002855;">Phone</h6>
+                        <p class="text-muted small mb-0"><a href="tel:+254712328150" style="color:#f59e0b;">+254 712 328 150</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center p-5 rounded" style="background: linear-gradient(135deg, #002855, #00AEEF);">
+            <h3 class="text-white fw-bold mb-2">Join the ChamaPro Family</h3>
+            <p class="text-white mb-4">Thousands of Chamas trust us with their finances. Yours should too.</p>
+            <a href="{% url 'signup' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color: #002855;">Create Free Account</a>
+            <a href="{% url 'support' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">Contact Us</a>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

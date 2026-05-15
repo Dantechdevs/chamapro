@@ -1,0 +1,302 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Use Cases – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .hero {
+            background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .usecase-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .usecase-card:hover {
+            box-shadow: 0 12px 40px rgba(0,174,239,0.15);
+            transform: translateY(-6px);
+            border-color: #00AEEF;
+        }
+        .usecase-card-header {
+            padding: 36px 28px 24px;
+            text-align: center;
+        }
+        .usecase-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+        }
+        .usecase-card-body {
+            padding: 0 28px 32px;
+        }
+        .feature-tick {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 0.92rem;
+            color: #374151;
+        }
+        .feature-tick i {
+            margin-top: 2px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .segment-badge {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .quote-block {
+            border-left: 4px solid #00AEEF;
+            padding: 16px 20px;
+            background: #f0faff;
+            border-radius: 0 10px 10px 0;
+            margin-top: 20px;
+            font-style: italic;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+        .quote-block span {
+            display: block;
+            margin-top: 8px;
+            font-style: normal;
+            font-weight: 600;
+            color: #002855;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">Built for Every Group</h1>
+            <p class="lead mb-0">Whether you're a Sacco, NGO, or financial institution — ChamaPro adapts to how you work.</p>
+        </div>
+    </div>
+
+    <!-- Use Case Cards -->
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: #002855;">Who Uses ChamaPro?</h2>
+            <p class="text-muted">Three powerful use cases, one platform.</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+
+            <!-- Saccos -->
+            <div class="col-md-4">
+                <div class="usecase-card">
+                    <div class="usecase-card-header" style="background: #f0faff;">
+                        <span class="segment-badge" style="background:#e6f5fb; color:#00AEEF;">Savings Groups</span>
+                        <div class="usecase-icon" style="background: #fff;">
+                            <i class="fa fa-piggy-bank" style="color: #00AEEF;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="color: #002855;">Saccos & Chamas</h4>
+                        <p class="text-muted small mb-0">For investment groups managing member savings and loans</p>
+                    </div>
+                    <div class="usecase-card-body pt-3">
+                        <div class="feature-tick"><i class="fa fa-check-circle text-primary"></i> Track monthly contributions per member</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-primary"></i> Manage loan applications and repayments</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-primary"></i> Collect payments via M-Pesa STK Push</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-primary"></i> Issue fines for late or missed contributions</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-primary"></i> Generate PDF & Excel financial reports</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-primary"></i> Manage multiple Chamas from one account</div>
+                        <div class="quote-block">
+                            "We used to track everything in a notebook. ChamaPro changed everything — our treasurer now spends 10 minutes a month instead of a whole afternoon."
+                            <span>— Grace M., Chama Treasurer, Nairobi</span>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-5" style="background-color: #00AEEF; border: none;">Start Free</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NGOs -->
+            <div class="col-md-4">
+                <div class="usecase-card">
+                    <div class="usecase-card-header" style="background: #f0faf5;">
+                        <span class="segment-badge" style="background:#e6faf0; color:#10b981;">Non-Profit</span>
+                        <div class="usecase-icon" style="background: #fff;">
+                            <i class="fa fa-hands-helping" style="color: #10b981;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="color: #002855;">NGOs & Community Groups</h4>
+                        <p class="text-muted small mb-0">For organisations managing donor funds and beneficiary groups</p>
+                    </div>
+                    <div class="usecase-card-body pt-3">
+                        <div class="feature-tick"><i class="fa fa-check-circle text-success"></i> Track member welfare contributions</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-success"></i> Manage emergency loan disbursements</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-success"></i> Record and audit all transactions</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-success"></i> Role-based access for staff and volunteers</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-success"></i> Export reports for donor accountability</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle text-success"></i> Manage multiple groups under one organisation</div>
+                        <div class="quote-block" style="border-color: #10b981; background: #f0faf5;">
+                            "ChamaPro helped us account for every shilling to our donors. The export reports are professional and our auditors love them."
+                            <span>— James O., NGO Program Manager, Kisumu</span>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'partner_apply' %}" class="btn btn-success rounded-pill px-5">Partner With Us</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Institutions -->
+            <div class="col-md-4">
+                <div class="usecase-card">
+                    <div class="usecase-card-header" style="background: #fdf6ff;">
+                        <span class="segment-badge" style="background:#ede9fe; color:#7c3aed;">Enterprise</span>
+                        <div class="usecase-icon" style="background: #fff;">
+                            <i class="fa fa-university" style="color: #7c3aed;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="color: #002855;">Financial Institutions</h4>
+                        <p class="text-muted small mb-0">For banks and MFIs serving Chama clients at scale</p>
+                    </div>
+                    <div class="usecase-card-body pt-3">
+                        <div class="feature-tick"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> White-label platform for your brand</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Manage thousands of Chama groups</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> API integration with core banking systems</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Compliance and audit trail reporting</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Dedicated account manager</div>
+                        <div class="feature-tick"><i class="fa fa-check-circle" style="color:#7c3aed;"></i> Custom SLA and enterprise support</div>
+                        <div class="quote-block" style="border-color: #7c3aed; background: #fdf6ff;">
+                            "We onboarded 200 Chama groups onto ChamaPro in under a month. The API integration with our core banking was seamless."
+                            <span>— David K., Head of Digital, Tier-2 Bank</span>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'partner_apply' %}" class="btn rounded-pill px-5 text-white" style="background-color: #7c3aed; border: none;">Contact Sales</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Feature Comparison Table -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Feature Comparison</h2>
+                <p class="text-muted">Everything you need, matched to your use case.</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle">
+                    <thead style="background: #002855; color: white;">
+                        <tr>
+                            <th class="text-start py-3 px-4">Feature</th>
+                            <th class="py-3">Saccos & Chamas</th>
+                            <th class="py-3">NGOs</th>
+                            <th class="py-3">Financial Institutions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in comparison_rows %}
+                        <tr>
+                            <td class="text-start px-4 fw-500">{{ row.feature }}</td>
+                            <td>{% if row.sacco %}<i class="fa fa-check-circle text-primary fa-lg"></i>{% else %}<i class="fa fa-minus text-muted"></i>{% endif %}</td>
+                            <td>{% if row.ngo %}<i class="fa fa-check-circle text-success fa-lg"></i>{% else %}<i class="fa fa-minus text-muted"></i>{% endif %}</td>
+                            <td>{% if row.fi %}<i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i>{% else %}<i class="fa fa-minus text-muted"></i>{% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td class="text-start px-4">Member Management</td><td><i class="fa fa-check-circle text-primary fa-lg"></i></td><td><i class="fa fa-check-circle text-success fa-lg"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr style="background:#f8f9fa;"><td class="text-start px-4">Contribution Tracking</td><td><i class="fa fa-check-circle text-primary fa-lg"></i></td><td><i class="fa fa-check-circle text-success fa-lg"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr><td class="text-start px-4">Loan Management</td><td><i class="fa fa-check-circle text-primary fa-lg"></i></td><td><i class="fa fa-check-circle text-success fa-lg"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr style="background:#f8f9fa;"><td class="text-start px-4">M-Pesa Integration</td><td><i class="fa fa-check-circle text-primary fa-lg"></i></td><td><i class="fa fa-check-circle text-success fa-lg"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr><td class="text-start px-4">PDF & Excel Reports</td><td><i class="fa fa-check-circle text-primary fa-lg"></i></td><td><i class="fa fa-check-circle text-success fa-lg"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr style="background:#f8f9fa;"><td class="text-start px-4">Fines & Penalties</td><td><i class="fa fa-check-circle text-primary fa-lg"></i></td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr><td class="text-start px-4">White-Label Branding</td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr style="background:#f8f9fa;"><td class="text-start px-4">API Access</td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        <tr><td class="text-start px-4">Dedicated Account Manager</td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-minus text-muted"></i></td><td><i class="fa fa-check-circle fa-lg" style="color:#7c3aed;"></i></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center p-5 rounded" style="background: linear-gradient(135deg, #002855, #00AEEF);">
+            <h3 class="text-white fw-bold mb-2">Ready to get started?</h3>
+            <p class="text-white mb-4">Join thousands of groups already running on ChamaPro.</p>
+            <a href="{% url 'signup' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color: #002855;">Create Free Account</a>
+            <a href="{% url 'pricing' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">View Pricing</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

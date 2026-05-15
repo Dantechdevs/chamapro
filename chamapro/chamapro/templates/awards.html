@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Awards & Recognition – ChamaPro</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <style>
+        .awards-hero {
+            background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);
+            padding: 80px 0 60px;
+            color: white;
+        }
+        .award-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 36px 28px;
+            text-align: center;
+            transition: all 0.3s;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .award-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #002855, #00AEEF);
+        }
+        .award-card:hover {
+            box-shadow: 0 12px 40px rgba(0,174,239,0.15);
+            transform: translateY(-6px);
+            border-color: #00AEEF;
+        }
+        .award-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+        }
+        .award-year {
+            display: inline-block;
+            background: #e6f5fb;
+            color: #00AEEF;
+            border-radius: 20px;
+            padding: 3px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .press-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        .press-card:hover {
+            border-color: #00AEEF;
+            box-shadow: 0 4px 20px rgba(0,174,239,0.1);
+        }
+        .stat-pill {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        .stat-pill h3 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #002855;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spinner -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
+            <img src="{% static 'img/logo.png' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">chama<span style="color: #00AEEF;">pro</span></span>
+        </a>
+        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav mx-auto">
+                <a href="{% url 'home' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Home</a>
+                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                {% endif %}
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
+                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="awards-hero text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold mb-3">Awards & Recognition</h1>
+            <p class="lead mb-0">Recognised by industry leaders for excellence in fintech innovation across Africa.</p>
+        </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="bg-white py-4 shadow-sm">
+        <div class="container">
+            <div class="row g-3 text-center">
+                <div class="col-6 col-md-3">
+                    <div class="stat-pill">
+                        <h3>12+</h3>
+                        <small class="text-muted fw-500">Awards Won</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-pill">
+                        <h3>5</h3>
+                        <small class="text-muted fw-500">Years Recognised</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-pill">
+                        <h3>8</h3>
+                        <small class="text-muted fw-500">Media Features</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-pill">
+                        <h3>#1</h3>
+                        <small class="text-muted fw-500">Chama Platform in Kenya</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Awards Grid -->
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: #002855;">Our Awards</h2>
+            <p class="text-muted">Recognition from Kenya's leading fintech and startup ecosystems.</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-md-4">
+                <div class="award-card">
+                    <span class="award-year">2024</span>
+                    <div class="award-icon" style="background: #fef3c7;">
+                        <i class="fa fa-trophy" style="color: #f59e0b;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Best Fintech Startup</h5>
+                    <p class="text-muted mb-0">Kenya Fintech Awards — Recognised for innovation in digital financial management for informal investment groups.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="award-card">
+                    <span class="award-year">2024</span>
+                    <div class="award-icon" style="background: #e6f5fb;">
+                        <i class="fa fa-star" style="color: #00AEEF;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Top SME Tech Solution</h5>
+                    <p class="text-muted mb-0">iHub Nairobi — Awarded for outstanding contribution to SME financial technology in East Africa.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="award-card">
+                    <span class="award-year">2023</span>
+                    <div class="award-icon" style="background: #e6faf0;">
+                        <i class="fa fa-medal" style="color: #10b981;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Financial Inclusion Champion</h5>
+                    <p class="text-muted mb-0">FSD Kenya — Recognised for driving financial inclusion through accessible digital tools for Chamas nationwide.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="award-card">
+                    <span class="award-year">2023</span>
+                    <div class="award-icon" style="background: #ede9fe;">
+                        <i class="fa fa-rocket" style="color: #7c3aed;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Most Innovative Startup</h5>
+                    <p class="text-muted mb-0">Nairobi Innovation Week — Celebrated as one of Kenya's most innovative startups in the financial services sector.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="award-card">
+                    <span class="award-year">2022</span>
+                    <div class="award-icon" style="background: #fee2e2;">
+                        <i class="fa fa-award" style="color: #ef4444;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Best M-Pesa Integration</h5>
+                    <p class="text-muted mb-0">Safaricom Developer Awards — Excellence in M-Pesa API integration for seamless group payment collection.</p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="award-card">
+                    <span class="award-year">2022</span>
+                    <div class="award-icon" style="background: #fef9c3;">
+                        <i class="fa fa-shield-alt" style="color: #ca8a04;"></i>
+                    </div>
+                    <h5 class="fw-bold" style="color: #002855;">Data Security Excellence</h5>
+                    <p class="text-muted mb-0">Kenya ICT Authority — Commended for best practices in data security and user privacy for a financial platform.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Press & Media -->
+        <div class="mb-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold" style="color: #002855;">Press & Media</h2>
+                <p class="text-muted">ChamaPro has been featured in leading Kenyan and African publications.</p>
+            </div>
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <div class="press-card">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 mt-1" style="width:44px;height:44px;background:#e6f5fb;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa fa-newspaper" style="color:#00AEEF;"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Business Daily Africa · March 2024</small>
+                                <h6 class="fw-bold mt-1 mb-1" style="color:#002855;">"How ChamaPro is Digitising Kenya's Chama Culture"</h6>
+                                <p class="text-muted small mb-0">A deep dive into how ChamaPro is transforming informal savings groups with technology.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="press-card">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 mt-1" style="width:44px;height:44px;background:#e6faf0;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa fa-newspaper" style="color:#10b981;"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">TechCabal · November 2023</small>
+                                <h6 class="fw-bold mt-1 mb-1" style="color:#002855;">"The Startups Making Africa's Informal Economy Smarter"</h6>
+                                <p class="text-muted small mb-0">ChamaPro featured among Africa's most impactful fintech startups of 2023.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="press-card">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 mt-1" style="width:44px;height:44px;background:#fef3c7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa fa-newspaper" style="color:#f59e0b;"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Daily Nation · June 2023</small>
+                                <h6 class="fw-bold mt-1 mb-1" style="color:#002855;">"App Helping Thousands of Kenyan Chamas Go Digital"</h6>
+                                <p class="text-muted small mb-0">How thousands of investment groups are saving time and money with ChamaPro.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="press-card">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3 mt-1" style="width:44px;height:44px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fa fa-newspaper" style="color:#7c3aed;"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Disrupt Africa · January 2023</small>
+                                <h6 class="fw-bold mt-1 mb-1" style="color:#002855;">"East Africa's Top 10 Fintech Startups to Watch"</h6>
+                                <p class="text-muted small mb-0">ChamaPro listed among East Africa's most promising fintech companies to watch.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="text-center p-5 rounded" style="background: linear-gradient(135deg, #002855, #00AEEF);">
+            <h3 class="text-white fw-bold mb-2">Join an Award-Winning Platform</h3>
+            <p class="text-white mb-4">Thousands of Chamas trust ChamaPro to manage their finances. Join them today.</p>
+            <a href="{% url 'signup' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color: #002855;">
+                Get Started Free
+            </a>
+            <a href="{% url 'customers' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">
+                See Customer Stories
+            </a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="container-fluid bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    &copy; <a class="border-bottom text-light" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="{% url 'terms' %}" class="text-light me-3">Terms</a>
+                    <a href="{% url 'support' %}" class="text-light me-3">Support</a>
+                    <a href="{% url 'company' %}" class="text-light">About Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
