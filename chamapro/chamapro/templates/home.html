@@ -9,75 +9,1028 @@
     <meta content="chama management, sacco, investment group, kenya, mpesa" name="keywords">
     <meta content="ChamaPro – Smart digital platform for Chama contribution tracking, loans, and financial management." name="description">
 
-    <!-- Favicon -->
     <link href="{% static 'img/favicon.ico' %}" rel="icon">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Open+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <!-- Icon Font Stylesheets -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Libraries -->
     <link href="{% static 'lib/animate/animate.min.css' %}" rel="stylesheet">
     <link href="{% static 'lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
 
-    <!-- Bootstrap & Template -->
+    <!-- Bootstrap -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <style>
+        /* ===== CSS VARIABLES — GREEN PALETTE (matches ChamaPro app) ===== */
+        :root {
+            --navy:      #0d2b1a;   /* deep forest green  (was navy blue)   */
+            --sky:       #1a7a40;   /* brand green        (was sky blue)     */
+            --sky-light: #e8f5ee;   /* pale green tint    (was sky-light)    */
+            --gold:      #FFD700;
+            --green:     #16a34a;   /* bright action green                  */
+            --green-lt:  #4ade80;   /* light accent green                   */
+            --purple:    #7c3aed;
+            --dark:      #061409;   /* near-black green   (was dark navy)    */
+            --gray:      #f2f8f4;   /* green-tinted gray  (was #f4f7fb)      */
+            --text:      #1e293b;
+            --muted:     #64748b;
+            --white:     #ffffff;
+            --radius:    16px;
+            --radius-sm: 10px;
+            --shadow:    0 4px 24px rgba(13,43,26,0.10);
+            --shadow-lg: 0 12px 48px rgba(13,43,26,0.16);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text);
+            background: var(--white);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, .display-4, .display-5 {
+            font-family: 'Syne', sans-serif;
+        }
+
+        /* ===== SPINNER ===== */
+        #spinner { background: var(--white); z-index: 9999; }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: var(--dark) !important;
+            border-bottom: 1px solid rgba(26,122,64,0.25);
+            font-size: 0.82rem;
+            letter-spacing: 0.01em;
+            position: relative;
+            z-index: 1100;
+        }
+        .top-bar a { transition: color 0.2s; }
+        .top-bar a:hover { color: var(--gold) !important; }
+        .top-bar .dropdown-menu {
+            background: var(--dark) !important;
+            border: 1px solid rgba(26,122,64,0.3) !important;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+        }
+        .top-bar .dropdown-item { font-size: 0.83rem; padding: 8px 18px; }
+        .top-bar .dropdown-item:hover { background: rgba(26,122,64,0.15); color: var(--green-lt) !important; }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            padding: 14px 40px;
+            background: var(--white) !important;
+            box-shadow: 0 2px 20px rgba(13,43,26,0.07);
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            transition: box-shadow 0.3s;
+        }
+        .navbar.scrolled { box-shadow: 0 4px 30px rgba(13,43,26,0.14); }
+        .navbar-brand span { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--navy); }
+        .navbar-brand span em { font-style: normal; color: var(--sky); }
+        .nav-link { font-weight: 500; color: var(--navy) !important; font-size: 0.95rem; padding: 8px 14px !important; border-radius: 8px; transition: background 0.2s, color 0.2s; }
+        .nav-link:hover, .nav-link.active { background: var(--sky-light); color: var(--sky) !important; }
+        .btn-get-started {
+            background: var(--sky);
+            color: var(--white) !important;
+            border-radius: 50px;
+            padding: 10px 26px !important;
+            font-weight: 600;
+            border: none;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(26,122,64,0.3);
+        }
+        .btn-get-started:hover { background: #155f32; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,122,64,0.4); }
+        .btn-demo {
+            border: 2px solid var(--sky);
+            color: var(--sky) !important;
+            border-radius: 50px;
+            padding: 10px 26px !important;
+            font-weight: 600;
+            background: transparent;
+            transition: all 0.2s;
+        }
+        .btn-demo:hover { background: var(--sky); color: var(--white) !important; }
+
+        /* ===== HERO ===== */
+        .hero-section {
+            background: linear-gradient(135deg, var(--dark) 0%, #0d3d1f 55%, #155f32 100%);
+            min-height: 92vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 80px 0 60px;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -100px; right: -150px;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(26,122,64,0.22) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -100px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(255,215,0,0.07) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(26,122,64,0.18);
+            border: 1px solid rgba(26,122,64,0.4);
+            color: var(--green-lt);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 24px;
+        }
+        .hero-badge span { width: 7px; height: 7px; background: var(--green-lt); border-radius: 50%; display: inline-block; animation: pulse-dot 1.5s infinite; }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.4rem, 5vw, 4rem);
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        .hero-title .accent { color: var(--green-lt); }
+        .hero-title .gold { color: var(--gold); }
+        .hero-sub {
+            color: rgba(255,255,255,0.75);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            max-width: 520px;
+            margin-bottom: 36px;
+        }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 48px; }
+        .btn-hero-primary {
+            background: var(--sky);
+            color: var(--white);
+            border-radius: 50px;
+            padding: 15px 34px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            box-shadow: 0 6px 24px rgba(26,122,64,0.45);
+            transition: all 0.25s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-hero-primary:hover { background: #155f32; color: var(--white); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(26,122,64,0.55); }
+        .btn-hero-outline {
+            border: 2px solid rgba(255,255,255,0.4);
+            color: var(--white);
+            border-radius: 50px;
+            padding: 13px 32px;
+            font-weight: 600;
+            font-size: 1rem;
+            background: transparent;
+            transition: all 0.25s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-hero-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.1); color: var(--white); }
+        .hero-trust {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+        }
+        .hero-trust .avatars { display: flex; }
+        .hero-trust .avatars div {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 2px solid var(--dark);
+            background: linear-gradient(135deg, var(--sky), var(--navy));
+            margin-left: -8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: white; font-weight: 700;
+        }
+        .hero-trust .avatars div:first-child { margin-left: 0; }
+        .hero-mockup {
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+            padding: 16px;
+        }
+        .mockup-card {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            padding: 28px;
+            color: var(--white);
+            margin-bottom: 16px;
+        }
+        .mockup-card.main-card {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(26,122,64,0.4);
+        }
+        .stat-pill {
+            background: rgba(74,222,128,0.15);
+            border: 1px solid rgba(74,222,128,0.35);
+            color: #4ade80;
+            border-radius: 50px;
+            padding: 4px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .mini-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .mini-bar-fill {
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(90deg, var(--green-lt), #16a34a);
+            animation: fillBar 2s ease-out forwards;
+        }
+        @keyframes fillBar { from{width:0} }
+        .floating-badge {
+            position: absolute;
+            background: var(--white);
+            border-radius: 14px;
+            padding: 12px 18px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            animation: float 4s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        .floating-badge.b1 { top: 10%; right: 0px; animation-delay: 0s; }
+        .floating-badge.b2 { bottom: 15%; left: 0px; animation-delay: 2s; }
+        .floating-badge .badge-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+        /* ===== SECTION STYLES ===== */
+        .section-label {
+            display: inline-block;
+            background: var(--sky-light);
+            color: var(--sky);
+            border: 1px solid rgba(26,122,64,0.25);
+            border-radius: 50px;
+            padding: 5px 18px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1.15;
+        }
+
+        /* ===== ABOUT ===== */
+        .about-section { padding: 100px 0; }
+        .about-img-wrap { position: relative; }
+        .about-img-wrap img { border-radius: 24px; width: 100%; box-shadow: var(--shadow-lg); }
+        .about-img-badge {
+            position: absolute;
+            bottom: -20px; right: -20px;
+            background: var(--navy);
+            color: var(--white);
+            border-radius: 18px;
+            padding: 20px 26px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+        .about-img-badge strong { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--green-lt); display: block; }
+        .about-img-badge span { font-size: 0.82rem; opacity: 0.75; }
+        .tab-nav-custom { border: none; gap: 8px; margin-bottom: 24px; }
+        .tab-nav-custom .nav-link {
+            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 50px !important;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 8px 22px;
+            background: transparent;
+            transition: all 0.2s;
+        }
+        .tab-nav-custom .nav-link.active {
+            background: var(--navy) !important;
+            border-color: var(--navy) !important;
+            color: var(--white);
+        }
+        .value-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px;
+            border-radius: var(--radius);
+            background: var(--gray);
+            transition: all 0.25s;
+        }
+        .value-card:hover { background: var(--sky-light); transform: translateX(4px); }
+        .value-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            background: var(--navy);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--green-lt);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        /* ===== STATS ===== */
+        .stats-section {
+            background: linear-gradient(135deg, var(--navy) 0%, #155f32 100%);
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234ade80' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .stat-item { text-align: center; padding: 20px; }
+        .stat-number {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .stat-number .stat-suffix { color: var(--green-lt); }
+        .stat-label { color: rgba(255,255,255,0.7); font-size: 0.95rem; font-weight: 500; }
+        .stat-icon { font-size: 2rem; color: var(--green-lt); margin-bottom: 16px; opacity: 0.85; }
+        .stat-divider { width: 1px; background: rgba(255,255,255,0.1); }
+
+        /* ===== HOW IT WORKS ===== */
+        .how-section { padding: 100px 0; background: var(--gray); }
+        .step-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 36px 28px;
+            position: relative;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .step-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        .step-number {
+            font-family: 'Syne', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--sky-light);
+            line-height: 1;
+            position: absolute;
+            top: 16px; right: 24px;
+        }
+        .step-icon-wrap {
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .step-connector {
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            transform: translateY(-50%);
+            color: var(--sky);
+            font-size: 1.4rem;
+            z-index: 2;
+        }
+
+        /* ===== FEATURES ===== */
+        .features-section { padding: 100px 0; }
+        .feature-card {
+            border: 1.5px solid #e8eef6;
+            border-radius: 20px;
+            padding: 32px;
+            background: var(--white);
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .feature-card:hover {
+            border-color: var(--sky);
+            box-shadow: 0 8px 32px rgba(26,122,64,0.12);
+            transform: translateY(-4px);
+        }
+        .feature-icon {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            background: var(--sky-light);
+            color: var(--sky);
+        }
+
+        /* ===== SERVICES ===== */
+        .services-section { padding: 100px 0; background: var(--gray); }
+        .service-tab-btn {
+            display: flex; align-items: center; gap: 14px;
+            padding: 18px 22px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            background: var(--white);
+            cursor: pointer;
+            transition: all 0.25s;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .service-tab-btn.active, .service-tab-btn:hover {
+            border-color: var(--sky);
+            background: var(--sky-light);
+            box-shadow: 0 4px 14px rgba(26,122,64,0.1);
+        }
+        .service-tab-btn .tab-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .service-content-panel {
+            background: var(--white);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .service-content-panel img { width: 100%; height: 260px; object-fit: cover; }
+        .service-details { padding: 32px; }
+        .check-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--text); font-weight: 500; }
+        .check-item i { color: var(--green); font-size: 1rem; }
+
+        /* ===== USE CASES ===== */
+        .use-cases-section { padding: 100px 0; }
+        .use-card {
+            border-radius: 24px;
+            padding: 40px 32px;
+            height: 100%;
+            transition: all 0.3s;
+            border: 1.5px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .use-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+        }
+        .use-card.chama { background: #f0fdf4; border-color: rgba(26,122,64,0.2); }
+        .use-card.chama::before { background: var(--sky); }
+        .use-card.ngo { background: #f0fdf4; border-color: rgba(16,185,129,0.2); }
+        .use-card.ngo::before { background: var(--green); }
+        .use-card.fi { background: #f5f3ff; border-color: rgba(124,58,237,0.2); }
+        .use-card.fi::before { background: var(--purple); }
+        .use-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        .use-icon-wrap {
+            width: 72px; height: 72px;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+        }
+
+        /* ===== PRICING TEASER ===== */
+        .pricing-section { padding: 100px 0; background: var(--gray); }
+        .pricing-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 40px 36px;
+            border: 2px solid #e8eef6;
+            transition: all 0.3s;
+            position: relative;
+            height: 100%;
+        }
+        .pricing-card.popular {
+            border-color: var(--sky);
+            box-shadow: 0 12px 48px rgba(26,122,64,0.15);
+        }
+        .popular-badge {
+            position: absolute;
+            top: -14px; left: 50%; transform: translateX(-50%);
+            background: var(--sky);
+            color: var(--white);
+            border-radius: 50px;
+            padding: 4px 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .price-amount {
+            font-family: 'Syne', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+        .price-period { color: var(--muted); font-size: 0.9rem; }
+        .pricing-feature { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.92rem; }
+        .pricing-feature:last-child { border: none; }
+        .pricing-feature i.yes { color: var(--green); }
+        .pricing-feature i.no { color: #cbd5e1; }
+
+        /* ===== TESTIMONIALS ===== */
+        .testimonials-section { padding: 100px 0; }
+        .testimonial-card {
+            background: var(--white);
+            border: 1.5px solid #e8eef6;
+            border-radius: 24px;
+            padding: 36px;
+            transition: all 0.3s;
+        }
+        .testimonial-card:hover { border-color: var(--sky); box-shadow: var(--shadow); }
+        .stars { color: var(--gold); font-size: 0.9rem; margin-bottom: 16px; }
+        .testimonial-quote { color: var(--text); line-height: 1.7; font-style: italic; margin-bottom: 24px; }
+        .testimonial-author { display: flex; align-items: center; gap: 14px; }
+        .author-avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--sky));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            color: var(--white);
+            font-size: 1rem;
+        }
+        .author-name { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+        .author-role { color: var(--muted); font-size: 0.82rem; }
+
+        /* ===== APP DOWNLOAD ===== */
+        .app-section {
+            background: linear-gradient(135deg, var(--dark) 0%, #0d3d1f 100%);
+            padding: 100px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .app-section::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(26,122,64,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .app-store-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 14px 24px;
+            color: var(--white);
+            text-decoration: none;
+            transition: all 0.25s;
+            backdrop-filter: blur(10px);
+        }
+        .app-store-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.4); color: var(--white); transform: translateY(-2px); }
+        .app-store-btn .store-label { font-size: 0.7rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em; }
+        .app-store-btn .store-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; }
+
+        /* ===== APP MOCKUP ===== */
+        .app-mockup-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 480px;
+            width: 100%;
+        }
+        /* Desktop dashboard card — peeking behind phone */
+        .dash-peek {
+            position: absolute;
+            left: 0;
+            top: 20px;
+            width: 68%;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 16px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            padding: 14px;
+            z-index: 1;
+        }
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .dash-greeting { color: #1a3a1a; }
+        .dash-actions { display: flex; gap: 6px; }
+        .dash-pill {
+            background: #e8f5e8;
+            color: #1a4a1a;
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-size: 0.58rem;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .dash-pill.green { background: #1a4a1a; color: white; }
+        .dash-stats {
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .dash-stat-card {
+            background: #f8faf8;
+            border-radius: 10px;
+            padding: 8px 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ds-icon {
+            width: 24px; height: 24px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.6rem;
+            flex-shrink: 0;
+        }
+        .ds-icon.green { background: #dcfce7; color: #16a34a; }
+        .ds-icon.red { background: #fee2e2; color: #dc2626; }
+        .ds-icon.blue { background: #dbeafe; color: #2563eb; }
+        .dash-chart-area {
+            background: #f8faf8;
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
+        /* Phone frame */
+        .phone-frame {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 46%;
+            height: 100%;
+            background: #111;
+            border-radius: 36px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.08);
+            z-index: 2;
+            overflow: hidden;
+            border: 8px solid #111;
+        }
+        .phone-notch {
+            position: absolute;
+            top: 8px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 14px;
+            background: #111;
+            border-radius: 10px;
+            z-index: 10;
+        }
+        .phone-screen {
+            background: #f0faf0;
+            height: 100%;
+            border-radius: 28px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .phone-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 14px 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #1a3a1a;
+        }
+        .phone-balance-card {
+            background: #1a4a1a;
+            color: white;
+            margin: 4px 10px 6px;
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+        .qa-item { cursor: default; }
+        .qa-icon {
+            width: 28px; height: 28px;
+            border-radius: 10px;
+            background: #dcfce7;
+            color: #16a34a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem;
+            margin: 0 auto 3px;
+        }
+        .phone-txn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            border-bottom: 1px solid #e8f5e8;
+        }
+        .phone-txn:last-child { border: none; }
+        .txn-icon {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.5rem;
+            flex-shrink: 0;
+        }
+        .txn-icon.green { background: #dcfce7; color: #16a34a; }
+        .txn-icon.red { background: #fee2e2; color: #dc2626; }
+        .txn-icon.blue { background: #dbeafe; color: #2563eb; }
+        .phone-bottom-nav {
+            margin-top: auto;
+            display: flex;
+            border-top: 1px solid #e8f5e8;
+            background: white;
+            padding: 6px 0 8px;
+        }
+        .bnav-item {
+            flex: 1;
+            text-align: center;
+            font-size: 0.48rem;
+            color: #888;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+        .bnav-item i { font-size: 0.7rem; }
+        .bnav-item.active { color: #1a4a1a; }
+        .bnav-item.active i { color: #1a4a1a; }
+
+        /* ===== APP SCREENSHOT (full-width, below mockup) ===== */
+        .app-screenshot-strip {
+            position: relative;
+            z-index: 1;
+            margin-top: 60px;
+            padding: 0 0 0;
+        }
+        .app-screenshot-strip img {
+            width: 100%;
+            display: block;
+            border-radius: 28px 28px 0 0;
+            box-shadow: 0 -20px 80px rgba(0,0,0,0.45);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-bottom: none;
+        }
+        .app-screenshot-label {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        .app-screenshot-label span {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(74,222,128,0.12);
+            border: 1px solid rgba(74,222,128,0.3);
+            color: var(--green-lt);
+            border-radius: 50px;
+            padding: 6px 18px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 991px) {
+            .app-mockup-wrap { height: 400px; }
+            .dash-peek { width: 65%; }
+            .phone-frame { width: 50%; }
+        }
+        @media (max-width: 575px) {
+            .app-mockup-wrap { height: 360px; }
+        }
+
+        /* ===== CONTACT ===== */
+        .contact-section { padding: 100px 0; background: var(--gray); }
+        .contact-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: var(--shadow);
+        }
+        .form-control-custom {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            background: var(--white);
+            color: var(--text);
+        }
+        .form-control-custom:focus {
+            outline: none;
+            border-color: var(--sky);
+            box-shadow: 0 0 0 4px rgba(26,122,64,0.08);
+        }
+        .form-label-custom { font-weight: 600; color: var(--navy); margin-bottom: 8px; font-size: 0.9rem; display: block; }
+        .btn-submit {
+            background: var(--sky);
+            color: var(--white);
+            border: none;
+            border-radius: 50px;
+            padding: 16px 40px;
+            font-weight: 700;
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 6px 20px rgba(26,122,64,0.3);
+            width: 100%;
+        }
+        .btn-submit:hover { background: #155f32; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(26,122,64,0.4); }
+        .contact-info-item {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .contact-info-item:last-child { border: none; }
+        .contact-info-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: var(--sky-light);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--sky);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* ===== CTA BANNER ===== */
+        .cta-section {
+            background: linear-gradient(135deg, var(--sky) 0%, var(--navy) 100%);
+            padding: 80px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%,-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer-section {
+            background: var(--dark);
+            padding: 80px 0 40px;
+        }
+        .footer-brand { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--white); }
+        .footer-brand em { font-style: normal; color: var(--green-lt); }
+        .footer-desc { color: rgba(255,255,255,0.55); font-size: 0.92rem; line-height: 1.7; margin: 16px 0 24px; max-width: 280px; }
+        .footer-social { display: flex; gap: 10px; }
+        .social-btn {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .social-btn:hover { background: var(--sky); border-color: var(--sky); color: var(--white); }
+        .footer-heading { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 1rem; margin-bottom: 20px; }
+        .footer-link { display: block; color: rgba(255,255,255,0.5); font-size: 0.9rem; text-decoration: none; padding: 5px 0; transition: color 0.2s; }
+        .footer-link:hover { color: var(--green-lt); }
+        .footer-newsletter input {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 12px 18px;
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .footer-newsletter input::placeholder { color: rgba(255,255,255,0.35); }
+        .footer-newsletter input:focus { outline: none; border-color: var(--green-lt); }
+        .footer-newsletter button {
+            background: var(--sky);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .footer-newsletter button:hover { background: #155f32; }
+        .footer-divider { border-color: rgba(255,255,255,0.07); margin: 40px 0 24px; }
+        .footer-copy { color: rgba(255,255,255,0.35); font-size: 0.85rem; }
+        .footer-copy a { color: rgba(255,255,255,0.5); text-decoration: none; }
+        .footer-copy a:hover { color: var(--green-lt); }
+
+        /* ===== BACK TO TOP ===== */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px; right: 30px;
+            width: 46px; height: 46px;
+            background: var(--sky);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 16px rgba(26,122,64,0.4);
+            text-decoration: none;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(20px);
+            z-index: 999;
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); }
+        .back-to-top:hover { background: var(--navy); color: var(--white); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .hero-section { min-height: auto; padding: 60px 0 40px; }
+            .hero-mockup { margin-top: 40px; }
+            .floating-badge { display: none; }
+            .about-img-badge { bottom: -10px; right: -10px; padding: 14px 18px; }
+            .step-connector { display: none; }
+            .navbar { padding: 12px 16px; }
+            .stat-divider { display: none; }
+        }
+        @media (max-width: 767px) {
+            .hero-title { font-size: 2.2rem; }
+            .hero-sub { font-size: 1rem; }
+            .contact-card { padding: 28px 20px; }
+            .pricing-card { padding: 32px 24px; }
+        }
+    </style>
 </head>
 
 <body>
 
     <!-- Spinner -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center" style="z-index:9999;">
+        <div class="spinner-border" role="status" style="width:3rem;height:3rem;color:var(--sky);"></div>
     </div>
 
     <!-- ======================== TOP BAR ======================== -->
-    <div class="top-bar row gx-0 align-items-center d-none d-lg-flex py-2 px-5" style="background-color: #002855; color: white;">
+    <div class="top-bar row gx-0 align-items-center d-none d-lg-flex py-2 px-5">
         <div class="col-lg-6 text-start">
-            <small><i class="fa fa-phone-alt me-2" style="color: #FFD700;"></i>+254 712 328 150</small>
-            <small class="ms-3">|</small>
-            <small class="ms-3"><i class="fa fa-envelope me-2" style="color: #FFD700;"></i>info@chamapro.com</small>
+            <small><i class="fa fa-phone-alt me-2" style="color:var(--gold);"></i>+254 712 328 150</small>
+            <small class="ms-3" style="color:rgba(255,255,255,0.2);">|</small>
+            <small class="ms-3"><i class="fa fa-envelope me-2" style="color:var(--gold);"></i>info@chamapro.com</small>
         </div>
-        <div class="col-lg-6 text-end">
-
-            <!-- Use Cases Dropdown -->
-            <div class="d-inline-block dropdown ms-3">
-                <a href="{% url 'use_cases' %}" class="small text-white text-decoration-none dropdown-toggle" id="useCasesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Use Cases
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="useCasesDropdown" style="background:#002855; border:1px solid #00AEEF;">
+        <div class="col-lg-6 text-end d-flex align-items-center justify-content-end gap-3">
+            <div class="d-inline-block dropdown">
+                <a href="{% url 'use_cases' %}" class="small text-white text-decoration-none dropdown-toggle" id="useCasesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Use Cases</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="useCasesDropdown">
                     <li><a class="dropdown-item text-white" href="{% url 'use_case_financial' %}">Financial Institutions</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'use_case_ngo' %}">NGOs & Community Groups</a></li>
                 </ul>
             </div>
-
-            <!-- Awards Link -->
-            <a href="{% url 'awards' %}" class="small ms-3 text-white text-decoration-none">Awards</a>
-
-            <!-- Technology Dropdown -->
-            <div class="d-inline-block dropdown ms-3">
-                <a href="{% url 'technology' %}" class="small text-white text-decoration-none dropdown-toggle" id="technologyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Technology
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="technologyDropdown" style="background:#002855; border:1px solid #00AEEF;">
+            <a href="{% url 'awards' %}" class="small text-white text-decoration-none">Awards</a>
+            <div class="d-inline-block dropdown">
+                <a href="{% url 'technology' %}" class="small text-white text-decoration-none dropdown-toggle" id="technologyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Technology</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="technologyDropdown">
                     <li><a class="dropdown-item text-white" href="{% url 'technology' %}">Web Application</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'technology' %}">iOS Application</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'technology' %}">Android Application</a></li>
                 </ul>
             </div>
-
-            <!-- Company Dropdown -->
-            <div class="d-inline-block dropdown ms-3">
-                <a href="{% url 'company' %}" class="small text-white text-decoration-none dropdown-toggle" id="companyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Company
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="companyDropdown" style="background:#002855; border:1px solid #00AEEF;">
+            <div class="d-inline-block dropdown">
+                <a href="{% url 'company' %}" class="small text-white text-decoration-none dropdown-toggle" id="companyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Company</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="companyDropdown">
                     <li><a class="dropdown-item text-white" href="{% url 'company' %}">About ChamaPro</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'partner_apply' %}">Partners Program</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'company' %}">Our Team</a></li>
@@ -85,493 +1038,782 @@
                     <li><a class="dropdown-item text-white" href="{% url 'terms' %}">Terms & Conditions</a></li>
                 </ul>
             </div>
-
-            <!-- Support Dropdown -->
-            <div class="d-inline-block dropdown ms-3">
-                <a href="{% url 'support' %}" class="small text-white text-decoration-none dropdown-toggle" id="supportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Support
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="supportDropdown" style="background:#002855; border:1px solid #00AEEF;">
+            <div class="d-inline-block dropdown">
+                <a href="{% url 'support' %}" class="small text-white text-decoration-none dropdown-toggle" id="supportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Support</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="supportDropdown">
                     <li><a class="dropdown-item text-white" href="{% url 'support' %}">Help Center</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'support' %}">Schedule Meeting</a></li>
                     <li><a class="dropdown-item text-white" href="{% url 'support' %}">Account Deletion</a></li>
                 </ul>
             </div>
-
-            <!-- Blog Link -->
-            <a href="#" class="small ms-3 text-white text-decoration-none">Blog</a>
+            <a href="#" class="small text-white text-decoration-none">Blog</a>
         </div>
     </div>
 
-    <!-- ======================== MAIN NAVBAR ======================== -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white py-lg-0 px-lg-5 shadow-sm">
-        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center ms-4 ms-lg-0">
-           <img src="{% static 'img/chamapro.jpeg' %}" alt="ChamaPro Logo" style="height: 40px;" class="me-2">
-            <span style="font-size: 1.5rem; font-weight: bold; color: #002855;">
-                chama<span style="color: #00AEEF;">pro</span>
-            </span>
+    <!-- ======================== NAVBAR ======================== -->
+    <nav class="navbar navbar-expand-lg" id="mainNav">
+        <a href="{% url 'home' %}" class="navbar-brand d-flex align-items-center">
+            <img src="{% static 'img/chamapro.jpeg' %}" alt="ChamaPro Logo" style="height:38px;" class="me-2">
+            <span>chama<em>pro</em></span>
         </a>
-
-        <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <button type="button" class="navbar-toggler border-0 me-2" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarCollapse">
-            <div class="navbar-nav mx-auto">
-                <a href="{% url 'home' %}" class="nav-item nav-link active" style="color: #002855; font-weight: 500;">Home</a>
-                <a href="{% url 'features' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Features</a>
-                <a href="{% url 'pricing' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Pricing</a>
-                <a href="{% url 'customers' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Customers</a>
+            <div class="navbar-nav mx-auto gap-1">
+                <a href="{% url 'home' %}" class="nav-link active">Home</a>
+                <a href="{% url 'features' %}" class="nav-link">Features</a>
+                <a href="{% url 'pricing' %}" class="nav-link">Pricing</a>
+                <a href="{% url 'customers' %}" class="nav-link">Customers</a>
                 {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Dashboard</a>
+                    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #002855; font-weight: 500;">Sign In</a>
+                    <a href="{% url 'login' %}" class="nav-link">Sign In</a>
                 {% endif %}
             </div>
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Dashboard</a>
-                    <a href="{% url 'logout' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">Logout</a>
+                    <a href="{% url 'dashboard' %}" class="btn-get-started text-decoration-none">Dashboard</a>
+                    <a href="{% url 'logout' %}" class="btn-demo text-decoration-none">Logout</a>
                 {% else %}
-                    <a href="{% url 'signup' %}" class="btn btn-primary rounded-pill px-4 py-2 me-2" style="background-color: #00AEEF; border: none;">Get Started</a>
-                    <a href="{% url 'view_demo' %}" class="btn btn-outline-primary rounded-pill px-4 py-2" style="border-color: #00AEEF; color: #00AEEF;">View Demo</a>
+                    <a href="{% url 'signup' %}" class="btn-get-started text-decoration-none">Get Started Free</a>
+                    <a href="{% url 'view_demo' %}" class="btn-demo text-decoration-none">View Demo</a>
                 {% endif %}
             </div>
         </div>
     </nav>
 
-    <!-- ======================== CAROUSEL ======================== -->
-    <div class="container-fluid p-0 mb-5 wow fadeIn" data-wow-delay="0.1s">
-        <div id="header-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
-            <div class="carousel-inner">
+    <!-- ======================== HERO ======================== -->
+    <section class="hero-section">
+        <div class="container position-relative" style="z-index:2;">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
+                    <div class="hero-badge">
+                        <span></span>
+                        Trusted by 5,000+ Chamas in Kenya
+                    </div>
+                    <h1 class="hero-title">
+                        Automate Your<br>
+                        <span class="accent">Chama</span> — Save<br>
+                        Time &amp; <span class="gold">Grow Faster</span>
+                    </h1>
+                    <p class="hero-sub">
+                        ChamaPro is Kenya's leading digital platform for Chama management. Track contributions, manage loans, and collect via M-Pesa — all in one place.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="{% url 'signup' %}" class="btn-hero-primary">
+                            <i class="fa fa-rocket"></i> Get Started Free
+                        </a>
+                        <a href="{% url 'view_demo' %}" class="btn-hero-outline">
+                            <i class="fa fa-play-circle"></i> Watch Demo
+                        </a>
+                    </div>
+                    <div class="hero-trust">
+                        <div class="avatars">
+                            <div>MK</div><div>JO</div><div>AW</div><div>BM</div><div style="background:linear-gradient(135deg,#4ade80,#0d2b1a);">+</div>
+                        </div>
+                        <span>Join <strong style="color:white;">80,000+</strong> members already on ChamaPro</span>
+                    </div>
+                </div>
+                <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
+                    <div class="hero-mockup position-relative px-lg-3">
+                        <!-- Floating badges -->
+                        <div class="floating-badge b1">
+                            <div class="badge-icon" style="background:#e8f5ee;"><i class="fa fa-check-circle" style="color:var(--sky);"></i></div>
+                            <div><div style="font-size:0.75rem;color:var(--muted);font-weight:500;">Contribution Paid</div><div>KES 5,000 via M-Pesa</div></div>
+                        </div>
+                        <div class="floating-badge b2">
+                            <div class="badge-icon" style="background:#f0fdf4;"><i class="fa fa-arrow-trend-up" style="color:var(--green);"></i></div>
+                            <div><div style="font-size:0.75rem;color:var(--muted);font-weight:500;">Group Savings</div><div style="color:var(--green);">↑ 23% this month</div></div>
+                        </div>
 
-                <!-- Slide 1 -->
-                <div class="carousel-item active">
-                    <img class="w-100" src="{% static 'img/carousel-1.jpg' %}" alt="Chama Management" style="max-height: 600px; object-fit: cover;">
-                    <div class="carousel-caption text-start" style="color: black;">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-lg-8">
-                                    <h1 class="animated slideInDown" style="font-size: 3rem; font-weight: bold; color: black;">
-                                        Automate Your Chama Today!
-                                    </h1>
-                                    <h3 class="mb-3 animated slideInDown" style="color: black; font-size: 1.5rem;">
-                                        Focus on your Chama investments as we handle your financial administration.
-                                    </h3>
-                                    <p class="animated slideInDown d-none d-md-block" style="color: black; font-size: 1rem; line-height: 1.6;">
-                                        ChamaPro is a simple-to-use platform that enables investment groups to manage all their
-                                        group activities and communications. The cloud-based solution enables group administrators
-                                        to easily and efficiently track all contribution accounts within the group.
-                                    </p>
-                                    <a href="{% url 'signup' %}" class="btn btn-primary py-3 px-5 animated slideInDown">Get Started Free</a>
+                        <!-- Main dashboard card -->
+                        <div class="mockup-card main-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <div style="font-size:0.78rem;opacity:0.6;margin-bottom:4px;">Group Balance</div>
+                                    <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;">KES 1.2M</div>
+                                </div>
+                                <span class="stat-pill">+12% ↑</span>
+                            </div>
+                            <div style="font-size:0.78rem;opacity:0.6;margin-bottom:6px;">Contribution progress this cycle</div>
+                            <div class="mini-bar"><div class="mini-bar-fill" style="width:78%;"></div></div>
+                            <div class="d-flex justify-content-between mt-2" style="font-size:0.78rem;opacity:0.6;">
+                                <span>18/23 members paid</span><span>78%</span>
+                            </div>
+                        </div>
+
+                        <!-- Stats row -->
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="mockup-card" style="padding:20px;">
+                                    <div style="font-size:0.75rem;opacity:0.6;margin-bottom:6px;"><i class="fa fa-wallet me-1"></i> Active Loans</div>
+                                    <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">7</div>
+                                    <div style="font-size:0.72rem;color:#4ade80;">All on schedule ✓</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mockup-card" style="padding:20px;">
+                                    <div style="font-size:0.75rem;opacity:0.6;margin-bottom:6px;"><i class="fa fa-users me-1"></i> Members</div>
+                                    <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">23</div>
+                                    <div style="font-size:0.72rem;color:var(--green-lt);">2 pending ›</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Slide 2 -->
-                <div class="carousel-item">
-                    <img class="w-100" src="{% static 'img/carousel-2.jpg' %}" alt="Group Finance Automation" style="max-height: 600px; object-fit: cover;">
-                    <div class="carousel-caption text-start" style="color: black;">
-                        <div class="container">
-                            <div class="row justify-content-start">
-                                <div class="col-lg-8">
-                                    <h1 class="animated slideInDown" style="font-size: 3rem; font-weight: bold; color: black;">
-                                        M-Pesa Integrated Payments
-                                    </h1>
-                                    <h3 class="mb-3 animated slideInDown" style="color: black; font-size: 1.5rem;">
-                                        Collect contributions seamlessly via M-Pesa STK Push.
-                                    </h3>
-                                    <p class="animated slideInDown d-none d-md-block" style="color: black; font-size: 1rem; line-height: 1.6;">
-                                        No more chasing members for cash. ChamaPro sends M-Pesa payment prompts directly to
-                                        members' phones and records every transaction automatically — saving your treasurer hours each month.
-                                    </p>
-                                    <a href="{% url 'features' %}" class="btn btn-primary py-3 px-5 animated slideInDown">Explore Features</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#header-carousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#header-carousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
         </div>
-    </div>
+    </section>
+
+    <!-- ======================== STATS ======================== -->
+    <section class="stats-section">
+        <div class="container position-relative" style="z-index:1;">
+            <div class="row g-4 align-items-center">
+                <div class="col-6 col-lg-3 stat-item wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="stat-icon"><i class="fa fa-users"></i></div>
+                    <div class="stat-number">5K<span class="stat-suffix">+</span></div>
+                    <div class="stat-label">Active Chamas</div>
+                </div>
+                <div class="col-6 col-lg-3 stat-item wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="stat-icon"><i class="fa fa-check-circle"></i></div>
+                    <div class="stat-number">80K<span class="stat-suffix">+</span></div>
+                    <div class="stat-label">Members Served</div>
+                </div>
+                <div class="col-6 col-lg-3 stat-item wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="stat-icon"><i class="fa fa-award"></i></div>
+                    <div class="stat-number">12<span class="stat-suffix"></span></div>
+                    <div class="stat-label">Awards Won</div>
+                </div>
+                <div class="col-6 col-lg-3 stat-item wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="stat-icon"><i class="fa fa-map-marker-alt"></i></div>
+                    <div class="stat-number">47<span class="stat-suffix"></span></div>
+                    <div class="stat-label">Counties Reached</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- ======================== ABOUT ======================== -->
-    <div class="container-xxl py-5">
-        <div class="container">
-            <div class="row g-4 align-items-end mb-4">
-                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <img class="img-fluid rounded" src="{% static 'img/about.jpg' %}" alt="About ChamaPro">
-                </div>
-                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.3s">
-                    <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">About ChamaPro</p>
-                    <h1 class="display-5 mb-4">Smart Contributions Management for Your Chama</h1>
-                    <p class="mb-4">
-                        ChamaPro helps investment groups and Chamas manage contributions, loans, and group records
-                        with ease. Our system ensures transparency, accountability, and convenience for all members.
-                        Whether you are saving, lending, or tracking finances, ChamaPro simplifies the entire process.
-                    </p>
-                    <div class="border rounded p-4">
-                        <nav>
-                            <div class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
-                                <button class="nav-link fw-semi-bold active" id="nav-story-tab" data-bs-toggle="tab" data-bs-target="#nav-story" type="button" role="tab">Our Story</button>
-                                <button class="nav-link fw-semi-bold" id="nav-mission-tab" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button" role="tab">Mission</button>
-                                <button class="nav-link fw-semi-bold" id="nav-vision-tab" data-bs-toggle="tab" data-bs-target="#nav-vision" type="button" role="tab">Vision</button>
-                            </div>
-                        </nav>
-                        <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-story" role="tabpanel">
-                                <p>ChamaPro was created to empower Chamas and investment groups by providing a
-                                   modern, digital way to manage contributions and records without stress.</p>
-                                <p class="mb-0">We believe in accountability, financial growth, and easy collaboration among members.</p>
-                            </div>
-                            <div class="tab-pane fade" id="nav-mission" role="tabpanel">
-                                <p>Our mission is to simplify group savings and contributions through technology.</p>
-                                <p class="mb-0">We aim to ensure transparency, trust, and efficiency in every Chama.</p>
-                            </div>
-                            <div class="tab-pane fade" id="nav-vision" role="tabpanel">
-                                <p>We envision a future where Chamas and groups can operate like professional
-                                   financial institutions using affordable tools.</p>
-                                <p class="mb-0">Our vision is to make every contribution count towards financial freedom.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="border rounded p-4 wow fadeInUp" data-wow-delay="0.1s">
-                <div class="row g-4">
-                    <div class="col-lg-4 wow fadeIn" data-wow-delay="0.1s">
-                        <div class="h-100">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 btn-lg-square rounded-circle bg-primary">
-                                    <i class="fa fa-times text-white"></i>
-                                </div>
-                                <div class="ps-3">
-                                    <h4>No Hidden Charges</h4>
-                                    <span>Clear and transparent contribution tracking.</span>
-                                </div>
-                                <div class="border-end d-none d-lg-block"></div>
-                            </div>
-                            <div class="border-bottom mt-4 d-block d-lg-none"></div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 wow fadeIn" data-wow-delay="0.3s">
-                        <div class="h-100">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 btn-lg-square rounded-circle bg-primary">
-                                    <i class="fa fa-users text-white"></i>
-                                </div>
-                                <div class="ps-3">
-                                    <h4>Group Empowerment</h4>
-                                    <span>Built for Chamas, Saccos, and investment teams.</span>
-                                </div>
-                                <div class="border-end d-none d-lg-block"></div>
-                            </div>
-                            <div class="border-bottom mt-4 d-block d-lg-none"></div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 wow fadeIn" data-wow-delay="0.5s">
-                        <div class="h-100">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 btn-lg-square rounded-circle bg-primary">
-                                    <i class="fa fa-phone text-white"></i>
-                                </div>
-                                <div class="ps-3">
-                                    <h4>24/7 Support</h4>
-                                    <span>Always here to assist your group's needs.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== FACTS ======================== -->
-    <div class="container-fluid facts my-5 py-5">
-        <div class="container py-5">
-            <div class="row g-5">
-                <div class="col-sm-6 col-lg-3 text-center wow fadeIn" data-wow-delay="0.1s">
-                    <i class="fa fa-users fa-3x text-white mb-3"></i>
-                    <h1 class="display-4 text-white" data-toggle="counter-up">5000</h1>
-                    <span class="fs-5 text-white">Active Chamas</span>
-                    <hr class="bg-white w-25 mx-auto mb-0">
-                </div>
-                <div class="col-sm-6 col-lg-3 text-center wow fadeIn" data-wow-delay="0.3s">
-                    <i class="fa fa-check fa-3x text-white mb-3"></i>
-                    <h1 class="display-4 text-white" data-toggle="counter-up">80000</h1>
-                    <span class="fs-5 text-white">Members Served</span>
-                    <hr class="bg-white w-25 mx-auto mb-0">
-                </div>
-                <div class="col-sm-6 col-lg-3 text-center wow fadeIn" data-wow-delay="0.5s">
-                    <i class="fa fa-award fa-3x text-white mb-3"></i>
-                    <h1 class="display-4 text-white" data-toggle="counter-up">12</h1>
-                    <span class="fs-5 text-white">Awards Won</span>
-                    <hr class="bg-white w-25 mx-auto mb-0">
-                </div>
-                <div class="col-sm-6 col-lg-3 text-center wow fadeIn" data-wow-delay="0.7s">
-                    <i class="fa fa-map-marker-alt fa-3x text-white mb-3"></i>
-                    <h1 class="display-4 text-white" data-toggle="counter-up">47</h1>
-                    <span class="fs-5 text-white">Counties Reached</span>
-                    <hr class="bg-white w-25 mx-auto mb-0">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== FEATURES ======================== -->
-    <div class="container-xxl feature py-5">
+    <section class="about-section">
         <div class="container">
             <div class="row g-5 align-items-center">
-                <div class="col-lg-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Why Choose ChamaPro?</p>
-                    <h1 class="display-5 mb-4">Reasons Why Groups Trust Us</h1>
-                    <p class="mb-4">
-                        ChamaPro is designed to help Chamas and investment groups manage their finances with ease.
-                        From contributions and loans to reports and transparency, we provide tools that keep your
-                        group organised, accountable, and financially secure.
-                    </p>
-                    <a class="btn btn-primary py-3 px-5" href="{% url 'features' %}">Explore All Features</a>
+                <div class="col-lg-5 wow fadeInLeft" data-wow-delay="0.1s">
+                    <div class="about-img-wrap">
+                        <img src="{% static 'img/about.jpg' %}" alt="About ChamaPro">
+                        <div class="about-img-badge">
+                            <strong>8+</strong>
+                            <span>Years of Innovation</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-md-6">
-                            <div class="row g-4">
-                                <div class="col-12 wow fadeIn" data-wow-delay="0.3s">
-                                    <div class="feature-box border rounded p-4">
-                                        <i class="fa fa-check fa-3x text-primary mb-3"></i>
-                                        <h4 class="mb-3">Fast Contributions Tracking</h4>
-                                        <p class="mb-3">Record and monitor member contributions instantly without paperwork.</p>
-                                        <a class="fw-semi-bold" href="{% url 'features' %}">Read More <i class="fa fa-arrow-right ms-1"></i></a>
-                                    </div>
-                                </div>
-                                <div class="col-12 wow fadeIn" data-wow-delay="0.5s">
-                                    <div class="feature-box border rounded p-4">
-                                        <i class="fa fa-headset fa-3x text-primary mb-3"></i>
-                                        <h4 class="mb-3">Guidance & Support</h4>
-                                        <p class="mb-3">We provide dedicated support to help your group grow and stay accountable.</p>
-                                        <a class="fw-semi-bold" href="{% url 'support' %}">Read More <i class="fa fa-arrow-right ms-1"></i></a>
-                                    </div>
-                                </div>
+                <div class="col-lg-7 wow fadeInRight" data-wow-delay="0.2s">
+                    <div class="section-label">About ChamaPro</div>
+                    <h2 class="section-title mb-4">Smart Contributions Management for Your Chama</h2>
+                    <p class="text-muted mb-5" style="font-size:1.05rem;line-height:1.8;">
+                        ChamaPro helps investment groups and Chamas manage contributions, loans, and group records with ease. Our system ensures transparency, accountability, and convenience for all members.
+                    </p>
+
+                    <!-- Tabs -->
+                    <ul class="nav tab-nav-custom mb-4" id="aboutTabs" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#nav-story" type="button">Our Story</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button">Mission</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-vision" type="button">Vision</button></li>
+                    </ul>
+                    <div class="tab-content mb-5">
+                        <div class="tab-pane fade show active" id="nav-story">
+                            <p class="text-muted" style="line-height:1.8;">ChamaPro was created to empower Chamas and investment groups by providing a modern, digital way to manage contributions without stress. We believe in accountability, financial growth, and easy collaboration among members.</p>
+                        </div>
+                        <div class="tab-pane fade" id="nav-mission">
+                            <p class="text-muted" style="line-height:1.8;">Our mission is to simplify group savings and contributions through technology. We aim to ensure transparency, trust, and efficiency in every Chama across Kenya.</p>
+                        </div>
+                        <div class="tab-pane fade" id="nav-vision">
+                            <p class="text-muted" style="line-height:1.8;">We envision a future where Chamas operate like professional financial institutions using affordable, accessible tools — making every contribution count towards financial freedom.</p>
+                        </div>
+                    </div>
+
+                    <!-- Value cards -->
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="value-card">
+                                <div class="value-icon"><i class="fa fa-shield-alt"></i></div>
+                                <div><h6 class="mb-1" style="font-size:0.9rem;">No Hidden Charges</h6><p class="mb-0 text-muted" style="font-size:0.8rem;">Clear pricing always</p></div>
                             </div>
                         </div>
-                        <div class="col-md-6 wow fadeIn" data-wow-delay="0.7s">
-                            <div class="feature-box border rounded p-4">
-                                <i class="fa fa-shield-alt fa-3x text-primary mb-3"></i>
-                                <h4 class="mb-3">Secure & Transparent</h4>
-                                <p class="mb-3">Every transaction is safe, well-documented, and visible to members for full trust.</p>
-                                <a class="fw-semi-bold" href="{% url 'technology' %}">Read More <i class="fa fa-arrow-right ms-1"></i></a>
+                        <div class="col-md-4">
+                            <div class="value-card">
+                                <div class="value-icon"><i class="fa fa-users"></i></div>
+                                <div><h6 class="mb-1" style="font-size:0.9rem;">Group Empowerment</h6><p class="mb-0 text-muted" style="font-size:0.8rem;">Built for Chamas</p></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="value-card">
+                                <div class="value-icon"><i class="fa fa-headset"></i></div>
+                                <div><h6 class="mb-1" style="font-size:0.9rem;">24/7 Support</h6><p class="mb-0 text-muted" style="font-size:0.8rem;">Always here for you</p></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- ======================== HOW IT WORKS ======================== -->
+    <section class="how-section">
+        <div class="container">
+            <div class="text-center mb-5 wow fadeInUp">
+                <div class="section-label">How It Works</div>
+                <h2 class="section-title">Get Your Chama Running in Minutes</h2>
+                <p class="text-muted mt-3" style="max-width:500px;margin:12px auto 0;">No technical knowledge required. Set up and go in four simple steps.</p>
+            </div>
+            <div class="row g-4 position-relative">
+                <div class="d-none d-lg-block position-absolute" style="top:80px;left:calc(12.5% + 30px);right:calc(12.5% + 30px);height:2px;background:linear-gradient(90deg,var(--sky),var(--navy));opacity:0.15;z-index:0;"></div>
+
+                <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="step-card">
+                        <div class="step-number">01</div>
+                        <div class="step-icon-wrap" style="background:#e8f5ee;"><i class="fa fa-user-plus" style="color:var(--sky);"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Create Account</h5>
+                        <p class="text-muted mb-0" style="font-size:0.9rem;line-height:1.6;">Sign up free in under 2 minutes. No credit card needed.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="step-card">
+                        <div class="step-number">02</div>
+                        <div class="step-icon-wrap" style="background:#f0fdf4;"><i class="fa fa-users" style="color:var(--green);"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Add Members</h5>
+                        <p class="text-muted mb-0" style="font-size:0.9rem;line-height:1.6;">Invite your Chama members via SMS, email, or share link.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="step-card">
+                        <div class="step-number">03</div>
+                        <div class="step-icon-wrap" style="background:#f5f3ff;"><i class="fa fa-mobile-alt" style="color:var(--purple);"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Collect via M-Pesa</h5>
+                        <p class="text-muted mb-0" style="font-size:0.9rem;line-height:1.6;">Send STK push prompts. Members pay instantly from their phones.</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.4s">
+                    <div class="step-card">
+                        <div class="step-number">04</div>
+                        <div class="step-icon-wrap" style="background:#fff7e6;"><i class="fa fa-chart-bar" style="color:#f59e0b;"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Track & Report</h5>
+                        <p class="text-muted mb-0" style="font-size:0.9rem;line-height:1.6;">View real-time reports, manage loans, and share statements.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================== FEATURES ======================== -->
+    <section class="features-section">
+        <div class="container">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6 wow fadeInLeft">
+                    <div class="section-label">Why Choose ChamaPro?</div>
+                    <h2 class="section-title">Everything Your Chama Needs</h2>
+                </div>
+                <div class="col-lg-6 wow fadeInRight">
+                    <p class="text-muted" style="font-size:1.05rem;line-height:1.8;">From contributions and loans to reports and transparency — tools that keep your group organised, accountable, and financially secure.</p>
+                    <a href="{% url 'features' %}" class="btn-get-started text-decoration-none mt-3 d-inline-block">Explore All Features</a>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="feature-card">
+                        <div class="feature-icon"><i class="fa fa-piggy-bank"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Contribution Tracking</h5>
+                        <p class="text-muted mb-0" style="font-size:0.92rem;line-height:1.7;">Record and monitor every member's contributions instantly with automated logging and real-time balances.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.15s">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#f0fdf4;color:var(--green);"><i class="fa fa-mobile-alt"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">M-Pesa STK Push</h5>
+                        <p class="text-muted mb-0" style="font-size:0.92rem;line-height:1.7;">Collect contributions directly to members' phones. No cash, no delays, no confusion.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#f5f3ff;color:var(--purple);"><i class="fa fa-hand-holding-usd"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Loan Management</h5>
+                        <p class="text-muted mb-0" style="font-size:0.92rem;line-height:1.7;">Issue loans, track repayments, and calculate interest automatically. Full accountability built in.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.25s">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#fff7e6;color:#f59e0b;"><i class="fa fa-chart-line"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Financial Reports</h5>
+                        <p class="text-muted mb-0" style="font-size:0.92rem;line-height:1.7;">Generate instant statements, contribution reports, and investment summaries anytime.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#fef2f2;color:#ef4444;"><i class="fa fa-bell"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">SMS & Email Alerts</h5>
+                        <p class="text-muted mb-0" style="font-size:0.92rem;line-height:1.7;">Automatic reminders for due contributions, loan repayments, and meeting notifications.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.35s">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background:#e8f5ee;color:var(--sky);"><i class="fa fa-shield-alt"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:10px;">Secure & Transparent</h5>
+                        <p class="text-muted mb-0" style="font-size:0.92rem;line-height:1.7;">Every transaction is encrypted, documented, and visible to authorised members for full trust.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- ======================== SERVICES ======================== -->
-    <div class="container-xxl service py-5">
+    <section class="services-section">
         <div class="container">
-            <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Our Services</p>
-                <h1 class="display-5 mb-5">Smart Solutions for Chama & Group Contributions</h1>
+            <div class="text-center mb-5 wow fadeInUp">
+                <div class="section-label">Our Services</div>
+                <h2 class="section-title">Smart Solutions for Every Chama Need</h2>
             </div>
-            <div class="row g-4 wow fadeInUp" data-wow-delay="0.3s">
+            <div class="row g-4 wow fadeInUp" data-wow-delay="0.2s">
                 <div class="col-lg-4">
-                    <div class="nav nav-pills d-flex justify-content-between w-100 h-100 me-4">
-                        <button class="nav-link w-100 d-flex align-items-center text-start border p-4 mb-4 active" data-bs-toggle="pill" data-bs-target="#tab-pane-1" type="button">
-                            <h5 class="m-0"><i class="fa fa-piggy-bank text-primary me-3"></i>Contribution Tracking</h5>
-                        </button>
-                        <button class="nav-link w-100 d-flex align-items-center text-start border p-4 mb-4" data-bs-toggle="pill" data-bs-target="#tab-pane-2" type="button">
-                            <h5 class="m-0"><i class="fa fa-wallet text-primary me-3"></i>Group Investments</h5>
-                        </button>
-                        <button class="nav-link w-100 d-flex align-items-center text-start border p-4 mb-4" data-bs-toggle="pill" data-bs-target="#tab-pane-3" type="button">
-                            <h5 class="m-0"><i class="fa fa-user-friends text-primary me-3"></i>Loan Management</h5>
-                        </button>
-                        <button class="nav-link w-100 d-flex align-items-center text-start border p-4 mb-0" data-bs-toggle="pill" data-bs-target="#tab-pane-4" type="button">
-                            <h5 class="m-0"><i class="fa fa-chart-line text-primary me-3"></i>Reports & Transparency</h5>
-                        </button>
-                    </div>
+                    <button class="service-tab-btn active" data-target="svc-1" onclick="switchService(this,'svc-1')">
+                        <div class="tab-icon" style="background:#e8f5ee;"><i class="fa fa-piggy-bank" style="color:var(--sky);"></i></div>
+                        <div><h6 class="mb-0" style="font-size:0.95rem;">Contribution Tracking</h6><small class="text-muted">Auto-log every payment</small></div>
+                    </button>
+                    <button class="service-tab-btn" data-target="svc-2" onclick="switchService(this,'svc-2')">
+                        <div class="tab-icon" style="background:#f0fdf4;"><i class="fa fa-wallet" style="color:var(--green);"></i></div>
+                        <div><h6 class="mb-0" style="font-size:0.95rem;">Group Investments</h6><small class="text-muted">Track returns & dividends</small></div>
+                    </button>
+                    <button class="service-tab-btn" data-target="svc-3" onclick="switchService(this,'svc-3')">
+                        <div class="tab-icon" style="background:#f5f3ff;"><i class="fa fa-user-friends" style="color:var(--purple);"></i></div>
+                        <div><h6 class="mb-0" style="font-size:0.95rem;">Loan Management</h6><small class="text-muted">Issue, track & schedule</small></div>
+                    </button>
+                    <button class="service-tab-btn" data-target="svc-4" onclick="switchService(this,'svc-4')">
+                        <div class="tab-icon" style="background:#fff7e6;"><i class="fa fa-chart-line" style="color:#f59e0b;"></i></div>
+                        <div><h6 class="mb-0" style="font-size:0.95rem;">Reports & Transparency</h6><small class="text-muted">Instant financial statements</small></div>
+                    </button>
                 </div>
                 <div class="col-lg-8">
-                    <div class="tab-content w-100">
-                        <!-- Tab 1 -->
-                        <div class="tab-pane fade show active" id="tab-pane-1">
-                            <div class="row g-4">
-                                <div class="col-md-6" style="min-height: 350px;">
-                                    <div class="position-relative h-100">
-                                        <img class="position-absolute rounded w-100 h-100" src="{% static 'img/service-1.jpg' %}" style="object-fit: cover;" alt="Contribution Tracking">
-                                    </div>
+                    <div class="service-content-panel">
+                        <div id="svc-1">
+                            <img src="{% static 'img/service-1.jpg' %}" alt="Contribution Tracking">
+                            <div class="service-details">
+                                <h4 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">Easily Track Member Contributions</h4>
+                                <p class="text-muted mb-4" style="line-height:1.7;">Keep accurate records of every member's contributions with instant updates and reminders. No more confusion or missing payments.</p>
+                                <div class="row g-2">
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Automated contribution logging</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>SMS & Email reminders</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Real-time balances</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>M-Pesa integration</div></div>
                                 </div>
-                                <div class="col-md-6">
-                                    <h3 class="mb-4">Easily Track Member Contributions</h3>
-                                    <p class="mb-4">Keep accurate records of every member's contributions with instant updates and reminders. No more confusion or missing payments.</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Automated contribution logging</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>SMS/Email reminders</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Real-time balances</p>
-                                    <a href="{% url 'features' %}" class="btn btn-primary py-3 px-5 mt-3">Read More</a>
-                                </div>
+                                <a href="{% url 'features' %}" class="btn-get-started text-decoration-none mt-4 d-inline-block">Learn More</a>
                             </div>
                         </div>
-                        <!-- Tab 2 -->
-                        <div class="tab-pane fade" id="tab-pane-2">
-                            <div class="row g-4">
-                                <div class="col-md-6" style="min-height: 350px;">
-                                    <div class="position-relative h-100">
-                                        <img class="position-absolute rounded w-100 h-100" src="{% static 'img/service-2.jpg' %}" style="object-fit: cover;" alt="Group Investments">
-                                    </div>
+                        <div id="svc-2" style="display:none;">
+                            <img src="{% static 'img/service-2.jpg' %}" alt="Group Investments">
+                            <div class="service-details">
+                                <h4 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">Grow Wealth Through Group Investments</h4>
+                                <p class="text-muted mb-4" style="line-height:1.7;">Pool resources together and invest in profitable ventures while tracking returns directly from ChamaPro.</p>
+                                <div class="row g-2">
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Investment tracking</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Profit & dividend sharing</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Secure record keeping</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Portfolio dashboards</div></div>
                                 </div>
-                                <div class="col-md-6">
-                                    <h3 class="mb-4">Grow Wealth Through Group Investments</h3>
-                                    <p class="mb-4">Pool your resources together and invest in profitable ventures while tracking returns directly from ChamaPro.</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Investment tracking</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Profit & dividends sharing</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Secure record keeping</p>
-                                    <a href="{% url 'features' %}" class="btn btn-primary py-3 px-5 mt-3">Read More</a>
-                                </div>
+                                <a href="{% url 'features' %}" class="btn-get-started text-decoration-none mt-4 d-inline-block">Learn More</a>
                             </div>
                         </div>
-                        <!-- Tab 3 -->
-                        <div class="tab-pane fade" id="tab-pane-3">
-                            <div class="row g-4">
-                                <div class="col-md-6" style="min-height: 350px;">
-                                    <div class="position-relative h-100">
-                                        <img class="position-absolute rounded w-100 h-100" src="{% static 'img/service-3.jpg' %}" style="object-fit: cover;" alt="Loan Management">
-                                    </div>
+                        <div id="svc-3" style="display:none;">
+                            <img src="{% static 'img/service-3.jpg' %}" alt="Loan Management">
+                            <div class="service-details">
+                                <h4 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">Simple & Transparent Loan Management</h4>
+                                <p class="text-muted mb-4" style="line-height:1.7;">Issue loans, track repayments, and calculate interest automatically to ensure full accountability within your group.</p>
+                                <div class="row g-2">
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Loan applications & approvals</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Automated repayment schedules</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Interest tracking</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Defaulter alerts</div></div>
                                 </div>
-                                <div class="col-md-6">
-                                    <h3 class="mb-4">Simple & Transparent Loan Management</h3>
-                                    <p class="mb-4">Easily issue loans to members, track repayments, and calculate interest automatically to ensure accountability.</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Loan applications & approvals</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Automated repayment schedules</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Interest tracking</p>
-                                    <a href="{% url 'features' %}" class="btn btn-primary py-3 px-5 mt-3">Read More</a>
-                                </div>
+                                <a href="{% url 'features' %}" class="btn-get-started text-decoration-none mt-4 d-inline-block">Learn More</a>
                             </div>
                         </div>
-                        <!-- Tab 4 -->
-                        <div class="tab-pane fade" id="tab-pane-4">
-                            <div class="row g-4">
-                                <div class="col-md-6" style="min-height: 350px;">
-                                    <div class="position-relative h-100">
-                                        <img class="position-absolute rounded w-100 h-100" src="{% static 'img/service-4.jpg' %}" style="object-fit: cover;" alt="Reports & Transparency">
-                                    </div>
+                        <div id="svc-4" style="display:none;">
+                            <img src="{% static 'img/service-4.jpg' %}" alt="Reports">
+                            <div class="service-details">
+                                <h4 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">Comprehensive Reports & Transparency</h4>
+                                <p class="text-muted mb-4" style="line-height:1.7;">Access clear reports on contributions, loans, and investments — ensuring members are always updated and informed.</p>
+                                <div class="row g-2">
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Financial statements</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Member access to records</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Export to PDF & Excel</div></div>
+                                    <div class="col-sm-6"><div class="check-item"><i class="fa fa-check-circle"></i>Audit trail</div></div>
                                 </div>
-                                <div class="col-md-6">
-                                    <h3 class="mb-4">Comprehensive Reports & Transparency</h3>
-                                    <p class="mb-4">Access clear reports on contributions, loans, and investments. Ensure members are always updated and informed.</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Financial reports & statements</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Member access to records</p>
-                                    <p><i class="fa fa-check text-primary me-3"></i>Transparency & accountability</p>
-                                    <a href="{% url 'features' %}" class="btn btn-primary py-3 px-5 mt-3">Read More</a>
-                                </div>
+                                <a href="{% url 'features' %}" class="btn-get-started text-decoration-none mt-4 d-inline-block">Learn More</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- ======================== USE CASES HIGHLIGHT ======================== -->
-    <div class="container-xxl py-5" style="background: #f8f9fa;">
+    <!-- ======================== USE CASES ======================== -->
+    <section class="use-cases-section">
         <div class="container">
-            <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Who We Serve</p>
-                <h1 class="display-5 mb-2">Built for Every Group</h1>
-                <p class="text-muted mb-5">One platform, three powerful use cases.</p>
+            <div class="text-center mb-5 wow fadeInUp">
+                <div class="section-label">Who We Serve</div>
+                <h2 class="section-title">Built for Every Group</h2>
+                <p class="text-muted mt-3">One platform. Three powerful use cases.</p>
             </div>
-            <div class="row g-4 wow fadeInUp" data-wow-delay="0.3s">
-                <div class="col-md-4">
-                    <div class="border rounded p-4 text-center h-100" style="transition: all 0.3s;">
-                        <div style="width:70px;height:70px;background:#e6f5fb;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;">
-                            <i class="fa fa-piggy-bank" style="color:#00AEEF;"></i>
-                        </div>
-                        <h5 class="fw-bold mb-2" style="color:#002855;">Saccos & Chamas</h5>
-                        <p class="text-muted mb-3">For investment groups managing member savings, loans, and contributions with M-Pesa.</p>
-                        <a href="{% url 'use_cases' %}" class="btn btn-outline-primary rounded-pill px-4" style="border-color:#00AEEF;color:#00AEEF;">Learn More</a>
+            <div class="row g-4">
+                <div class="col-md-4 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="use-card chama">
+                        <div class="use-icon-wrap" style="background:#d1fae5;"><i class="fa fa-piggy-bank" style="color:var(--sky);font-size:1.8rem;"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">Saccos & Chamas</h5>
+                        <p class="text-muted mb-4" style="font-size:0.93rem;line-height:1.7;">For investment groups managing member savings, loans, and contributions with M-Pesa integration built-in.</p>
+                        <a href="{% url 'use_cases' %}" class="btn-demo text-decoration-none" style="font-size:0.9rem;padding:8px 22px !important;">Learn More →</a>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="border rounded p-4 text-center h-100" style="transition: all 0.3s;">
-                        <div style="width:70px;height:70px;background:#e6faf0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;">
-                            <i class="fa fa-hands-helping" style="color:#10b981;"></i>
-                        </div>
-                        <h5 class="fw-bold mb-2" style="color:#002855;">NGOs & Community Groups</h5>
-                        <p class="text-muted mb-3">Transparent fund management and donor-ready reports for welfare and community organisations.</p>
-                        <a href="{% url 'use_case_ngo' %}" class="btn btn-outline-success rounded-pill px-4">Learn More</a>
+                <div class="col-md-4 wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="use-card ngo">
+                        <div class="use-icon-wrap" style="background:#d1fae5;"><i class="fa fa-hands-helping" style="color:var(--green);font-size:1.8rem;"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">NGOs & Community Groups</h5>
+                        <p class="text-muted mb-4" style="font-size:0.93rem;line-height:1.7;">Transparent fund management and donor-ready reports for welfare and community organisations across Kenya.</p>
+                        <a href="{% url 'use_case_ngo' %}" style="border-color:var(--green);color:var(--green);font-size:0.9rem;padding:8px 22px !important;" class="btn-demo text-decoration-none">Learn More →</a>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="border rounded p-4 text-center h-100" style="transition: all 0.3s;">
-                        <div style="width:70px;height:70px;background:#ede9fe;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;">
-                            <i class="fa fa-university" style="color:#7c3aed;"></i>
-                        </div>
-                        <h5 class="fw-bold mb-2" style="color:#002855;">Financial Institutions</h5>
-                        <p class="text-muted mb-3">White-label platform with API integration for banks and MFIs serving Chama clients at scale.</p>
-                        <a href="{% url 'use_case_financial' %}" class="btn rounded-pill px-4 text-white" style="background:#7c3aed;border:none;">Learn More</a>
+                <div class="col-md-4 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="use-card fi">
+                        <div class="use-icon-wrap" style="background:#ede9fe;"><i class="fa fa-university" style="color:var(--purple);font-size:1.8rem;"></i></div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:12px;">Financial Institutions</h5>
+                        <p class="text-muted mb-4" style="font-size:0.93rem;line-height:1.7;">White-label platform with API integration for banks and MFIs serving Chama clients at scale.</p>
+                        <a href="{% url 'use_case_financial' %}" style="border-color:var(--purple);color:var(--purple);font-size:0.9rem;padding:8px 22px !important;" class="btn-demo text-decoration-none">Learn More →</a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- ======================== CALLBACK / CONTACT ======================== -->
-    <div class="container-fluid callback my-5 pt-5">
-        <div class="container pt-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-7">
-                    <div class="bg-white border rounded p-4 p-sm-5 wow fadeInUp" data-wow-delay="0.5s">
-                        <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                            <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Get In Touch</p>
-                            <h1 class="display-5 mb-5">Request A Call-Back</h1>
+    <!-- ======================== PRICING TEASER ======================== -->
+    <section class="pricing-section">
+        <div class="container">
+            <div class="text-center mb-5 wow fadeInUp">
+                <div class="section-label">Pricing</div>
+                <h2 class="section-title">Simple, Transparent Pricing</h2>
+                <p class="text-muted mt-3">Start free. Upgrade as your Chama grows. No hidden fees.</p>
+            </div>
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="pricing-card">
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;color:var(--navy);margin-bottom:8px;">Starter</h5>
+                        <p class="text-muted" style="font-size:0.88rem;margin-bottom:20px;">Perfect for small Chamas just getting started.</p>
+                        <div class="price-amount mb-1">Free</div>
+                        <div class="price-period mb-4">forever</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Up to 15 members</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Contribution tracking</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Basic reports</div>
+                        <div class="pricing-feature"><i class="fa fa-times no"></i> M-Pesa STK Push</div>
+                        <div class="pricing-feature"><i class="fa fa-times no"></i> Loan management</div>
+                        <a href="{% url 'signup' %}" class="btn-get-started text-decoration-none mt-4 d-block text-center">Get Started Free</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">Most Popular</div>
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;color:var(--navy);margin-bottom:8px;">Growth</h5>
+                        <p class="text-muted" style="font-size:0.88rem;margin-bottom:20px;">For growing Chamas that need full automation.</p>
+                        <div class="price-amount mb-1">KES 999<span style="font-size:1rem;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;">/mo</span></div>
+                        <div class="price-period mb-4">per group</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Unlimited members</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> M-Pesa STK Push</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Full loan management</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> SMS & Email alerts</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Advanced reports</div>
+                        <a href="{% url 'signup' %}" class="btn-get-started text-decoration-none mt-4 d-block text-center">Start Free Trial</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="pricing-card">
+                        <h5 style="font-family:'Syne',sans-serif;font-weight:700;color:var(--navy);margin-bottom:8px;">Enterprise</h5>
+                        <p class="text-muted" style="font-size:0.88rem;margin-bottom:20px;">For SACCOs, NGOs, and financial institutions.</p>
+                        <div class="price-amount mb-1">Custom</div>
+                        <div class="price-period mb-4">contact us</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> White-label branding</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> API access</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Dedicated support</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Multi-group management</div>
+                        <div class="pricing-feature"><i class="fa fa-check yes"></i> Custom integrations</div>
+                        <a href="{% url 'support' %}" class="btn-demo text-decoration-none mt-4 d-block text-center" style="padding:14px 24px !important;">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'pricing' %}" class="text-decoration-none" style="color:var(--sky);font-weight:600;">View full pricing details →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================== TESTIMONIALS ======================== -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="text-center mb-5 wow fadeInUp">
+                <div class="section-label">Testimonials</div>
+                <h2 class="section-title">What Our Chamas Say</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="testimonial-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="testimonial-quote">"ChamaPro has made it so easy to track contributions and manage loans. No more confusion during meetings — everything is transparent and accurate."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">MA</div>
+                            <div><div class="author-name">Mary Achieng</div><div class="author-role">Treasurer, Umoja Chama</div></div>
                         </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.2s">
+                    <div class="testimonial-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="testimonial-quote">"Our group has grown because of the financial discipline ChamaPro brings. Reports are ready instantly, and everyone trusts the process."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">DK</div>
+                            <div><div class="author-name">David Kariuki</div><div class="author-role">Chairman, Vision Group</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="testimonial-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="testimonial-quote">"I recommend ChamaPro to any Chama that wants to avoid endless manual records. It has saved us time and built confidence among members."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">SN</div>
+                            <div><div class="author-name">Sarah Njeri</div><div class="author-role">Secretary, Taifa Women Group</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <a href="{% url 'customers' %}" class="btn-demo text-decoration-none" style="padding:12px 36px !important;">Read More Stories</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================== APP DOWNLOAD ======================== -->
+    <section class="app-section">
+        <div class="container position-relative" style="z-index:1;">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6 wow fadeInLeft">
+                    <div class="section-label" style="background:rgba(74,222,128,0.12);color:var(--green-lt);border-color:rgba(74,222,128,0.3);">Mobile Apps</div>
+                    <h2 class="section-title" style="color:var(--white);margin-top:12px;">Manage Your Chama From Anywhere</h2>
+                    <p style="color:rgba(255,255,255,0.65);margin-top:16px;margin-bottom:32px;line-height:1.8;font-size:1.05rem;">Download the ChamaPro app and stay on top of your group's finances on the go. Available for iOS and Android.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="#" class="app-store-btn">
+                            <i class="fab fa-apple" style="font-size:1.8rem;"></i>
+                            <div><div class="store-label">Download on the</div><div class="store-name">App Store</div></div>
+                        </a>
+                        <a href="#" class="app-store-btn">
+                            <i class="fab fa-google-play" style="font-size:1.6rem;"></i>
+                            <div><div class="store-label">Get it on</div><div class="store-name">Google Play</div></div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 wow fadeInRight d-flex justify-content-center align-items-center">
+                    <!-- Phone + Dashboard Mockup -->
+                    <div class="app-mockup-wrap">
+
+                        <!-- Desktop dashboard peek (left, behind phone) -->
+                        <div class="dash-peek">
+                            <div class="dash-header">
+                                <div class="dash-greeting">
+                                    <span style="font-size:0.7rem;opacity:0.6;">Good morning,</span>
+                                    <div style="font-weight:700;font-size:0.9rem;">Daniel 👋</div>
+                                </div>
+                                <div class="dash-actions">
+                                    <div class="dash-pill"><i class="fa fa-bolt"></i> Quick Actions</div>
+                                    <div class="dash-pill green"><i class="fa fa-users"></i> Group Billing</div>
+                                </div>
+                            </div>
+                            <div class="dash-stats">
+                                <div class="dash-stat-card">
+                                    <div class="ds-icon green"><i class="fa fa-wallet"></i></div>
+                                    <div>
+                                        <div style="font-size:0.6rem;opacity:0.55;text-transform:uppercase;letter-spacing:.04em;">Total Balance</div>
+                                        <div style="font-weight:800;font-size:0.85rem;">KES 248,750</div>
+                                        <div style="font-size:0.58rem;color:#4ade80;">Available Balance</div>
+                                    </div>
+                                </div>
+                                <div class="dash-stat-card">
+                                    <div class="ds-icon green"><i class="fa fa-arrow-down"></i></div>
+                                    <div>
+                                        <div style="font-size:0.6rem;opacity:0.55;text-transform:uppercase;letter-spacing:.04em;">Contributions</div>
+                                        <div style="font-weight:800;font-size:0.85rem;">KES 62,500</div>
+                                        <div style="font-size:0.58rem;color:#4ade80;">This Month</div>
+                                    </div>
+                                </div>
+                                <div class="dash-stat-card">
+                                    <div class="ds-icon red"><i class="fa fa-arrow-up"></i></div>
+                                    <div>
+                                        <div style="font-size:0.6rem;opacity:0.55;text-transform:uppercase;letter-spacing:.04em;">Expenses</div>
+                                        <div style="font-weight:800;font-size:0.85rem;">KES 18,700</div>
+                                        <div style="font-size:0.58rem;color:#f87171;">This Month</div>
+                                    </div>
+                                </div>
+                                <div class="dash-stat-card">
+                                    <div class="ds-icon blue"><i class="fa fa-users"></i></div>
+                                    <div>
+                                        <div style="font-size:0.6rem;opacity:0.55;text-transform:uppercase;letter-spacing:.04em;">Members</div>
+                                        <div style="font-weight:800;font-size:0.85rem;">24</div>
+                                        <div style="font-size:0.58rem;color:#60a5fa;">Active Members</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Mini chart -->
+                            <div class="dash-chart-area">
+                                <div style="font-size:0.65rem;font-weight:700;margin-bottom:8px;opacity:0.8;">GROUP OVERVIEW</div>
+                                <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:70px;">
+                                    <defs>
+                                        <linearGradient id="cGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#4ade80" stop-opacity="0.4"/>
+                                            <stop offset="100%" stop-color="#4ade80" stop-opacity="0.02"/>
+                                        </linearGradient>
+                                        <linearGradient id="eGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stop-color="#f87171" stop-opacity="0.3"/>
+                                            <stop offset="100%" stop-color="#f87171" stop-opacity="0.02"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M0,70 L40,58 L80,50 L120,38 L160,22 L200,14 L240,6 L260,4 L260,80 L0,80 Z" fill="url(#cGrad)"/>
+                                    <path d="M0,70 L40,58 L80,50 L120,38 L160,22 L200,14 L240,6 L260,4" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M0,68 L40,63 L80,60 L120,55 L160,50 L200,46 L240,42 L260,40 L260,80 L0,80 Z" fill="url(#eGrad)"/>
+                                    <path d="M0,68 L40,63 L80,60 L120,55 L160,50 L200,46 L240,42 L260,40" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4,2"/>
+                                    <circle cx="260" cy="4" r="3" fill="#4ade80"/>
+                                    <circle cx="260" cy="40" r="3" fill="#f87171"/>
+                                </svg>
+                                <div style="display:flex;gap:12px;font-size:0.6rem;opacity:0.65;">
+                                    <span><span style="color:#4ade80;">●</span> Contributions</span>
+                                    <span><span style="color:#f87171;">●</span> Expenses</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phone frame (right, front) -->
+                        <div class="phone-frame">
+                            <div class="phone-notch"></div>
+                            <div class="phone-screen">
+                                <div class="phone-status">
+                                    <span>9:41</span>
+                                    <div style="display:flex;gap:4px;align-items:center;">
+                                        <i class="fa fa-wifi" style="font-size:0.55rem;"></i>
+                                        <i class="fa fa-battery-full" style="font-size:0.55rem;"></i>
+                                    </div>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px 4px;">
+                                    <i class="fa fa-bars" style="font-size:0.75rem;color:#1a3a1a;"></i>
+                                    <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.8rem;color:#1a3a1a;">ChamaPro</span>
+                                    <div style="position:relative;"><i class="fa fa-bell" style="font-size:0.75rem;color:#1a3a1a;"></i><span style="position:absolute;top:-3px;right:-4px;background:#ef4444;color:white;font-size:0.45rem;border-radius:50%;width:10px;height:10px;display:flex;align-items:center;justify-content:center;">4</span></div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:6px;padding:4px 12px 8px;border-bottom:1px solid #e8f5e8;">
+                                    <div style="width:28px;height:28px;border-radius:50%;background:#1a4a1a;display:flex;align-items:center;justify-content:center;font-size:0.55rem;font-weight:800;color:white;">CP</div>
+                                    <div>
+                                        <div style="font-weight:700;font-size:0.65rem;color:#1a3a1a;">ZEST GROUP</div>
+                                        <div style="font-size:0.55rem;color:#666;">Group Admin & Member</div>
+                                    </div>
+                                </div>
+                                <div class="phone-balance-card">
+                                    <div style="font-size:0.6rem;opacity:0.75;margin-bottom:2px;">Total Balance</div>
+                                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;">KES 248,750.00</div>
+                                    <div style="font-size:0.55rem;opacity:0.7;margin-bottom:8px;">Available Balance</div>
+                                    <div style="display:flex;justify-content:space-between;">
+                                        <div><div style="font-size:0.55rem;opacity:0.7;">This Month Contributions</div><div style="font-weight:700;font-size:0.65rem;">KES 62,500.00</div></div>
+                                        <div style="text-align:right;"><div style="font-size:0.55rem;opacity:0.7;">This Month Expenses</div><div style="font-weight:700;font-size:0.65rem;">KES 18,700.00</div></div>
+                                    </div>
+                                </div>
+                                <div style="padding:6px 10px 4px;">
+                                    <div style="font-size:0.6rem;font-weight:700;color:#1a3a1a;margin-bottom:6px;">QUICK ACTIONS</div>
+                                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;">
+                                        <div class="qa-item"><div class="qa-icon"><i class="fa fa-arrow-down"></i></div><div style="font-size:0.5rem;">Deposit</div></div>
+                                        <div class="qa-item"><div class="qa-icon"><i class="fa fa-arrow-up"></i></div><div style="font-size:0.5rem;">Withdraw</div></div>
+                                        <div class="qa-item"><div class="qa-icon"><i class="fa fa-users"></i></div><div style="font-size:0.5rem;">Members</div></div>
+                                        <div class="qa-item"><div class="qa-icon"><i class="fa fa-hand-holding-usd"></i></div><div style="font-size:0.5rem;">Loans</div></div>
+                                    </div>
+                                </div>
+                                <div style="padding:4px 10px;">
+                                    <div style="font-size:0.6rem;font-weight:700;color:#1a3a1a;margin-bottom:5px;">RECENT TRANSACTIONS</div>
+                                    <div class="phone-txn"><div class="txn-icon green"><i class="fa fa-arrow-down"></i></div><div style="flex:1"><div style="font-size:0.58rem;font-weight:600;">Mary Wanjiku</div><div style="font-size:0.5rem;color:#666;">May 24 · 10:24 AM</div></div><div style="font-size:0.58rem;color:#16a34a;font-weight:700;">+2,500</div></div>
+                                    <div class="phone-txn"><div class="txn-icon red"><i class="fa fa-arrow-up"></i></div><div style="flex:1"><div style="font-size:0.58rem;font-weight:600;">Land Survey</div><div style="font-size:0.5rem;color:#666;">May 24 · 9:15 AM</div></div><div style="font-size:0.58rem;color:#dc2626;font-weight:700;">-5,000</div></div>
+                                    <div class="phone-txn"><div class="txn-icon blue"><i class="fa fa-rotate-left"></i></div><div style="flex:1"><div style="font-size:0.58rem;font-weight:600;">John Kamau</div><div style="font-size:0.5rem;color:#666;">May 23 · 6:30 PM</div></div><div style="font-size:0.58rem;color:#16a34a;font-weight:700;">+3,000</div></div>
+                                </div>
+                                <div class="phone-bottom-nav">
+                                    <div class="bnav-item active"><i class="fa fa-home"></i><span>Home</span></div>
+                                    <div class="bnav-item"><i class="fa fa-users"></i><span>Group</span></div>
+                                    <div class="bnav-item"><i class="fa fa-exchange-alt"></i><span>Txns</span></div>
+                                    <div class="bnav-item"><i class="fa fa-chart-bar"></i><span>Reports</span></div>
+                                    <div class="bnav-item"><i class="fa fa-ellipsis-h"></i><span>More</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== FULL-WIDTH APP SCREENSHOT ===== -->
+            <div class="app-screenshot-strip wow fadeInUp" data-wow-delay="0.2s">
+                <div class="app-screenshot-label mb-3">
+                    <span>
+                        <i class="fa fa-desktop"></i>&nbsp; Web &amp; Mobile — The Full ChamaPro Experience
+                    </span>
+                </div>
+                <img src="{% static 'img/app-screenshot.png' %}" alt="ChamaPro Web Dashboard and Mobile App Screenshot">
+            </div>
+        </div>
+    </section>
+
+    <!-- ======================== CONTACT ======================== -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-5 wow fadeInLeft">
+                    <div class="section-label">Get In Touch</div>
+                    <h2 class="section-title mt-2 mb-4">We'd Love to Hear From You</h2>
+                    <p class="text-muted mb-5" style="line-height:1.8;">Have questions about ChamaPro? Our team is ready to help you set up and grow your Chama.</p>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fa fa-phone-alt"></i></div>
+                        <div><div style="font-weight:600;color:var(--navy);">Phone</div><div class="text-muted" style="font-size:0.9rem;">+254 712 328 150</div></div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fa fa-envelope"></i></div>
+                        <div><div style="font-weight:600;color:var(--navy);">Email</div><div class="text-muted" style="font-size:0.9rem;">info@chamapro.com</div></div>
+                    </div>
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon"><i class="fa fa-map-marker-alt"></i></div>
+                        <div><div style="font-weight:600;color:var(--navy);">Office</div><div class="text-muted" style="font-size:0.9rem;">Westlands, Nairobi, Kenya</div></div>
+                    </div>
+                </div>
+                <div class="col-lg-7 wow fadeInRight">
+                    <div class="contact-card">
+                        <h4 style="font-family:'Syne',sans-serif;font-weight:800;color:var(--navy);margin-bottom:28px;">Request a Call-Back</h4>
                         <form method="POST" action="{% url 'support' %}">
                             {% csrf_token %}
-                            <div class="row g-3">
+                            <div class="row g-4">
                                 <div class="col-sm-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="name" name="name" placeholder="Your Name">
-                                        <label for="name">Your Name</label>
-                                    </div>
+                                    <label class="form-label-custom">Your Name</label>
+                                    <input type="text" class="form-control-custom" name="name" placeholder="John Kamau">
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="form-floating">
-                                        <input type="email" class="form-control" id="mail" name="email" placeholder="Your Email">
-                                        <label for="mail">Your Email</label>
-                                    </div>
+                                    <label class="form-label-custom">Email Address</label>
+                                    <input type="email" class="form-control-custom" name="email" placeholder="john@email.com">
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="mobile" name="phone" placeholder="Your Mobile">
-                                        <label for="mobile">Your Mobile</label>
-                                    </div>
+                                    <label class="form-label-custom">Phone Number</label>
+                                    <input type="text" class="form-control-custom" name="phone" placeholder="+254 7XX XXX XXX">
                                 </div>
                                 <div class="col-sm-6">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="subject" name="subject" placeholder="Subject">
-                                        <label for="subject">Subject</label>
-                                    </div>
+                                    <label class="form-label-custom">Subject</label>
+                                    <input type="text" class="form-control-custom" name="subject" placeholder="How can we help?">
                                 </div>
                                 <div class="col-12">
-                                    <div class="form-floating">
-                                        <textarea class="form-control" placeholder="Leave a message here" id="message" name="message" style="height: 100px"></textarea>
-                                        <label for="message">Message</label>
-                                    </div>
+                                    <label class="form-label-custom">Message</label>
+                                    <textarea class="form-control-custom" name="message" rows="4" placeholder="Tell us more about your Chama..."></textarea>
                                 </div>
-                                <div class="col-12 text-center">
-                                    <button class="btn btn-primary w-100 py-3" type="submit">Submit Now</button>
+                                <div class="col-12">
+                                    <button type="submit" class="btn-submit">Send Message <i class="fa fa-paper-plane ms-2"></i></button>
                                 </div>
                             </div>
                         </form>
@@ -579,245 +1821,116 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- ======================== PROJECTS ======================== -->
-    <div class="container-xxl py-5">
-        <div class="container">
-            <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Our Projects</p>
-                <h1 class="display-5 mb-5">What ChamaPro Has Delivered</h1>
-            </div>
-            <div class="owl-carousel project-carousel wow fadeInUp" data-wow-delay="0.3s">
-                <div class="project-item pe-5 pb-5">
-                    <div class="project-img mb-3">
-                        <img class="img-fluid rounded" src="{% static 'img/service-1.jpg' %}" alt="Financial Planning">
-                        <a href="{% url 'features' %}"><i class="fa fa-link fa-3x text-primary"></i></a>
-                    </div>
-                    <div class="project-title">
-                        <h4 class="mb-0">Contribution Tracking</h4>
-                    </div>
-                </div>
-                <div class="project-item pe-5 pb-5">
-                    <div class="project-img mb-3">
-                        <img class="img-fluid rounded" src="{% static 'img/service-2.jpg' %}" alt="Group Investments">
-                        <a href="{% url 'features' %}"><i class="fa fa-link fa-3x text-primary"></i></a>
-                    </div>
-                    <div class="project-title">
-                        <h4 class="mb-0">Group Investments</h4>
-                    </div>
-                </div>
-                <div class="project-item pe-5 pb-5">
-                    <div class="project-img mb-3">
-                        <img class="img-fluid rounded" src="{% static 'img/service-3.jpg' %}" alt="Loan Management">
-                        <a href="{% url 'features' %}"><i class="fa fa-link fa-3x text-primary"></i></a>
-                    </div>
-                    <div class="project-title">
-                        <h4 class="mb-0">Loan Management</h4>
-                    </div>
-                </div>
-                <div class="project-item pe-5 pb-5">
-                    <div class="project-img mb-3">
-                        <img class="img-fluid rounded" src="{% static 'img/service-4.jpg' %}" alt="Financial Reports">
-                        <a href="{% url 'features' %}"><i class="fa fa-link fa-3x text-primary"></i></a>
-                    </div>
-                    <div class="project-title">
-                        <h4 class="mb-0">Financial Reports</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== TEAM ======================== -->
-    <div class="container-xxl py-5">
-        <div class="container">
-            <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Our Team</p>
-                <h1 class="display-5 mb-5">Meet The People Behind ChamaPro</h1>
-            </div>
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="team-item">
-                        <img class="img-fluid rounded" src="{% static 'img/team-1.jpg' %}" alt="Brian Mutua">
-                        <div class="team-text">
-                            <h4 class="mb-0">Brian Mutua</h4>
-                            <small>Co-founder & CEO</small>
-                            <div class="team-social d-flex">
-                                <a class="btn btn-square rounded-circle mx-1" href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a class="btn btn-square rounded-circle mx-1" href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="team-item">
-                        <img class="img-fluid rounded" src="{% static 'img/team-2.jpg' %}" alt="Amina Wanjiku">
-                        <div class="team-text">
-                            <h4 class="mb-0">Amina Wanjiku</h4>
-                            <small>Co-founder & CTO</small>
-                            <div class="team-social d-flex">
-                                <a class="btn btn-square rounded-circle mx-1" href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a class="btn btn-square rounded-circle mx-1" href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
-                    <div class="team-item">
-                        <img class="img-fluid rounded" src="{% static 'img/team-3.jpg' %}" alt="James Otieno">
-                        <div class="team-text">
-                            <h4 class="mb-0">James Otieno</h4>
-                            <small>Head of Finance</small>
-                            <div class="team-social d-flex">
-                                <a class="btn btn-square rounded-circle mx-1" href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a class="btn btn-square rounded-circle mx-1" href="#"><i class="fab fa-twitter"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="text-center mt-4">
-                <a href="{% url 'company' %}" class="btn btn-outline-primary rounded-pill px-5 py-2" style="border-color:#00AEEF;color:#00AEEF;">Meet The Full Team</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== TESTIMONIALS ======================== -->
-    <div class="container-xxl py-5">
-        <div class="container">
-            <div class="text-center mx-auto wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <p class="d-inline-block border rounded text-primary fw-semi-bold py-1 px-3">Testimonials</p>
-                <h1 class="display-5 mb-5">What Our Chamas Say</h1>
-            </div>
-            <div class="owl-carousel testimonial-carousel wow fadeInUp" data-wow-delay="0.3s">
-                <div class="testimonial-item">
-                    <div class="testimonial-text border rounded p-4 pt-5 mb-5">
-                        <div class="btn-square bg-white border rounded-circle">
-                            <i class="fa fa-quote-right fa-2x text-primary"></i>
-                        </div>
-                        "ChamaPro has made it so easy for us to track contributions and manage loans.
-                        No more confusion during meetings — everything is transparent and accurate."
-                    </div>
-                    <img class="rounded-circle mb-3" src="{% static 'img/testimonial-1.jpg' %}" alt="Mary Achieng">
-                    <h4>Mary Achieng</h4>
-                    <span>Treasurer, Umoja Chama</span>
-                </div>
-                <div class="testimonial-item">
-                    <div class="testimonial-text border rounded p-4 pt-5 mb-5">
-                        <div class="btn-square bg-white border rounded-circle">
-                            <i class="fa fa-quote-right fa-2x text-primary"></i>
-                        </div>
-                        "Our group has grown because of the financial discipline ChamaPro brings.
-                        Reports are ready instantly, and everyone trusts the process."
-                    </div>
-                    <img class="rounded-circle mb-3" src="{% static 'img/testimonial-2.jpg' %}" alt="David Kariuki">
-                    <h4>David Kariuki</h4>
-                    <span>Chairman, Vision Group</span>
-                </div>
-                <div class="testimonial-item">
-                    <div class="testimonial-text border rounded p-4 pt-5 mb-5">
-                        <div class="btn-square bg-white border rounded-circle">
-                            <i class="fa fa-quote-right fa-2x text-primary"></i>
-                        </div>
-                        "I recommend ChamaPro to any Chama that wants to avoid endless manual records.
-                        It has saved us time and built confidence among members."
-                    </div>
-                    <img class="rounded-circle mb-3" src="{% static 'img/testimonial-3.jpg' %}" alt="Sarah Njeri">
-                    <h4>Sarah Njeri</h4>
-                    <span>Secretary, Taifa Women Group</span>
-                </div>
-            </div>
-            <div class="text-center mt-3">
-                <a href="{% url 'customers' %}" class="btn btn-outline-primary rounded-pill px-5 py-2" style="border-color:#00AEEF;color:#00AEEF;">Read More Stories</a>
-            </div>
-        </div>
-    </div>
+    </section>
 
     <!-- ======================== CTA BANNER ======================== -->
-    <div class="container-fluid py-5 my-3" style="background: linear-gradient(135deg, #002855 0%, #00AEEF 100%);">
-        <div class="container text-center py-3">
-            <h2 class="text-white fw-bold mb-2">Ready to Take Your Chama Digital?</h2>
-            <p class="text-white mb-4" style="opacity:0.9;">Join 5,000+ Chamas across Kenya already using ChamaPro. Free to start — no credit card needed.</p>
-            <a href="{% url 'signup' %}" class="btn btn-light rounded-pill px-5 py-2 fw-bold me-3" style="color:#002855;">Get Started Free</a>
-            <a href="{% url 'view_demo' %}" class="btn btn-outline-light rounded-pill px-5 py-2 fw-bold">View Demo</a>
+    <section class="cta-section wow fadeInUp">
+        <div class="container position-relative" style="z-index:1;">
+            <h2 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,4vw,2.8rem);color:white;margin-bottom:16px;">Ready to Take Your Chama Digital?</h2>
+            <p style="color:rgba(255,255,255,0.85);font-size:1.05rem;max-width:520px;margin:0 auto 36px;">Join 5,000+ Chamas across Kenya already using ChamaPro. Free to start — no credit card needed.</p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+                <a href="{% url 'signup' %}" class="btn-hero-primary" style="background:white;color:var(--navy);">
+                    <i class="fa fa-rocket"></i> Get Started Free
+                </a>
+                <a href="{% url 'view_demo' %}" class="btn-hero-outline">
+                    <i class="fa fa-play-circle"></i> View Demo
+                </a>
+            </div>
         </div>
-    </div>
+    </section>
 
     <!-- ======================== FOOTER ======================== -->
-    <div class="container-fluid bg-dark text-light footer mt-5 py-5 wow fadeIn" data-wow-delay="0.1s">
-        <div class="container py-5">
-            <div class="row g-5">
-                <div class="col-lg-3 col-md-6">
-                    <h4 class="text-white mb-4">Our Office</h4>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Westlands, Nairobi, Kenya</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+254 712 328 150</p>
-                    <p class="mb-2"><i class="fa fa-envelope me-3"></i>info@chamapro.com</p>
-                    <div class="d-flex pt-2">
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href="#"><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-square btn-outline-light rounded-circle me-2" href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <h4 class="text-white mb-4">Services</h4>
-                    <a class="btn btn-link" href="{% url 'features' %}">Contribution Tracking</a>
-                    <a class="btn btn-link" href="{% url 'features' %}">Loan Management</a>
-                    <a class="btn btn-link" href="{% url 'features' %}">Financial Reports</a>
-                    <a class="btn btn-link" href="{% url 'features' %}">Member Management</a>
-                    <a class="btn btn-link" href="{% url 'features' %}">Group Savings</a>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <h4 class="text-white mb-4">Quick Links</h4>
-                    <a class="btn btn-link" href="{% url 'company' %}">About Us</a>
-                    <a class="btn btn-link" href="{% url 'support' %}">Contact Us</a>
-                    <a class="btn btn-link" href="{% url 'pricing' %}">Pricing</a>
-                    <a class="btn btn-link" href="{% url 'terms' %}">Terms & Privacy</a>
-                    <a class="btn btn-link" href="{% url 'support' %}">Support</a>
-                    <a class="btn btn-link" href="{% url 'awards' %}">Awards</a>
-                </div>
-                <div class="col-lg-3 col-md-6">
-                    <h4 class="text-white mb-4">Newsletter</h4>
-                    <p>Stay updated with the latest news and tips for managing your Chama.</p>
-                    <div class="position-relative w-100">
-                        <input class="form-control bg-white border-0 w-100 py-3 ps-4 pe-5" type="email" placeholder="Your email">
-                        <button type="button" class="btn btn-primary py-2 position-absolute top-0 end-0 mt-2 me-2">Sign Up</button>
-                    </div>
-                    <div class="mt-4">
-                        <a href="{% url 'use_cases' %}" class="btn btn-link ps-0">Use Cases</a>
-                        <a href="{% url 'technology' %}" class="btn btn-link">Technology</a>
-                        <a href="{% url 'partner_apply' %}" class="btn btn-link">Partner With Us</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== COPYRIGHT ======================== -->
-    <div class="container-fluid copyright py-4">
+    <footer class="footer-section">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    &copy; <a class="border-bottom" href="{% url 'home' %}">ChamaPro</a>, All Rights Reserved.
+            <div class="row g-5">
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand">chama<em>pro</em></div>
+                    <p class="footer-desc">Smart digital platform for Chama contribution tracking, loans, and financial management across Kenya.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    </div>
                 </div>
-                <div class="col-md-6 text-center text-md-end">
-                    Designed & Built by <a class="border-bottom" href="https://dantechdevelopers.com">Dantechdevs</a>
+                <div class="col-lg-2 col-md-6">
+                    <div class="footer-heading">Services</div>
+                    <a href="{% url 'features' %}" class="footer-link">Contribution Tracking</a>
+                    <a href="{% url 'features' %}" class="footer-link">Loan Management</a>
+                    <a href="{% url 'features' %}" class="footer-link">Financial Reports</a>
+                    <a href="{% url 'features' %}" class="footer-link">Member Management</a>
+                    <a href="{% url 'features' %}" class="footer-link">Group Savings</a>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <div class="footer-heading">Company</div>
+                    <a href="{% url 'company' %}" class="footer-link">About Us</a>
+                    <a href="{% url 'pricing' %}" class="footer-link">Pricing</a>
+                    <a href="{% url 'customers' %}" class="footer-link">Customers</a>
+                    <a href="{% url 'awards' %}" class="footer-link">Awards</a>
+                    <a href="{% url 'partner_apply' %}" class="footer-link">Partner With Us</a>
+                    <a href="{% url 'terms' %}" class="footer-link">Terms & Privacy</a>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-heading">Stay Updated</div>
+                    <p class="footer-desc" style="margin-bottom:16px;">Get Chama tips and product updates directly in your inbox.</p>
+                    <div class="footer-newsletter">
+                        <input type="email" placeholder="your@email.com">
+                        <button type="button">Subscribe Now</button>
+                    </div>
                 </div>
             </div>
+            <hr class="footer-divider">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="footer-copy">&copy; 2025 <a href="{% url 'home' %}">ChamaPro</a>. All rights reserved.</div>
+                <div class="footer-copy">Designed &amp; Built by <a href="https://dantechdevelopers.com" target="_blank">Dantechdevs</a></div>
+            </div>
         </div>
-    </div>
+    </footer>
 
     <!-- Back to Top -->
-    <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
+    <a href="#" class="back-to-top" id="backToTop"><i class="bi bi-arrow-up"></i></a>
 
-    <!-- JavaScript Libraries -->
-    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'lib/waypoints/waypoints.min.js' %}"></script>
     <script src="{% static 'lib/wow/wow.min.js' %}"></script>
     <script src="{% static 'lib/easing/easing.min.js' %}"></script>
-    <script src="{% static 'lib/owlcarousel/owl.carousel.min.js' %}"></script>
     <script src="{% static 'lib/counterup/counterup.min.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+        new WOW().init();
+
+        $(window).on('load', function() {
+            if ($('#spinner').length > 0) {
+                $('#spinner').delay(200).fadeOut(400);
+            }
+        });
+
+        window.addEventListener('scroll', function() {
+            const nav = document.getElementById('mainNav');
+            if (window.scrollY > 40) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+
+            const btn = document.getElementById('backToTop');
+            if (window.scrollY > 300) btn.classList.add('visible');
+            else btn.classList.remove('visible');
+        });
+
+        document.getElementById('backToTop').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        function switchService(btn, target) {
+            document.querySelectorAll('.service-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.service-content-panel > div').forEach(d => d.style.display = 'none');
+            document.getElementById(target).style.display = 'block';
+        }
+
+        $('.stat-number').counterUp({ delay: 10, time: 1500 });
+    </script>
 </body>
 </html>
