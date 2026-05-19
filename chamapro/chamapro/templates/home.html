@@ -65,26 +65,34 @@
         /* ===== SPINNER ===== */
         #spinner { background: var(--white); z-index: 9999; }
 
-        /* ===== TOP BAR ===== */
+        /* ===== TOP BAR — clean glassmorphism strip ===== */
         .top-bar {
-            background: var(--dark) !important;
-            border-bottom: 1px solid rgba(26,122,64,0.25);
-            font-size: 0.82rem;
+            background: rgba(6, 20, 9, 0.72) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.8rem;
             letter-spacing: 0.01em;
             position: relative;
             z-index: 1100;
         }
-        .top-bar a { transition: color 0.2s; }
+        .top-bar .contact-info { color: rgba(255,255,255,0.75); display: flex; align-items: center; gap: 20px; }
+        .top-bar .contact-info i { color: var(--gold); font-size: 0.75rem; }
+        .top-bar .contact-info span { color: rgba(255,255,255,0.75); }
+        .top-bar .divider { width: 1px; height: 14px; background: rgba(255,255,255,0.18); }
+        .top-bar a { color: rgba(255,255,255,0.78) !important; text-decoration: none; transition: color 0.2s; font-size: 0.8rem; }
         .top-bar a:hover { color: var(--gold) !important; }
         .top-bar .dropdown-menu {
-            background: var(--dark) !important;
-            border: 1px solid rgba(26,122,64,0.3) !important;
+            background: rgba(8,26,12,0.95) !important;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1) !important;
             border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.35);
             min-width: 200px;
         }
-        .top-bar .dropdown-item { font-size: 0.83rem; padding: 8px 18px; }
-        .top-bar .dropdown-item:hover { background: rgba(26,122,64,0.15); color: var(--green-lt) !important; }
+        .top-bar .dropdown-item { font-size: 0.82rem; padding: 9px 18px; color: rgba(255,255,255,0.72) !important; }
+        .top-bar .dropdown-item:hover { background: rgba(74,222,128,0.1); color: var(--green-lt) !important; }
+        .top-bar .dropdown-toggle::after { border-top-color: rgba(255,255,255,0.5); }
 
         /* ===== NAVBAR ===== */
         .navbar {
@@ -123,90 +131,102 @@
         }
         .btn-demo:hover { background: var(--sky); color: var(--white) !important; }
 
-        /* ===== HERO ===== */
-        .hero-section {
-            background: linear-gradient(135deg, var(--dark) 0%, #0d3d1f 55%, #155f32 100%);
-            min-height: 92vh;
-            display: flex;
-            align-items: center;
+        /* ===== HERO CAROUSEL ===== */
+        .hero-carousel-section {
             position: relative;
             overflow: hidden;
-            padding: 80px 0 60px;
         }
-        .hero-section::before {
+        .hero-slide {
+            position: relative;
+            min-height: 88vh;
+            display: flex !important;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .hero-slide::before {
             content: '';
             position: absolute;
-            top: -100px; right: -150px;
-            width: 700px; height: 700px;
-            background: radial-gradient(circle, rgba(26,122,64,0.22) 0%, transparent 70%);
-            border-radius: 50%;
+            inset: 0;
+            background: linear-gradient(
+                105deg,
+                rgba(6,20,9,0.0) 0%,
+                rgba(6,20,9,0.0) 55%,
+                rgba(6,20,9,0.0) 100%
+            );
         }
-        .hero-section::after {
-            content: '';
-            position: absolute;
-            bottom: -80px; left: -100px;
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(255,215,0,0.07) 0%, transparent 70%);
-            border-radius: 50%;
+        /* Slide 1 — text left, dashboard right */
+        .hero-slide.slide-1 { background-image: url("{% static 'img/carousel-1.jpg' %}"); }
+        /* Slide 2 — text left, team image right */
+        .hero-slide.slide-2 { background-image: url("{% static 'img/carousel-2.jpg' %}"); }
+
+        /* Text content overlay */
+        .hero-slide-content {
+            position: relative;
+            z-index: 3;
+            max-width: 520px;
         }
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(26,122,64,0.18);
-            border: 1px solid rgba(26,122,64,0.4);
-            color: var(--green-lt);
-            padding: 6px 16px;
+            background: var(--navy);
+            color: var(--white);
+            padding: 7px 18px;
             border-radius: 50px;
-            font-size: 0.83rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
-        .hero-badge span { width: 7px; height: 7px; background: var(--green-lt); border-radius: 50%; display: inline-block; animation: pulse-dot 1.5s infinite; }
+        .hero-badge .dot { width: 7px; height: 7px; background: var(--green-lt); border-radius: 50%; display: inline-block; animation: pulse-dot 1.5s infinite; }
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
         .hero-title {
             font-family: 'Syne', sans-serif;
-            font-size: clamp(2.4rem, 5vw, 4rem);
+            font-size: clamp(2.6rem, 5vw, 4rem);
             font-weight: 800;
-            color: var(--white);
-            line-height: 1.1;
-            margin-bottom: 20px;
+            color: var(--navy);
+            line-height: 1.08;
+            margin-bottom: 18px;
         }
-        .hero-title .accent { color: var(--green-lt); }
-        .hero-title .gold { color: var(--gold); }
+        .hero-title .accent { color: var(--sky); }
+        .hero-title .gold   { color: var(--gold); }
+
         .hero-sub {
-            color: rgba(255,255,255,0.75);
-            font-size: 1.1rem;
-            line-height: 1.7;
-            max-width: 520px;
-            margin-bottom: 36px;
+            color: rgba(13,43,26,0.72);
+            font-size: 1.05rem;
+            line-height: 1.75;
+            margin-bottom: 32px;
         }
-        .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 48px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
         .btn-hero-primary {
-            background: var(--sky);
+            background: var(--navy);
             color: var(--white);
             border-radius: 50px;
-            padding: 15px 34px;
+            padding: 14px 32px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.98rem;
             border: none;
-            box-shadow: 0 6px 24px rgba(26,122,64,0.45);
             transition: all 0.25s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 6px 22px rgba(13,43,26,0.22);
         }
-        .btn-hero-primary:hover { background: #155f32; color: var(--white); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(26,122,64,0.55); }
+        .btn-hero-primary:hover { background: var(--sky); color: var(--white); transform: translateY(-2px); }
+
         .btn-hero-outline {
-            border: 2px solid rgba(255,255,255,0.4);
-            color: var(--white);
+            border: 2px solid var(--navy);
+            color: var(--navy);
             border-radius: 50px;
-            padding: 13px 32px;
+            padding: 12px 30px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.98rem;
             background: transparent;
             transition: all 0.25s;
             text-decoration: none;
@@ -214,85 +234,68 @@
             align-items: center;
             gap: 8px;
         }
-        .btn-hero-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.1); color: var(--white); }
-        .hero-trust {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.85rem;
+        .btn-hero-outline:hover { background: var(--navy); color: var(--white); }
+
+        /* Carousel controls */
+        .hero-carousel-section .carousel-control-prev,
+        .hero-carousel-section .carousel-control-next {
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            top: 50%; transform: translateY(-50%);
+            bottom: auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transition: background 0.2s, transform 0.2s;
+            opacity: 1;
         }
-        .hero-trust .avatars { display: flex; }
-        .hero-trust .avatars div {
-            width: 34px; height: 34px; border-radius: 50%;
-            border: 2px solid var(--dark);
-            background: linear-gradient(135deg, var(--sky), var(--navy));
-            margin-left: -8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.7rem; color: white; font-weight: 700;
+        .hero-carousel-section .carousel-control-prev { left: 24px; }
+        .hero-carousel-section .carousel-control-next { right: 24px; }
+        .hero-carousel-section .carousel-control-prev:hover,
+        .hero-carousel-section .carousel-control-next:hover {
+            background: var(--sky);
+            transform: translateY(-50%) scale(1.08);
         }
-        .hero-trust .avatars div:first-child { margin-left: 0; }
-        .hero-mockup {
-            position: relative;
-            z-index: 2;
-            overflow: hidden;
-            padding: 16px;
+        .hero-carousel-section .carousel-control-prev-icon,
+        .hero-carousel-section .carousel-control-next-icon {
+            width: 18px; height: 18px;
+            filter: invert(1) sepia(1) saturate(5) hue-rotate(90deg);
         }
-        .mockup-card {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            padding: 28px;
-            color: var(--white);
-            margin-bottom: 16px;
+        .hero-carousel-section .carousel-control-prev:hover .carousel-control-prev-icon,
+        .hero-carousel-section .carousel-control-next:hover .carousel-control-next-icon {
+            filter: brightness(10);
         }
-        .mockup-card.main-card {
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(26,122,64,0.4);
+        /* Dots */
+        .hero-carousel-section .carousel-indicators {
+            bottom: 24px;
+            gap: 6px;
+            margin: 0;
+            justify-content: center;
         }
-        .stat-pill {
-            background: rgba(74,222,128,0.15);
-            border: 1px solid rgba(74,222,128,0.35);
-            color: #4ade80;
+        .hero-carousel-section .carousel-indicators button {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(13,43,26,0.25);
+            border: none;
+            transition: all 0.3s;
+            opacity: 1;
+        }
+        .hero-carousel-section .carousel-indicators button.active {
+            background: var(--sky);
+            width: 28px;
             border-radius: 50px;
-            padding: 4px 12px;
-            font-size: 0.78rem;
-            font-weight: 600;
         }
-        .mini-bar {
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50px;
-            margin-top: 10px;
-            overflow: hidden;
+
+        @media (max-width: 991px) {
+            .hero-slide { min-height: 70vh; padding: 80px 0 60px; background-position: right center; }
+            .hero-slide::before { background: linear-gradient(to right, rgba(230,245,238,0.92) 0%, rgba(230,245,238,0.75) 55%, rgba(230,245,238,0.15) 100%); }
+            .hero-title { font-size: 2.2rem; }
         }
-        .mini-bar-fill {
-            height: 100%;
-            border-radius: 50px;
-            background: linear-gradient(90deg, var(--green-lt), #16a34a);
-            animation: fillBar 2s ease-out forwards;
+        @media (max-width: 575px) {
+            .hero-slide { min-height: 85vh; background-position: 70% center; }
+            .hero-slide::before { background: rgba(230,245,238,0.88); }
+            .hero-title { font-size: 1.9rem; }
+            .hero-sub { font-size: 0.95rem; }
         }
-        @keyframes fillBar { from{width:0} }
-        .floating-badge {
-            position: absolute;
-            background: var(--white);
-            border-radius: 14px;
-            padding: 12px 18px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-            animation: float 4s ease-in-out infinite;
-            white-space: nowrap;
-        }
-        .floating-badge.b1 { top: 10%; right: 0px; animation-delay: 0s; }
-        .floating-badge.b2 { bottom: 15%; left: 0px; animation-delay: 2s; }
-        .floating-badge .badge-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
 
         /* ===== SECTION STYLES ===== */
         .section-label {
@@ -980,17 +983,12 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 991px) {
-            .hero-section { min-height: auto; padding: 60px 0 40px; }
-            .hero-mockup { margin-top: 40px; }
-            .floating-badge { display: none; }
             .about-img-badge { bottom: -10px; right: -10px; padding: 14px 18px; }
             .step-connector { display: none; }
             .navbar { padding: 12px 16px; }
             .stat-divider { display: none; }
         }
         @media (max-width: 767px) {
-            .hero-title { font-size: 2.2rem; }
-            .hero-sub { font-size: 1rem; }
             .contact-card { padding: 28px 20px; }
             .pricing-card { padding: 32px 24px; }
         }
@@ -1005,48 +1003,50 @@
     </div>
 
     <!-- ======================== TOP BAR ======================== -->
-    <div class="top-bar row gx-0 align-items-center d-none d-lg-flex py-2 px-5">
-        <div class="col-lg-6 text-start">
-            <small><i class="fa fa-phone-alt me-2" style="color:var(--gold);"></i>+254 712 328 150</small>
-            <small class="ms-3" style="color:rgba(255,255,255,0.2);">|</small>
-            <small class="ms-3"><i class="fa fa-envelope me-2" style="color:var(--gold);"></i>info@chamapro.com</small>
+    <div class="top-bar d-none d-lg-flex align-items-center justify-content-between py-2 px-5">
+        <div class="contact-info">
+            <span><i class="fa fa-phone-alt"></i> &nbsp;+254 712 328 150</span>
+            <div class="divider"></div>
+            <span><i class="fa fa-envelope"></i> &nbsp;info@chamapro.com</span>
+            <div class="divider"></div>
+            <span><i class="fa fa-map-marker-alt" style="color:var(--gold);"></i> &nbsp;Westlands, Nairobi</span>
         </div>
-        <div class="col-lg-6 text-end d-flex align-items-center justify-content-end gap-3">
-            <div class="d-inline-block dropdown">
-                <a href="{% url 'use_cases' %}" class="small text-white text-decoration-none dropdown-toggle" id="useCasesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Use Cases</a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="useCasesDropdown">
-                    <li><a class="dropdown-item text-white" href="{% url 'use_case_financial' %}">Financial Institutions</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'use_case_ngo' %}">NGOs & Community Groups</a></li>
+        <div class="d-flex align-items-center gap-4">
+            <div class="dropdown">
+                <a href="{% url 'use_cases' %}" class="dropdown-toggle" id="tbUseCases" data-bs-toggle="dropdown">Use Cases</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="tbUseCases">
+                    <li><a class="dropdown-item" href="{% url 'use_case_financial' %}">Financial Institutions</a></li>
+                    <li><a class="dropdown-item" href="{% url 'use_case_ngo' %}">NGOs &amp; Community Groups</a></li>
                 </ul>
             </div>
-            <a href="{% url 'awards' %}" class="small text-white text-decoration-none">Awards</a>
-            <div class="d-inline-block dropdown">
-                <a href="{% url 'technology' %}" class="small text-white text-decoration-none dropdown-toggle" id="technologyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Technology</a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="technologyDropdown">
-                    <li><a class="dropdown-item text-white" href="{% url 'technology' %}">Web Application</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'technology' %}">iOS Application</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'technology' %}">Android Application</a></li>
+            <a href="{% url 'awards' %}">Awards</a>
+            <div class="dropdown">
+                <a href="{% url 'technology' %}" class="dropdown-toggle" id="tbTech" data-bs-toggle="dropdown">Technology</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="tbTech">
+                    <li><a class="dropdown-item" href="{% url 'technology' %}">Web Application</a></li>
+                    <li><a class="dropdown-item" href="{% url 'technology' %}">iOS Application</a></li>
+                    <li><a class="dropdown-item" href="{% url 'technology' %}">Android Application</a></li>
                 </ul>
             </div>
-            <div class="d-inline-block dropdown">
-                <a href="{% url 'company' %}" class="small text-white text-decoration-none dropdown-toggle" id="companyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Company</a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="companyDropdown">
-                    <li><a class="dropdown-item text-white" href="{% url 'company' %}">About ChamaPro</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'partner_apply' %}">Partners Program</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'company' %}">Our Team</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'support' %}">Contact Us</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'terms' %}">Terms & Conditions</a></li>
+            <div class="dropdown">
+                <a href="{% url 'company' %}" class="dropdown-toggle" id="tbCompany" data-bs-toggle="dropdown">Company</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="tbCompany">
+                    <li><a class="dropdown-item" href="{% url 'company' %}">About ChamaPro</a></li>
+                    <li><a class="dropdown-item" href="{% url 'partner_apply' %}">Partners Program</a></li>
+                    <li><a class="dropdown-item" href="{% url 'company' %}">Our Team</a></li>
+                    <li><a class="dropdown-item" href="{% url 'support' %}">Contact Us</a></li>
+                    <li><a class="dropdown-item" href="{% url 'terms' %}">Terms &amp; Conditions</a></li>
                 </ul>
             </div>
-            <div class="d-inline-block dropdown">
-                <a href="{% url 'support' %}" class="small text-white text-decoration-none dropdown-toggle" id="supportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Support</a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="supportDropdown">
-                    <li><a class="dropdown-item text-white" href="{% url 'support' %}">Help Center</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'support' %}">Schedule Meeting</a></li>
-                    <li><a class="dropdown-item text-white" href="{% url 'support' %}">Account Deletion</a></li>
+            <div class="dropdown">
+                <a href="{% url 'support' %}" class="dropdown-toggle" id="tbSupport" data-bs-toggle="dropdown">Support</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="tbSupport">
+                    <li><a class="dropdown-item" href="{% url 'support' %}">Help Center</a></li>
+                    <li><a class="dropdown-item" href="{% url 'support' %}">Schedule Meeting</a></li>
+                    <li><a class="dropdown-item" href="{% url 'support' %}">Account Deletion</a></li>
                 </ul>
             </div>
-            <a href="#" class="small text-white text-decoration-none">Blog</a>
+            <a href="#">Blog</a>
         </div>
     </div>
 
@@ -1083,86 +1083,91 @@
         </div>
     </nav>
 
-    <!-- ======================== HERO ======================== -->
-    <section class="hero-section">
-        <div class="container position-relative" style="z-index:2;">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
-                    <div class="hero-badge">
-                        <span></span>
-                        Trusted by 5,000+ Chamas in Kenya
-                    </div>
-                    <h1 class="hero-title">
-                        Automate Your<br>
-                        <span class="accent">Chama</span> — Save<br>
-                        Time &amp; <span class="gold">Grow Faster</span>
-                    </h1>
-                    <p class="hero-sub">
-                        ChamaPro is Kenya's leading digital platform for Chama management. Track contributions, manage loans, and collect via M-Pesa — all in one place.
-                    </p>
-                    <div class="hero-actions">
-                        <a href="{% url 'signup' %}" class="btn-hero-primary">
-                            <i class="fa fa-rocket"></i> Get Started Free
-                        </a>
-                        <a href="{% url 'view_demo' %}" class="btn-hero-outline">
-                            <i class="fa fa-play-circle"></i> Watch Demo
-                        </a>
-                    </div>
-                    <div class="hero-trust">
-                        <div class="avatars">
-                            <div>MK</div><div>JO</div><div>AW</div><div>BM</div><div style="background:linear-gradient(135deg,#4ade80,#0d2b1a);">+</div>
-                        </div>
-                        <span>Join <strong style="color:white;">80,000+</strong> members already on ChamaPro</span>
-                    </div>
-                </div>
-                <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
-                    <div class="hero-mockup position-relative px-lg-3">
-                        <!-- Floating badges -->
-                        <div class="floating-badge b1">
-                            <div class="badge-icon" style="background:#e8f5ee;"><i class="fa fa-check-circle" style="color:var(--sky);"></i></div>
-                            <div><div style="font-size:0.75rem;color:var(--muted);font-weight:500;">Contribution Paid</div><div>KES 5,000 via M-Pesa</div></div>
-                        </div>
-                        <div class="floating-badge b2">
-                            <div class="badge-icon" style="background:#f0fdf4;"><i class="fa fa-arrow-trend-up" style="color:var(--green);"></i></div>
-                            <div><div style="font-size:0.75rem;color:var(--muted);font-weight:500;">Group Savings</div><div style="color:var(--green);">↑ 23% this month</div></div>
-                        </div>
+    <!-- ======================== HERO CAROUSEL ======================== -->
+    <section class="hero-carousel-section">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="6000">
 
-                        <!-- Main dashboard card -->
-                        <div class="mockup-card main-card">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <div style="font-size:0.78rem;opacity:0.6;margin-bottom:4px;">Group Balance</div>
-                                    <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;">KES 1.2M</div>
-                                </div>
-                                <span class="stat-pill">+12% ↑</span>
-                            </div>
-                            <div style="font-size:0.78rem;opacity:0.6;margin-bottom:6px;">Contribution progress this cycle</div>
-                            <div class="mini-bar"><div class="mini-bar-fill" style="width:78%;"></div></div>
-                            <div class="d-flex justify-content-between mt-2" style="font-size:0.78rem;opacity:0.6;">
-                                <span>18/23 members paid</span><span>78%</span>
-                            </div>
-                        </div>
-
-                        <!-- Stats row -->
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="mockup-card" style="padding:20px;">
-                                    <div style="font-size:0.75rem;opacity:0.6;margin-bottom:6px;"><i class="fa fa-wallet me-1"></i> Active Loans</div>
-                                    <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">7</div>
-                                    <div style="font-size:0.72rem;color:#4ade80;">All on schedule ✓</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mockup-card" style="padding:20px;">
-                                    <div style="font-size:0.75rem;opacity:0.6;margin-bottom:6px;"><i class="fa fa-users me-1"></i> Members</div>
-                                    <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;">23</div>
-                                    <div style="font-size:0.72rem;color:var(--green-lt);">2 pending ›</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Indicators / dots -->
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
             </div>
+
+            <div class="carousel-inner">
+
+                <!-- ===== SLIDE 1 ===== -->
+                <div class="carousel-item active">
+                    <div class="hero-slide slide-1">
+                        <div class="container position-relative" style="z-index:3;">
+                            <div class="hero-slide-content">
+                                <div class="hero-badge">
+                                    <span class="dot"></span>
+                                    Trusted by 5,000+ Chamas in Kenya
+                                </div>
+                                <h1 class="hero-title">
+                                    Automate Your<br>
+                                    <span class="accent">Chama</span> — Save<br>
+                                    Time &amp; <span class="gold">Grow Faster</span>
+                                </h1>
+                                <p class="hero-sub">
+                                    ChamaPro is Kenya's leading digital platform for Chama management. Track contributions, manage loans, and collect via M-Pesa — all in one place.
+                                </p>
+                                <div class="hero-actions">
+                                    <a href="{% url 'signup' %}" class="btn-hero-primary">
+                                        <i class="fa fa-rocket"></i> Get Started Free
+                                    </a>
+                                    <a href="{% url 'view_demo' %}" class="btn-hero-outline">
+                                        <i class="fa fa-play-circle"></i> View Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== SLIDE 2 ===== -->
+                <div class="carousel-item">
+                    <div class="hero-slide slide-2">
+                        <div class="container position-relative" style="z-index:3;">
+                            <div class="hero-slide-content">
+                                <div class="hero-badge">
+                                    <span class="dot"></span>
+                                    Trusted by 5,000+ Chamas in Kenya
+                                </div>
+                                <h1 class="hero-title">
+                                    Empower Your<br>
+                                    <span class="accent">Chama</span> with<br>
+                                    Smart Management<br>
+                                    &amp; <span class="gold">Real Results</span>
+                                </h1>
+                                <p class="hero-sub">
+                                    From tracking contributions to managing loans and reporting, ChamaPro gives your group the tools to grow together, transparently.
+                                </p>
+                                <div class="hero-actions">
+                                    <a href="{% url 'signup' %}" class="btn-hero-primary">
+                                        <i class="fa fa-rocket"></i> Get Started Free
+                                    </a>
+                                    <a href="{% url 'view_demo' %}" class="btn-hero-outline">
+                                        <i class="fa fa-play-circle"></i> View Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.carousel-inner -->
+
+            <!-- Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+
         </div>
     </section>
 
