@@ -31,15 +31,15 @@
     <style>
         /* ===== CSS VARIABLES — GREEN PALETTE (matches ChamaPro app) ===== */
         :root {
-            --navy:      #0d2b1a;   /* deep forest green  (was navy blue)   */
-            --sky:       #1a7a40;   /* brand green        (was sky blue)     */
-            --sky-light: #e8f5ee;   /* pale green tint    (was sky-light)    */
+            --navy:      #0d2b1a;
+            --sky:       #1a7a40;
+            --sky-light: #e8f5ee;
             --gold:      #FFD700;
-            --green:     #16a34a;   /* bright action green                  */
-            --green-lt:  #4ade80;   /* light accent green                   */
+            --green:     #16a34a;
+            --green-lt:  #4ade80;
             --purple:    #7c3aed;
-            --dark:      #061409;   /* near-black green   (was dark navy)    */
-            --gray:      #f2f8f4;   /* green-tinted gray  (was #f4f7fb)      */
+            --dark:      #061409;
+            --gray:      #f2f8f4;
             --text:      #1e293b;
             --muted:     #64748b;
             --white:     #ffffff;
@@ -65,7 +65,7 @@
         /* ===== SPINNER ===== */
         #spinner { background: var(--white); z-index: 9999; }
 
-        /* ===== TOP BAR — clean glassmorphism strip ===== */
+        /* ===== TOP BAR ===== */
         .top-bar {
             background: rgba(6, 20, 9, 0.72) !important;
             backdrop-filter: blur(14px);
@@ -131,37 +131,77 @@
         }
         .btn-demo:hover { background: var(--sky); color: var(--white) !important; }
 
-        /* ===== HERO CAROUSEL ===== */
+        /* ===== HERO CAROUSEL — FIXED: clean cross-fade, no ghost overlap ===== */
         .hero-carousel-section {
             position: relative;
             overflow: hidden;
         }
+
+        /* Override Bootstrap's slide behaviour — use opacity cross-fade instead */
+        .hero-carousel-section .carousel-inner {
+            position: relative;
+            overflow: hidden;
+            /* Height is driven by the active (position:relative) slide */
+        }
+
+        .hero-carousel-section .carousel-item {
+            /* All slides rendered in the DOM but invisible */
+            display: block !important;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            pointer-events: none;
+            /* Smooth fade */
+            transition: opacity 0.7s ease;
+            /* Bootstrap may override translate — reset it */
+            transform: none !important;
+        }
+
+        .hero-carousel-section .carousel-item.active {
+            opacity: 1;
+            position: relative;   /* takes up layout height so the section isn't 0px */
+            pointer-events: auto;
+        }
+
+        /* Kill Bootstrap's in-between transition state classes */
+        .hero-carousel-section .carousel-item-next,
+        .hero-carousel-section .carousel-item-prev,
+        .hero-carousel-section .carousel-item.carousel-item-start,
+        .hero-carousel-section .carousel-item.carousel-item-end {
+            opacity: 0 !important;
+            transform: none !important;
+        }
+
+        /* ===== HERO SLIDE ===== */
         .hero-slide {
             position: relative;
-            min-height: 88vh;
-            display: flex !important;
+            height: 88vh;
+            min-height: 560px;
+            display: flex;
             align-items: center;
             background-size: cover;
-            background-position: center;
+            background-position: center top;
             background-repeat: no-repeat;
+            width: 100%;
         }
         .hero-slide::before {
             content: '';
             position: absolute;
             inset: 0;
             background: linear-gradient(
-                105deg,
-                rgba(6,20,9,0.0) 0%,
-                rgba(6,20,9,0.0) 55%,
-                rgba(6,20,9,0.0) 100%
+                to right,
+                rgba(232,245,238,0.82) 0%,
+                rgba(232,245,238,0.60) 45%,
+                rgba(232,245,238,0.10) 75%,
+                transparent 100%
             );
+            z-index: 1;
         }
-        /* Slide 1 — text left, dashboard right */
         .hero-slide.slide-1 { background-image: url("{% static 'img/carousel-1.jpg' %}"); }
-        /* Slide 2 — text left, team image right */
         .hero-slide.slide-2 { background-image: url("{% static 'img/carousel-2.jpg' %}"); }
 
-        /* Text content overlay */
         .hero-slide-content {
             position: relative;
             z-index: 3;
@@ -425,15 +465,6 @@
             font-size: 1.5rem;
             margin-bottom: 20px;
         }
-        .step-connector {
-            position: absolute;
-            top: 50%;
-            right: -30px;
-            transform: translateY(-50%);
-            color: var(--sky);
-            font-size: 1.4rem;
-            z-index: 2;
-        }
 
         /* ===== FEATURES ===== */
         .features-section { padding: 100px 0; }
@@ -529,7 +560,7 @@
             margin-bottom: 24px;
         }
 
-        /* ===== PRICING TEASER ===== */
+        /* ===== PRICING ===== */
         .pricing-section { padding: 100px 0; background: var(--gray); }
         .pricing-card {
             background: var(--white);
@@ -636,7 +667,6 @@
             height: 480px;
             width: 100%;
         }
-        /* Desktop dashboard card — peeking behind phone */
         .dash-peek {
             position: absolute;
             left: 0;
@@ -649,12 +679,7 @@
             padding: 14px;
             z-index: 1;
         }
-        .dash-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+        .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .dash-greeting { color: #1a3a1a; }
         .dash-actions { display: flex; gap: 6px; }
         .dash-pill {
@@ -667,36 +692,13 @@
             display: flex; align-items: center; gap: 4px;
         }
         .dash-pill.green { background: #1a4a1a; color: white; }
-        .dash-stats {
-            display: grid;
-            grid-template-columns: repeat(4,1fr);
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-        .dash-stat-card {
-            background: #f8faf8;
-            border-radius: 10px;
-            padding: 8px 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .ds-icon {
-            width: 24px; height: 24px;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.6rem;
-            flex-shrink: 0;
-        }
+        .dash-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 10px; }
+        .dash-stat-card { background: #f8faf8; border-radius: 10px; padding: 8px 6px; display: flex; align-items: center; gap: 6px; }
+        .ds-icon { width: 24px; height: 24px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; flex-shrink: 0; }
         .ds-icon.green { background: #dcfce7; color: #16a34a; }
         .ds-icon.red { background: #fee2e2; color: #dc2626; }
         .ds-icon.blue { background: #dbeafe; color: #2563eb; }
-        .dash-chart-area {
-            background: #f8faf8;
-            border-radius: 10px;
-            padding: 8px 10px;
-        }
-        /* Phone frame */
+        .dash-chart-area { background: #f8faf8; border-radius: 10px; padding: 8px 10px; }
         .phone-frame {
             position: absolute;
             right: 0;
@@ -710,119 +712,28 @@
             overflow: hidden;
             border: 8px solid #111;
         }
-        .phone-notch {
-            position: absolute;
-            top: 8px; left: 50%; transform: translateX(-50%);
-            width: 60px; height: 14px;
-            background: #111;
-            border-radius: 10px;
-            z-index: 10;
-        }
-        .phone-screen {
-            background: #f0faf0;
-            height: 100%;
-            border-radius: 28px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .phone-status {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 14px 4px;
-            font-size: 0.6rem;
-            font-weight: 700;
-            color: #1a3a1a;
-        }
-        .phone-balance-card {
-            background: #1a4a1a;
-            color: white;
-            margin: 4px 10px 6px;
-            border-radius: 14px;
-            padding: 10px 12px;
-        }
+        .phone-notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 60px; height: 14px; background: #111; border-radius: 10px; z-index: 10; }
+        .phone-screen { background: #f0faf0; height: 100%; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; }
+        .phone-status { display: flex; justify-content: space-between; align-items: center; padding: 14px 14px 4px; font-size: 0.6rem; font-weight: 700; color: #1a3a1a; }
+        .phone-balance-card { background: #1a4a1a; color: white; margin: 4px 10px 6px; border-radius: 14px; padding: 10px 12px; }
         .qa-item { cursor: default; }
-        .qa-icon {
-            width: 28px; height: 28px;
-            border-radius: 10px;
-            background: #dcfce7;
-            color: #16a34a;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.65rem;
-            margin: 0 auto 3px;
-        }
-        .phone-txn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 0;
-            border-bottom: 1px solid #e8f5e8;
-        }
+        .qa-icon { width: 28px; height: 28px; border-radius: 10px; background: #dcfce7; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; margin: 0 auto 3px; }
+        .phone-txn { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid #e8f5e8; }
         .phone-txn:last-child { border: none; }
-        .txn-icon {
-            width: 22px; height: 22px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 0.5rem;
-            flex-shrink: 0;
-        }
+        .txn-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; flex-shrink: 0; }
         .txn-icon.green { background: #dcfce7; color: #16a34a; }
         .txn-icon.red { background: #fee2e2; color: #dc2626; }
         .txn-icon.blue { background: #dbeafe; color: #2563eb; }
-        .phone-bottom-nav {
-            margin-top: auto;
-            display: flex;
-            border-top: 1px solid #e8f5e8;
-            background: white;
-            padding: 6px 0 8px;
-        }
-        .bnav-item {
-            flex: 1;
-            text-align: center;
-            font-size: 0.48rem;
-            color: #888;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
+        .phone-bottom-nav { margin-top: auto; display: flex; border-top: 1px solid #e8f5e8; background: white; padding: 6px 0 8px; }
+        .bnav-item { flex: 1; text-align: center; font-size: 0.48rem; color: #888; display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .bnav-item i { font-size: 0.7rem; }
         .bnav-item.active { color: #1a4a1a; }
-        .bnav-item.active i { color: #1a4a1a; }
 
-        /* ===== APP SCREENSHOT (full-width, below mockup) ===== */
-        .app-screenshot-strip {
-            position: relative;
-            z-index: 1;
-            margin-top: 60px;
-            padding: 0 0 0;
-        }
-        .app-screenshot-strip img {
-            width: 100%;
-            display: block;
-            border-radius: 28px 28px 0 0;
-            box-shadow: 0 -20px 80px rgba(0,0,0,0.45);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-bottom: none;
-        }
-        .app-screenshot-label {
-            text-align: center;
-            margin-bottom: 18px;
-        }
-        .app-screenshot-label span {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(74,222,128,0.12);
-            border: 1px solid rgba(74,222,128,0.3);
-            color: var(--green-lt);
-            border-radius: 50px;
-            padding: 6px 18px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-        }
+        /* ===== APP SCREENSHOT ===== */
+        .app-screenshot-strip { position: relative; z-index: 1; margin-top: 60px; }
+        .app-screenshot-strip img { width: 100%; display: block; border-radius: 28px 28px 0 0; box-shadow: 0 -20px 80px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.08); border-bottom: none; }
+        .app-screenshot-label { text-align: center; margin-bottom: 18px; }
+        .app-screenshot-label span { display: inline-flex; align-items: center; gap: 8px; background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: var(--green-lt); border-radius: 50px; padding: 6px 18px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; }
 
         @media (max-width: 991px) {
             .app-mockup-wrap { height: 400px; }
@@ -835,12 +746,7 @@
 
         /* ===== CONTACT ===== */
         .contact-section { padding: 100px 0; background: var(--gray); }
-        .contact-card {
-            background: var(--white);
-            border-radius: 24px;
-            padding: 48px;
-            box-shadow: var(--shadow);
-        }
+        .contact-card { background: var(--white); border-radius: 24px; padding: 48px; box-shadow: var(--shadow); }
         .form-control-custom {
             border: 1.5px solid #e2e8f0;
             border-radius: 12px;
@@ -852,11 +758,7 @@
             background: var(--white);
             color: var(--text);
         }
-        .form-control-custom:focus {
-            outline: none;
-            border-color: var(--sky);
-            box-shadow: 0 0 0 4px rgba(26,122,64,0.08);
-        }
+        .form-control-custom:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 4px rgba(26,122,64,0.08); }
         .form-label-custom { font-weight: 600; color: var(--navy); margin-bottom: 8px; font-size: 0.9rem; display: block; }
         .btn-submit {
             background: var(--sky);
@@ -873,21 +775,9 @@
             width: 100%;
         }
         .btn-submit:hover { background: #155f32; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(26,122,64,0.4); }
-        .contact-info-item {
-            display: flex; align-items: center; gap: 14px;
-            padding: 16px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
+        .contact-info-item { display: flex; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
         .contact-info-item:last-child { border: none; }
-        .contact-info-icon {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            background: var(--sky-light);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--sky);
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
+        .contact-info-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--sky-light); display: flex; align-items: center; justify-content: center; color: var(--sky); font-size: 1rem; flex-shrink: 0; }
 
         /* ===== CTA BANNER ===== */
         .cta-section {
@@ -907,54 +797,20 @@
         }
 
         /* ===== FOOTER ===== */
-        .footer-section {
-            background: var(--dark);
-            padding: 80px 0 40px;
-        }
+        .footer-section { background: var(--dark); padding: 80px 0 40px; }
         .footer-brand { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--white); }
         .footer-brand em { font-style: normal; color: var(--green-lt); }
         .footer-desc { color: rgba(255,255,255,0.55); font-size: 0.92rem; line-height: 1.7; margin: 16px 0 24px; max-width: 280px; }
         .footer-social { display: flex; gap: 10px; }
-        .social-btn {
-            width: 38px; height: 38px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; justify-content: center;
-            color: rgba(255,255,255,0.6);
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
+        .social-btn { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 0.9rem; transition: all 0.2s; text-decoration: none; }
         .social-btn:hover { background: var(--sky); border-color: var(--sky); color: var(--white); }
         .footer-heading { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--white); font-size: 1rem; margin-bottom: 20px; }
         .footer-link { display: block; color: rgba(255,255,255,0.5); font-size: 0.9rem; text-decoration: none; padding: 5px 0; transition: color 0.2s; }
         .footer-link:hover { color: var(--green-lt); }
-        .footer-newsletter input {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            padding: 12px 18px;
-            color: var(--white);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem;
-            width: 100%;
-            margin-bottom: 10px;
-        }
+        .footer-newsletter input { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px 18px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: 100%; margin-bottom: 10px; }
         .footer-newsletter input::placeholder { color: rgba(255,255,255,0.35); }
         .footer-newsletter input:focus { outline: none; border-color: var(--green-lt); }
-        .footer-newsletter button {
-            background: var(--sky);
-            color: var(--white);
-            border: none;
-            border-radius: 10px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-family: 'DM Sans', sans-serif;
-            cursor: pointer;
-            width: 100%;
-            transition: background 0.2s;
-        }
+        .footer-newsletter button { background: var(--sky); color: var(--white); border: none; border-radius: 10px; padding: 12px 24px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; width: 100%; transition: background 0.2s; }
         .footer-newsletter button:hover { background: #155f32; }
         .footer-divider { border-color: rgba(255,255,255,0.07); margin: 40px 0 24px; }
         .footer-copy { color: rgba(255,255,255,0.35); font-size: 0.85rem; }
@@ -962,29 +818,13 @@
         .footer-copy a:hover { color: var(--green-lt); }
 
         /* ===== BACK TO TOP ===== */
-        .back-to-top {
-            position: fixed;
-            bottom: 30px; right: 30px;
-            width: 46px; height: 46px;
-            background: var(--sky);
-            color: var(--white);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 16px rgba(26,122,64,0.4);
-            text-decoration: none;
-            transition: all 0.3s;
-            opacity: 0;
-            transform: translateY(20px);
-            z-index: 999;
-        }
+        .back-to-top { position: fixed; bottom: 30px; right: 30px; width: 46px; height: 46px; background: var(--sky); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 16px rgba(26,122,64,0.4); text-decoration: none; transition: all 0.3s; opacity: 0; transform: translateY(20px); z-index: 999; }
         .back-to-top.visible { opacity: 1; transform: translateY(0); }
         .back-to-top:hover { background: var(--navy); color: var(--white); }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 991px) {
             .about-img-badge { bottom: -10px; right: -10px; padding: 14px 18px; }
-            .step-connector { display: none; }
             .navbar { padding: 12px 16px; }
             .stat-divider { display: none; }
         }
@@ -1218,8 +1058,6 @@
                     <p class="text-muted mb-5" style="font-size:1.05rem;line-height:1.8;">
                         ChamaPro helps investment groups and Chamas manage contributions, loans, and group records with ease. Our system ensures transparency, accountability, and convenience for all members.
                     </p>
-
-                    <!-- Tabs -->
                     <ul class="nav tab-nav-custom mb-4" id="aboutTabs" role="tablist">
                         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#nav-story" type="button">Our Story</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button">Mission</button></li>
@@ -1236,8 +1074,6 @@
                             <p class="text-muted" style="line-height:1.8;">We envision a future where Chamas operate like professional financial institutions using affordable, accessible tools — making every contribution count towards financial freedom.</p>
                         </div>
                     </div>
-
-                    <!-- Value cards -->
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="value-card">
@@ -1273,7 +1109,6 @@
             </div>
             <div class="row g-4 position-relative">
                 <div class="d-none d-lg-block position-absolute" style="top:80px;left:calc(12.5% + 30px);right:calc(12.5% + 30px);height:2px;background:linear-gradient(90deg,var(--sky),var(--navy));opacity:0.15;z-index:0;"></div>
-
                 <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
                     <div class="step-card">
                         <div class="step-number">01</div>
@@ -1621,10 +1456,8 @@
                     </div>
                 </div>
                 <div class="col-lg-6 wow fadeInRight d-flex justify-content-center align-items-center">
-                    <!-- Phone + Dashboard Mockup -->
                     <div class="app-mockup-wrap">
-
-                        <!-- Desktop dashboard peek (left, behind phone) -->
+                        <!-- Desktop dashboard peek -->
                         <div class="dash-peek">
                             <div class="dash-header">
                                 <div class="dash-greeting">
@@ -1670,7 +1503,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Mini chart -->
                             <div class="dash-chart-area">
                                 <div style="font-size:0.65rem;font-weight:700;margin-bottom:8px;opacity:0.8;">GROUP OVERVIEW</div>
                                 <svg viewBox="0 0 260 80" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:70px;">
@@ -1697,8 +1529,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Phone frame (right, front) -->
+                        <!-- Phone frame -->
                         <div class="phone-frame">
                             <div class="phone-notch"></div>
                             <div class="phone-screen">
@@ -1758,7 +1589,7 @@
                 </div>
             </div>
 
-            <!-- ===== FULL-WIDTH APP SCREENSHOT ===== -->
+            <!-- App Screenshot Strip -->
             <div class="app-screenshot-strip wow fadeInUp" data-wow-delay="0.2s">
                 <div class="app-screenshot-label mb-3">
                     <span>
